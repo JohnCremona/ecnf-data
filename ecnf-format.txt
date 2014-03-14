@@ -1,0 +1,125 @@
+﻿Notes on database entries for elliptic curves over number fields (other than Q)
+
+
+In the existing (mongodb) Database elliptic_curves there is currently a Collection called curves.  We will add *one* new collection, called either nf (Harald's choice) or nfcurves (John's choice). This will hold one "document" (mongo-ese for a single database record) for each curve.
+Each document has keys which we group for convenience here into two parts: field keys and curve keys.  The field keys identify the field K over which the curve E is defined, with enough detail so that searches can be done for curves over specific fields or (for example) over real quadratic fields.  The curve fields identify the curve and contains various invariants and properties of the curve.  In many cases some of these will not be known, in which case they are simply omitted; and the code which deals with these documents and creates web pages will have to be aware of this partial data.
+I have given these keys long names here for clarity.  Harald recommends using short names to save space, as in our code we can easily define longer pseudonyms (e.g. conductor_norm = "cn"). 
+FIELD KEYS
+Mandatory keys marked with *
+
+
+field_label  *   string          2.2.5.1
+degree       *   int             2
+signature    *   [int,int]       [2,0]
+abs_disc     *   int             5
+
+
+CURVE KEYS
+Mandatory keys marked with * 
+
+
+label              *     string (see below)
+short_label        *     string
+conductor_label    *     string
+iso_label          *     string (letter code of isogeny class)  
+conductor_ideal    *     string
+conductor_norm     *     int
+number             *     int    (number of curve in isogeny class, from 1) 
+
+
+Here,
+label = “%s-%s” % (field_label, short_label)
+short_label = “%s.%s%s” % (conductor_label, iso_label, str(number))
+We do not insist on a common format for the conductor_label or conductor_ideal.  The conductor_ideal should contain enough information to uniquely construct the conductor as an ideal.  The conductor_label need not, it could be something like "17.1" for the first ideal of norm 17 in some order.  For each type of field we include (real quadratic, imaginary quadratic, etc) these label formats will need to be specified somewhere and functions provided in the code to parse them.
+
+
+Below, all number field elements (NFelt) will be represented as a list of length d where d=[K:Q], each component is either an integer or a list of two integers [num,den] to represent the rational number num/den.  The d rationals in the list are the coefficients of the number field element with respect to the power basis on the generator of K whose minimal polynomial is stored in the number field database. 
+
+
+CURVE KEYS (continued)
+
+
+ainvs                  *         list of 5 NFelts (Weierstrass coefficients)
+jinv                   *         NFelt
+cm                     *?         int (a negative discriminant, or 0)
+base_change            *?         boolean (True, False)
+rank                            int
+rank_bounds                     list of 2 ints
+analytic_rank                   int
+torsion_order                   int
+torsion_structure               list of 0, 1 or 2 ints
+gens                            list of lists of 3 NFelts
+torsion_gens                    list of lists of 3 NFelts
+sha_an                          int
+
+
+There is no need for the Weierstrass coefficients to have any properties such as minimal / reduced model, but they should be integral.  Obviously one would not have both rank_bounds and rank (and similar).   Format of points was not fixed. 
+N.B. base_change should be True if and only if E is isomorphic over K to an elliptic curve E0 defined over Q.  For this it is necessary but not sufficient that j(E) lie in Q!   Later we will go through all curves in the database which have base_change==True and put in a link to the elliptic curve over Q (its home page), but we do not do this right now.
+
+
+N.B. We all agree to create plain text files with one line per curve containing some of the above fields.  There is no need to have all of them for two reasons:
+1. no need to include j-invariants as these can be computed on the fly when uploading (and similar);
+2. we may not have complete data for all curves, e.g. no generators or no rank.  It will be easier to write common parsing and uploads scripts (similar to those in https://github.com/LMFDB/lmfdb/blob/master/lmfdb/elliptic_curves/import_ec_data.py)
+3. We initially asked for torsion structure and gens to be supplied, but later decided that it was easy and quick to complete these on the fly.
+if we keep the number of data fields per input line constant, and I suggest that we can do that by agreeing to put "?" into the raw data files when a field is missing.
+
+
+The import scripts can easily handle more than one set of files, each of which has exactly one line per curve, provided that in each set of files there is enough labelling to uniquely identify each curve.  I suggest that these common fields for every file are:
+
+
+1. field_label
+2. conductor_label
+3. iso_label
+4. number
+
+
+since the unique label is then obtained by concatenating these, joined as field_label + "-" + conductor_label + "-" + iso_label + "." + number.  (I have tried to make this compatible with HMF labels, so I hope I have it correct.  A typical HMF complete label is 2.2.5.1-31.1-a where 2.2.5.1 is the field_label and 31.1 the conductor_label and a the iso_label.)
+Then we could have 2 sets of files: curves, curve_data with the following fields after the above 4:
+[Comment:  I have thrown out the field_data files originally suggested since all the field data (degree, signature, abd_disc) is easily extractable from the field label which the curves file already has.]
+
+
+curves:
+5. conductor_ideal
+6. conductor_norm
+7, 8, 9, 10, 11. ainvs (in 5 fields separated by space)
+12. cm
+13. base_change (use 0 and 1 for False and True)
+
+
+curve_data:
+5. rank
+6. rank_bounds
+7. analytic_rank
+8. ngens (number of generators of infinite order which follow)
+9-8+ngens. gens (number of fields equals rank or absent if rank=?)
+9+ngens. sha_an
+For points the syntax will be [x:y:z] with x, y, z all NFelts as strings.
+
+
+I hope I have not forgotten anything: some of the database fields (e.g. short_label, jinv) are trivially obtained from these.  I divided up the two raw data files so that if you only know the basics about curves (its equation, and cm & base_change flags) then you only need provide the curves file while if you know more about their Mordell-Weil group then you can provide curve_data files too.
+If we all stick to a version of this then we will be able to use a uniform upload script, which I am currently writing, based on my elliptic curve upload scripts.
+
+
+
+
+TODO
+A mockup of a typical mongoDB entry:
+
+
+{ 
+ “_id” : <chosen by mongodb and rather random>,
+ “field” : [ <label>, <degree>, [ <sig1>, <sig2> ], <abs_disc> ],
+ “label” : <curve label>,
+ “
+ 
+
+
+the class structure (mapping the database entries to python classes)
+
+
+ECNF:
+* NField (it’s own class)
+   * label
+   * ...
+* label
+* ...
