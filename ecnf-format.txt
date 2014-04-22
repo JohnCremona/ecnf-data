@@ -39,7 +39,7 @@ number             *     int    (number of curve in isogeny class, from 1)
 Here,
 
  label = “%s-%s” % (field_label, short_label)
- short_label = “%s.%s%s” % (conductor_label, iso_label, str(number))
+ short_label = “%s-%s%s” % (conductor_label, iso_label, str(number))
 
 We do not insist on a common format for the conductor_label or
 conductor_ideal.  The conductor_ideal should contain enough
@@ -48,11 +48,12 @@ conductor_label need not, it could be something like "17.1" for the
 first ideal of norm 17 in some order.  For each type of field we
 include (real quadratic, imaginary quadratic, etc) these label formats
 will need to be specified somewhere and functions provided in the code
-to parse them.
+to parse them.  See the file quadratic_ideals.txt for the quadratic
+case.
 
 All number field elements (NFelt) will be represented in the database
-as a list of length d where d=[K:Q], each component is a string which
-represents the rational number num/den.  [Originally we stored
+as a list of length d where d=[K:Q], each component a string which
+represents the rational number num/den.  Originally we stored
 rationals as pairs of integers [num,den] but this failed as soon as we
 had a curve who coefficients were loo large for Mongo to manage (it
 has a limitation of 8-byte integers).  The d rationals in the list are
@@ -93,22 +94,25 @@ right now.
 Raw data files for input / upload into the database
 
 We all agree to create plain text files with one line per curve
-containing some of the above fields.  There is no need to have all of
-them for two reasons:
+containing some of the above fields.  See the file sample-nfcurve for
+the details.  There is no need for contributors to provide all of the
+fields for two reasons:
 
-1. No need to include j-invariants as these can be computed on the fly
-when uploading (and similar);
+1. There is no need to include j-invariants as these can be computed
+on the fly when uploading (similarly for torsion, and other "easy"
+invariants);
 
 2. We may not have complete data for all curves, e.g. no generators or
-no rank.  We will write common parsing and uploads scripts (similar to
-those in import_ec_data.py): done for curves and curve_data files (see
+no rank.  We have common wrtten parsing and uploads scripts, similar
+to those in import_ec_data.py, for curves and curve_data files (see
 later).
 
 3. We initially asked for torsion structure and gens to be supplied,
 but later decided that it was easy and quick to complete these on the
-fly.  We keep the number of data fields per input line constant, by
-putting "?" into the raw data files when a field is missing (either
-unknown, or redundant -- e.g. rank bounds not needed if rank known).
+fly.  We keep the number of data fields per input line constant (or
+predictable), by putting "?" into the raw data files when a field is
+missing (either unknown, or redundant -- e.g. rank bounds not needed
+if rank known).
 
 The import scripts can handle more than one set of files, each of
 which has exactly one line per curve, provided that in each set of
@@ -135,12 +139,13 @@ Currently we need 1 or 2 sets of files: curves (obligatory) and
 curve_data (optional) with the following fields after the above 4.
 The file names should be of the form “curves.xyz” and “curve_data.xyz”
 with the same suffix (here “xyz”) to identify the dataset in some way.
-So far I have xyz=qsqrt5 for Alyson’s data and cubic-23 for Paul and
-Dan’s, but if they provide additional curves with (say) different
-conductor ranges then I would need to change these suffices to be more
-specific.  The intention is that these raw data files should be kept
-under revision control, by their creators and/or John, who has created
-the git repository https://github.com/JohnCremona/ecnf-data for this.
+So far we have xyz=sample for the sample curves files, xyz=qsqrt5 for
+Alyson’s data and cubic-23 for Paul and Dan’s, but if they provide
+additional curves with (say) different conductor ranges then we would
+need to change these suffices to be more specific.  The intention is
+that these raw data files should be kept under revision control, by
+their creators and/or John, who has created the git repository
+https://github.com/JohnCremona/ecnf-data for this.
 
 Additional data fields in curves.xyz:
 
@@ -149,6 +154,7 @@ Additional data fields in curves.xyz:
 7...11: ainvs (in 5 fields separated by space)
 12: cm (0 or a negative discriminant)
 13: base_change (use 0 and 1 for False and True)
+
 Sample line: 2.2.5.1 31.1 a 1 [31,18,1] 31  1,0 -1,-1 0,1 0,0 0,0 0 0
 
 Additional data fields in curve_data.xyz:
@@ -174,11 +180,12 @@ that if you only know the basics about curves (its equation, and cm &
 base_change flags) then you only need provide the curves file while if
 you know more about their Mordell-Weil group then you can provide
 curve_data files too.  The upload scripts will check for consistency
-that the conductor is correct.
+that the conductor is correct. (This has already revealed some
+glitches in the files, so was definitely a good idea!)
 
-If we all stick to a version of this then we will be able to use the
-uniform upload scripts, which I (JEC) have written, based on my
-elliptic curve upload scripts.  See lmfdb/ecnf/import_ecnf_data.py.
+If all contributors agree to keep to this then we will be able to use
+the uniform upload scripts, which have been written (by John), based
+on the elliptic curve upload scripts.  See lmfdb/ecnf/import_ecnf_data.py.
 
 TODO (this is being changed…)
 A mockup of a typical mongoDB entry:
