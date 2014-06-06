@@ -69,7 +69,8 @@ CURVE KEYS continued. (Mandatory keys marked with *)
 ainvs                  *         5-list of NFelts (Weierstrass coefficients)
 jinv                   *         NFelt
 cm                     *         int (a negative discriminant, or 0)
-base_change            *         boolean (True, False)
+base_change            *         False or label of curve over Q
+Q-curve                *         boolean (True, False)
 rank                             int
 rank_bounds                      2-list of ints
 analytic_rank                    int
@@ -84,12 +85,16 @@ properties such as minimal / reduced model, but they should be
 integral.  Obviously one would not have both rank_bounds and rank (and
 similar).
 
-N.B. base_change should be True if and only if E is isomorphic over K
-to an elliptic curve E0 defined over Q.  For this it is necessary but
-not sufficient that j(E) lie in Q!   Later we will go through all
-curves in the database which have base_change==True and put in a link
-to the elliptic curve over Q (its home page), but we do not do this
-right now.
+N.B. base_change should be not False if and only if E is isomorphic
+over K to an elliptic curve E0 defined over Q.  For this it is
+necessary but not sufficient that j(E) lie in Q!  If not False, the
+value is the label of the elliptic curve over Q.  This field depends
+on the curve, not just its isogeny class.  By contrast, Q-curve is
+True iff the curve is isogenous to all its Galois conjugates, which is
+an isogeny-invariant property.  If any curve in the class is a
+base-change then all curves in the class are Q-curves (including those
+defined over Q) but it is possible for an isogeny class of Q-curves
+not to contain any individual curves defined over Q.
 
 Raw data files for input / upload into the database
 
@@ -153,7 +158,7 @@ Additional data fields in curves.xyz:
 6: conductor_norm
 7...11: ainvs (in 5 fields separated by space)
 12: cm (0 or a negative discriminant)
-13: base_change (use 0 and 1 for False and True)
+13: Q_curve (use 0 and 1 for False and True)
 
 Sample line: 2.2.5.1 31.1 a 1 [31,18,1] 31  1,0 -1,-1 0,1 0,0 0,0 0 0
 
@@ -177,11 +182,14 @@ Some of the database fields (e.g. short_label, jinv) are trivially
 obtained from these, and the torsion structure and gens will also be
 computed during the upload.  I divided up the two raw data files so
 that if you only know the basics about curves (its equation, and cm &
-base_change flags) then you only need provide the curves file while if
+Q_curve flags) then you only need provide the curves file while if
 you know more about their Mordell-Weil group then you can provide
 curve_data files too.  The upload scripts will check for consistency
 that the conductor is correct. (This has already revealed some
-glitches in the files, so was definitely a good idea!)
+glitches in the files, so was definitely a good idea!).  The
+base_change field in the database will be computed on upload (for
+curves for which Q_curve is True) by checking that the j-invariant is
+in QQ and using Sage's E.descends_to(QQ) function.
 
 If all contributors agree to keep to this then we will be able to use
 the uniform upload scripts, which have been written (by John), based
