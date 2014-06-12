@@ -106,6 +106,7 @@ def basic_info(curves):
 			if hnf[1][1] not in data[norm][hnf[1][0]]:
 				data[norm][hnf[1][0]][hnf[1][1]] = []
 			else:
+				flag = False
 				for n, found_isog_class in enumerate(data[norm][hnf[1][0]][hnf[1][1]]):
 					if E.is_isogenous(EllipticCurve(k, [int(ainvs[0]) + int(ainvs[1]) * k.gen() for ainvs in map(operator.methodcaller("split", ","), found_isog_class[0].split()[6:11])]), proof = False):
 						ainvs = E.a_invariants()
@@ -113,7 +114,10 @@ def basic_info(curves):
 						curve_data[3] = len(found_isog_class)+1
 						curve_data[6:11] = ["%i,%i" % (ainvs[j][0], ainvs[j][1]) for j in xrange(0, 5)]
 						data[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
-						continue
+						flag = True
+						break
+				if flag == True:
+					break
 			
 			# Let's find an isogeny class
 			isogs = isog_class(E)
