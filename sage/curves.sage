@@ -52,7 +52,9 @@ def curve_cmp(E1,E2):
 def add_field(K):
     if K in used_curves:
         return
-    Plists[K] = prime_ideals(K, 101)
+    Plists[K] = prime_ideals(K, 121)
+    # Note: with bound only 100, curve [0,0,0,0,1] over Q(sqrt(-2))
+    # passes the local isogeny test for l=499!
     Dlists[K] = K.discriminant().abs()
     Glists[K] = K.galois_group()
     sigmas[K] = Glists[K][1]
@@ -98,11 +100,15 @@ def possible_isog_degrees(E, lmax=100):
 import sys
 def isog_class(E):
 	isog_class = [E]
-        if E.j_invariant() in cm_j_invariants.keys():
-                degs = isog_degrees
-        else:
-                degs = possible_isog_degrees(E, lmax=1000)
+        # if E.j_invariant() in cm_j_invariants.keys():
+        #         degs = isog_degrees
+        # else:
+        #         degs = possible_isog_degrees(E, lmax=1000)
+        degs = possible_isog_degrees(E, lmax=1000)
         sys.stdout.write(" possible isogeny degrees: %s" % degs)
+        bigdegs = [d for d in degs if d>100]
+        if bigdegs:
+                print " --Warning:  some large isogeny degrees will be tested!"
 	isogenies = E.isogenies_prime_degree(degs)
         degs = list(set([phi.degree() for phi in isogenies]))
         print "... reduced to %s" % degs
