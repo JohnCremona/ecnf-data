@@ -214,6 +214,13 @@ def basic_info(curves, outfile = None):
 			if hnf[1][1] not in data_k[norm][hnf[1][0]]:
 				data_k[norm][hnf[1][0]][hnf[1][1]] = []
 			else:
+                                # This is only useful if we input a
+                                # curve which is isogenous to one
+                                # already processed but is not
+                                # isomorphic to any previously seen,
+                                # which only happens if the isog_class
+                                # function produced an incomplete list
+                                # from the earlier curve!
 				for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
 					if E.is_isogenous(EllipticCurve(k, [int(ainvs[0]) + int(ainvs[1]) * k.gen() for ainvs in map(operator.methodcaller("split", ","), found_isog_class[0].split()[6:11])]), proof = False):
 						ainvs = E.a_invariants()
@@ -221,32 +228,34 @@ def basic_info(curves, outfile = None):
 						curve_data[3] = len(found_isog_class)+1
 						curve_data[6:11] = ["%i,%i" % (ainvs[j][0], ainvs[j][1]) for j in xrange(0, 5)]
 						data_k[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
-						continue
-			
+						break
+
 			# Let's find an isogeny class
 			isogs = isog_class(E)
 			if norm not in used:
 				used[norm] = []
 			used[norm] += isogs
-			
-			tmp = []
+
+                        # Q-curve? (isogeny class invariant)
+                        if N != sigma(N):
+                                q_curve = 0
+                        elif all([ai[1]==0 for ai in ainvs]):
+                                q_curve = 1
+                        else:
+                                Esigma = conj_curve(E,sigma)
+                                q_curve = int(any([Esigma.is_isomorphic(E2) for E2 in isogs]))
+
+			tmp = [] # list of output lines (with
+                                 # placeholder for isog code, filled
+                                 # in after sorting)
+
 			for n, E2 in enumerate(isogs):
 				# a-invs
 				ainvs = E2.a_invariants()
-				
 				# Disc
 				j = E2.j_invariant()
-				disc = cm_j_invariants[j] if j in cm_j_invariants else 0
-				
-				# Q-curve?
-				q_curve = "?"
-				if N != sigma(N):
-					q_curve = 0
-				elif all([ai[1]==0 for ai in ainvs]):
-					q_curve = 1
-				else:
-                                        Esigma = conj_curve(E2,sigma)
-                                        q_curve = int(any([Esigma.is_isomorphic(E3) for E3 in isogs]))
+				disc = cm_j_invariants.get(j, 0)
+
 				tmp.append("%s %s :isog %i %s %i %i,%i %i,%i %i,%i %i,%i %i,%i %i %s" % (field_label, cond_label, n + 1, cond_label, norm, ainvs[0][0], ainvs[0][1], ainvs[1][0], ainvs[1][1], ainvs[2][0], ainvs[2][1], ainvs[3][0], ainvs[3][1], ainvs[4][0], ainvs[4][1], disc, q_curve))
 			data_k[norm][hnf[1][0]][hnf[1][1]].append(tmp)
 
