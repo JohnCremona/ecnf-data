@@ -117,7 +117,7 @@ def basic_info(curves):
 						flag = True
 						break
 				if flag == True:
-					break
+					continue
 			
 			# Let's find an isogeny class
 			isogs = isog_class(E)
