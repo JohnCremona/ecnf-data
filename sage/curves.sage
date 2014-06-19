@@ -26,6 +26,7 @@ Plists = {} # will be keyed by fields
 Dlists = {} #
 Glists = {} #
 sigmas = {} #
+labels = {} #
 cm_j_invariants = {}
 used_curves = {}
 
@@ -55,7 +56,9 @@ def add_field(K):
     Plists[K] = prime_ideals(K, 121)
     # Note: with bound only 100, curve [0,0,0,0,1] over Q(sqrt(-2))
     # passes the local isogeny test for l=499!
-    Dlists[K] = K.discriminant().abs()
+    D = K.discriminant()
+    labels[K] = '2.0.%s.1' % str(-D) if D<0 else '2.2.%s.1' % str(D)
+    Dlists[K] = D.abs()
     Glists[K] = K.galois_group()
     sigmas[K] = Glists[K][1]
 # Get the CM j-invariants
@@ -185,6 +188,10 @@ def basic_info(curves, outfile = None):
                 sigma = sigmas[k]
                 used = used_curves[k]
                 isog_class_cmp = ic_cmp[k]
+                field_label = labels[k]
+                if not k in data:
+                        data[k] = {}
+                data_k = data[k]
 
 		# Get a global minimal model for E if possible
                 try:
@@ -200,20 +207,20 @@ def basic_info(curves, outfile = None):
 			cond_label = "[%i,%s,%s]" % (norm, hnf[1][0], hnf[1][1])
 
 			# Setup data
-			if norm not in data:
-				data[norm] = {}
-			if hnf[1][0] not in data[norm]:
-				data[norm][hnf[1][0]] = {}
-			if hnf[1][1] not in data[norm][hnf[1][0]]:
-				data[norm][hnf[1][0]][hnf[1][1]] = []
+			if norm not in data_k:
+				data_k[norm] = {}
+			if hnf[1][0] not in data_k[norm]:
+				data_k[norm][hnf[1][0]] = {}
+			if hnf[1][1] not in data_k[norm][hnf[1][0]]:
+				data_k[norm][hnf[1][0]][hnf[1][1]] = []
 			else:
-				for n, found_isog_class in enumerate(data[norm][hnf[1][0]][hnf[1][1]]):
+				for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
 					if E.is_isogenous(EllipticCurve(k, [int(ainvs[0]) + int(ainvs[1]) * k.gen() for ainvs in map(operator.methodcaller("split", ","), found_isog_class[0].split()[6:11])]), proof = False):
 						ainvs = E.a_invariants()
 						curve_data = found_isog_class[0].split()
 						curve_data[3] = len(found_isog_class)+1
 						curve_data[6:11] = ["%i,%i" % (ainvs[j][0], ainvs[j][1]) for j in xrange(0, 5)]
-						data[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
+						data_k[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
 						continue
 			
 			# Let's find an isogeny class
@@ -240,21 +247,29 @@ def basic_info(curves, outfile = None):
 				else:
                                         Esigma = conj_curve(E2,sigma)
                                         q_curve = int(any([Esigma.is_isomorphic(E3) for E3 in isogs]))
-				tmp.append("2.0.%i.1 %s :isog %i %s %i %i,%i %i,%i %i,%i %i,%i %i,%i %i %s" % (D, cond_label, n + 1, cond_label, norm, ainvs[0][0], ainvs[0][1], ainvs[1][0], ainvs[1][1], ainvs[2][0], ainvs[2][1], ainvs[3][0], ainvs[3][1], ainvs[4][0], ainvs[4][1], disc, q_curve))
-			data[norm][hnf[1][0]][hnf[1][1]].append(tmp)
+				tmp.append("%s %s :isog %i %s %i %i,%i %i,%i %i,%i %i,%i %i,%i %i %s" % (field_label, cond_label, n + 1, cond_label, norm, ainvs[0][0], ainvs[0][1], ainvs[1][0], ainvs[1][1], ainvs[2][0], ainvs[2][1], ainvs[3][0], ainvs[3][1], ainvs[4][0], ainvs[4][1], disc, q_curve))
+			data_k[norm][hnf[1][0]][hnf[1][1]].append(tmp)
 
 	# Sort the isogeny classes
-	norms = data.keys()
-	norms.sort()
-	for norm in norms:
-		hnf0s = data[norm].keys()
+        ks = data.keys()
+        print "fields: %s" % ks
+        ks.sort()
+        for k in ks:
+            data_k = data[k]
+            norms = data_k.keys()
+            norms.sort()
+            for norm in norms:
+                data_k_n = data_k[norm]
+		hnf0s = data_k_n.keys()
 		hnf0s.sort()
 		for hnf0 in hnf0s:
-			hnf1s = data[norm][hnf0].keys()
+                        data_k_n_h = data_k_n[hnf0]
+			hnf1s = data_k_n_h.keys()
 			hnf1s.sort()
 			for hnf1 in hnf1s:
-				data[norm][hnf0][hnf1].sort(cmp = isog_class_cmp)
-				for n, isogs in enumerate(data[norm][hnf0][hnf1]):
+                                dat = data_k_n_h[hnf1]
+				dat.sort(cmp = isog_class_cmp)
+				for n, isogs in enumerate(dat):
 					isog_letter = chr(97 + n)
 					for E_data in isogs:
                                                 line = E_data.replace(":isog", isog_letter)
