@@ -100,12 +100,13 @@ def has_potential_cm(E):
         return is_cm_j_invariant(E.j_invariant())
 
 def has_cm(E):
-        flag, (d,f) = has_potential_cm(E)
+        flag, df = has_potential_cm(E)
         if not flag:
-                return False
+                return False, None
+        d, f = df
         if E.base_field()(d).is_square():
                 return True, d*f**2
-        return False
+        return False, None
 
 # Determine the isogeny class of E
 easy_isog_degrees = [2,3,5,7,11,13,17,19,23,29,31,41,47,59,71] # the "easy" l
