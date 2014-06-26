@@ -34,23 +34,21 @@ def curve_cmp(E1,E2):
         ai2 = flatten([list(ai) for ai in E2.ainvs()])
         return cmp(ai1,ai2)
 
-def add_field(K):
+def add_field(K, charbound=200):
     if K in used_curves:
         return
-    Plists[K] = prime_ideals(K, 121)
+    Plists[K] = prime_ideals(K, charbound)
     # Note: with bound only 100, curve [0,0,0,0,1] over Q(sqrt(-2))
     # passes the local isogeny test for l=499!
-    D = K.discriminant()
-    if K.degree()==3 and D==-23:
-            labels[K] = '3.1.23.1'
-    elif K.degree()==2:
-            if D<0:
-                    labels[K] = '2.0.%s.1' % str(-D)
-            else:
-                    labels[K] = '2.2.%s.1' % str(D)
-    else:
-            raise NotImplementedError("cannot yet handle field %s" % K)
-    Dlists[K] = D.abs()
+    # With bound 121 curve [0, 0, 0, -11, 14] over Q(sqrt(5)) tried l=617
+
+    absD = K.discriminant().abs()
+    s = K.signature()[0] # number of real places
+    d = K.degree()
+# Warning: number fields whose label's 4'th component is not 1 will
+# not be handled correctly here
+    labels[K] = '%s.%s.%s.1' % (str(d),str(s),str(absD))
+    Dlists[K] = absD
     Glists[K] = K.galois_group(names='b')
 # Get the CM j-invariants
     for d, f, j in cm_j_invariants_and_orders(K):
@@ -111,52 +109,120 @@ def has_cm(E):
 # Determine the isogeny class of E
 easy_isog_degrees = [2,3,5,7,11,13,17,19,23,29,31,41,47,59,71] # the "easy" l
 
-# NB for curves with CM this will return a lot of primes which are not relevant!
-def possible_isog_degrees(E, lmax=100):
-        flag, d = has_cm(E)
-        if not flag:
-                dlist = [0 if E.has_bad_reduction(P) else ap(E,P)^2-4*P.norm()
-                         for P in Plists[E.base_field()]]
+def small_prime_value(Q):
+        # returns a prime represented by a positive definite binary
+        # quadratic form, not dividing its discriminant:
+        d = Q.discriminant()
+        for B in xsrange(10,1000,10):
+                llist = list(Set([Q(x,y)
+                                  for x in srange(-B,B) for y in srange(B)]))
+                #llist = [l for l in llist if l.is_prime() and not l.divides(d)]
+                llist = [l for l in llist if l.is_prime()]
+                llist.sort()
+                if llist:
+                        return llist[0]
+        raise ValueError("Unable to find a prime value of Q")
 
-                return [l for l in prime_range(lmax) if all([Mod(d,l).is_square()
-                                                             for d in dlist])]
-        # now E has CM by the order with discriminant d, and we want
-        # to avoid l for which the only isogenies are endomorphisms.
-        # For odd l there will be no more unless sqrt(l*) is in K
-        # where l* in [+l,-l] is 1 mod 4, and the only l which need to
-        # be checked are the divisors of the dield discriminant
+def possible_isog_degrees_CM(E, d):
+        # First put in 2 and any odd primes l such that l* is a square:
         K = E.base_field()
         llist = K.absolute_discriminant().odd_part().prime_factors()
         llist = [l if l%4==1 else -l for l in llist]
-        return [2] + [l.abs() for l in llist if K(l).is_square()]
+        llist = [2] + [l.abs() for l in llist if K(l).is_square()]
+        #print "first list: %s" % llist
+
+        #Next put in primes which ramify in the CM order:
+        llist += [l for l in d.prime_divisors() if not l in llist]
+        #print "second list: %s" % llist
+        llist = [2]
+        # Now find primes (not dividing d) represented by each form of
+        # discriminant d:
+        Qs = BinaryQF_reduced_representatives(d, primitive_only=True)
+        # discard principal form (q[0]=1) and one from an inverse pair:
+        Qs = [q for q in Qs if q[0]>1 and q[1]>=0]
+        for Q in Qs:
+                l = small_prime_value(Q)
+                if not l in llist:
+                        llist.append(l)
+        llist.sort()
+        #print "final list: %s" % llist
+        return llist
+
+
+# NB for curves without CM we need to implement Billeray, but the
+# following would only be incorrect if there is an isogeny of prime
+# degree > 200 which is not very likely.
+
+def possible_isog_degrees(E, lmax=200):
+        flag, d = has_cm(E)
+        if flag:
+                return possible_isog_degrees_CM(E,d)
+        dlist = [0 if E.has_bad_reduction(P) else ap(E,P)^2-4*P.norm()
+                 for P in Plists[E.base_field()]]
+        return [l for l in prime_range(lmax) if all([Mod(d,l).is_square()
+                                                             for d in dlist])]
 
 import sys
 def isog_class(E, verbose=False):
-	isog_class = [E]
-        # if E.j_invariant() in cm_j_invariants.keys():
-        #         degs = easy_isog_degrees
-        # else:
-        #         degs = possible_isog_degrees(E, lmax=1000)
         degs = possible_isog_degrees(E, lmax=1000)
-        if verbose: sys.stdout.write(" possible isogeny degrees: %s" % degs)
+        if verbose:
+                sys.stdout.write(" possible isogeny degrees: %s" % degs)
+                sys.stdout.flush()
         bigdegs = [d for d in degs if d>100]
         if bigdegs:
                 print " --Warning:  some large isogeny degrees %s will be tested!" % degs
 	isogenies = E.isogenies_prime_degree(degs)
-        degs = list(set([phi.degree() for phi in isogenies]))
-        if verbose: sys.stdout.write("... reduced to %s" % degs)
-	for isog in isogenies:
-                E2 = isog.codomain()
-                try:
-                    E2 = E2.global_minimal_model()
-                except:
-                    pass
-
+        if verbose:
+                sys.stdout.write(" -actual isogeny degrees: %s" % Set([phi.degree() for phi in isogenies]))
+                sys.stdout.flush()
+        # Add all new codomains to the list and collect degrees:
+	isog_class = [E]
+        degs = []
+        for phi in isogenies:
+                E2 = phi.codomain()
+                d = phi.degree()
                 if not any([E2.is_isomorphic(E3) for E3 in isog_class]):
-			isog_class.append(E2)
-			isogenies += E2.isogenies_prime_degree(degs)
+                        try:
+                                E2 = E2.global_minimal_model()
+                        except:
+                                pass
+                        isog_class.append(E2)
+                        if verbose:
+                                sys.stdout.write(" -added curve #%s (degree %s)..." % (len(isog_class),d))
+                                sys.stdout.flush()
+                        if not d in degs:
+                                degs.append(phi.degree())
+        if verbose:
+                sys.stdout.write("... relevant degrees: %s..." % degs)
+                sys.stdout.write(" -now completing the isogeny class...")
+                sys.stdout.flush()
+
+        i = 1 # index of next curve to consider
+        while i < len(isog_class):
+                E1 = isog_class[i]
+                i += 1
+                if verbose:
+                        sys.stdout.write(" -processing curve #%s..." % i)
+                        sys.stdout.flush()
+
+                isogenies = E1.isogenies_prime_degree(degs)
+
+                for phi in isogenies:
+                        E2 = phi.codomain()
+                        if not any([E2.is_isomorphic(E3) for E3 in isog_class]):
+                                try:
+                                        E2 = E2.global_minimal_model()
+                                except:
+                                        pass
+                                isog_class.append(E2)
+                                if verbose:
+                                        sys.stdout.write(" -added curve #%s..." % len(isog_class))
+                                        sys.stdout.flush()
+
+
         isog_class.sort(cmp=curve_cmp)
-        if verbose: print("... isogeny class has size %s" % len(isog_class))
+        if verbose:
+                print("... isogeny class has size %s" % len(isog_class))
 	return isog_class
 
 def is_Galois_invariant(N):
