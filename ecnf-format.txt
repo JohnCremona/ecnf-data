@@ -1,9 +1,16 @@
 ﻿Notes on database entries for elliptic curves over number fields (other than Q)
 
-In the existing (mongodb) Database elliptic_curves there is currently
-a Collection called curves.  We have added *one* new collection,
-called nfcurves. This will hold one "document" (mongo-ese for a single
-database record) for each curve.
+######################################
+#                                    #
+#  Data stored in the mongo database #
+#                                    #
+######################################
+
+In the existing (mongodb) Database elliptic_curves there is a
+Collection called curves, contain elliptic curves over Q only.  We
+have added *one* new collection, called nfcurves, which will hold one
+"document" (mongo-ese for a single database record) for each curve
+over number fields other than Q.
 
 Each document has keys which we group for convenience here into two
 parts: field keys and curve keys.  The field keys identify the field K
@@ -17,7 +24,12 @@ have to be aware of this partial data.
 
 I have given these keys long names here for clarity.  Harald
 recommends using short names to save space, as in our code we can
-easily define longer pseudonyms (e.g. conductor_norm = "cn").
+easily define longer pseudonyms (e.g. conductor_norm = "cn").  **THIS
+HAS NOT YET BEEN DONE** and if not done soon it will be too late,
+since changing these names requires (1) changing the upload scripts;
+(2) re-running theupload scripts on all the data; (3) changing all the
+website scripts.  (2) could be done in other ways, but probably not
+worth it.
 
 FIELD KEYS (Mandatory keys marked with *)
 
@@ -38,8 +50,8 @@ number             *     int    (number of curve in isogeny class, from 1)
 
 Here,
 
- label = “%s-%s” % (field_label, short_label)
- short_label = “%s-%s%s” % (conductor_label, iso_label, str(number))
+ label = "%s-%s" % (field_label, short_label)
+ short_label = "%s-%s%s" % (conductor_label, iso_label, str(number))
 
 We do not insist on a common format for the conductor_label or
 conductor_ideal.  The conductor_ideal should contain enough
@@ -69,7 +81,7 @@ CURVE KEYS continued. (Mandatory keys marked with *)
 ainvs                  *         5-list of NFelts (Weierstrass coefficients)
 jinv                   *         NFelt
 cm                     *         int (a negative discriminant, or 0)
-base_change            *         False or label of curve over Q
+base_change            *         list of labels of curves over Q (or [])
 Q-curve                *         boolean (True, False)
 rank                             int
 rank_bounds                      2-list of ints
@@ -79,50 +91,97 @@ torsion_structure                {0,1,2}-list of ints
 gens                             list of 3-lists of NFelts
 torsion_gens                     list of 3-lists of NFelts
 sha_an                           int
+isogeny_matrix         *         list of list of ints (degrees)
 
 There is no need for the Weierstrass coefficients to have any
 properties such as minimal / reduced model, but they should be
 integral.  Obviously one would not have both rank_bounds and rank (and
 similar).
 
-N.B. base_change should be not False if and only if E is isomorphic
-over K to an elliptic curve E0 defined over Q.  For this it is
-necessary but not sufficient that j(E) lie in Q!  If not False, the
-value is the label of the elliptic curve over Q.  This field depends
-on the curve, not just its isogeny class.  By contrast, Q-curve is
-True iff the curve is isogenous to all its Galois conjugates, which is
-an isogeny-invariant property.  If any curve in the class is a
-base-change then all curves in the class are Q-curves (including those
-defined over Q) but it is possible for an isogeny class of Q-curves
-not to contain any individual curves defined over Q.
+N.B. base_change should be [] unless E is isomorphic over K to an
+elliptic curve E0 defined over Q.  For this it is necessary but not
+sufficient that j(E) lie in Q!  If not [], the value is a list of
+labels of elliptic curves over Q.  (When K is quadratic this will
+noramlly contain 2 entries, labels of curves which are quadratic
+twists of each other.)  This field depends on the curve, not just its
+isogeny class.  By contrast, Q-curve is True iff the curve is
+isogenous to all its Galois conjugates, which is an isogeny-invariant
+property.  If any curve in the class is a base-change then all curves
+in the class are Q-curves (including those definable over Q), but it
+is possible for an isogeny class of Q-curves not to contain any
+individual curves defined over Q.  N.B. Sage version >= 6.3 is needed
+for E.descend_to(QQ) to give a list of curves over Q, as the import
+script needs, rather than either None or a single label (and will a
+lot of bugs) as it used to.
 
-Raw data files for input / upload into the database
+Isogeny degree matrix: under construction (August 2014) after
+implementing in Sage an extension of the E.isogeny_class() function
+previously only available over Q.  Not in Sage 6.3, relies on code at
+http://trac.sagemath.org/ticket/16743 currently awaiting review.  The
+idea is to process all the curves.* files provided by people, taking
+only one curve in each class and recomputing the class; sending the
+output to a file called (perhaps) allcurves.* in the same format as
+curves.*, and hopefully having the same number of lines if the
+original curves.* did actually contain complete isogeny classes, as
+well as a file isoclass.* (see below for the format of these files).
 
-We all agree to create plain text files with one line per curve
-containing some of the above fields.  See the file sample-nfcurve for
-the details.  There is no need for contributors to provide all of the
-fields for two reasons:
+*NB* Even if the original curves.* files were complete (closed under
+isogeny), since we do not yet have a canonical choice of model for
+elliptic curves over number fields other than Q, we cannot compare the
+content of the input with the new allcurves.* output using simple
+text-based tools such as diff.  Worse than that, the sorting of the
+curves in an isogeny class depends on a lexicographical ordering of
+the a-invariants, so if different models are used then the ordering
+will change.  This is not a satisfactory situation, but is the best we
+can do until we come up with a canonical model for each curve, or at
+least a canonical way of specifying its isomorphism class which could
+be used to provide a canonical ordering for curves in the isogeny
+class.
 
-1. There is no need to include j-invariants as these can be computed
-on the fly when uploading (similarly for torsion, and other "easy"
-invariants);
+###################################################
+#                                                 #
+#  Raw data files for uploading into the database #
+#                                                 #
+###################################################
 
-2. We may not have complete data for all curves, e.g. no generators or
-no rank.  We have common wrtten parsing and uploads scripts, similar
-to those in import_ec_data.py, for curves and curve_data files (see
-later).
+We agreed to create plain text files with one line per curve
+containing data from which the above data fields can be obtained.
+These files can obviously come from a variety of sources (Sage
+scripts, Magma scripts, C++ programs, etc.)  but will share a common
+format.  See the file sample-nfcurve for the details.
 
-3. We initially asked for torsion structure and gens to be supplied,
-but later decided that it was easy and quick to complete these on the
-fly.  We keep the number of data fields per input line constant (or
-predictable), by putting "?" into the raw data files when a field is
-missing (either unknown, or redundant -- e.g. rank bounds not needed
-if rank known).
+There is no need for contributors to provide all of the data fields,
+for several reasons:
+
+1. There is no need to include (for example) j-invariants as these can
+be computed on the fly when uploading; similarly for torsion, and
+other "easy" invariants;
+
+2. We may not have complete data for all curves, e.g. we may have no
+generators or not know the rank.  But we want to use common
+file-parsing and upload scripts.  These have now been written,
+similarly to those in lmfdb/elliptic_curves/import_ec_data.py, for
+curves.*, isoclass.* (under construction) and curve_data.* files (see
+later for these).
+
+3. Although we initially expected torsion structure and gens to be
+supplied, we later decided that it was easy and quick to complete
+these on the fly.  (Actually it is not so quick, and is probably the
+main reason the upload scripts are currently slow, but there are no
+current plans to change this.)  We keep the number of data fields per
+input line constant (or predictable), by putting "?" into the raw data
+files when a field is missing (either unknown, or redundant --
+e.g. rank bounds not needed if rank known).  Each data field must not
+contain any whitespace, since the parsing script uses whitespace to
+split each line up into data fields.
+
+-- Common Data Fields and conventions --
 
 The import scripts can handle more than one set of files, each of
-which has exactly one line per curve, provided that in each set of
-files there is enough labelling to uniquely identify each curve.
-These common fields for every file are the following 4:
+which has exactly one line per curve (note: isoclass.* files may have
+only one per isogeny class).  For this to work, each line in each set
+of files has 4 common label fields which uniquely identify each curve.
+These common fields for every file are the following:
 
 1. field_label
 2. conductor_label
@@ -137,22 +196,23 @@ hope I have it correct.  A typical HMF complete label is
 conductor_label and ‘a’ the iso_label.)
 
 In the input file NFelts are formatted as strings consisting of d
-coefficients separated by “,”, each an integer or rational, with no
+coefficients separated by ",", each an integer or rational, with no
 embedded spaces.
 
-Currently we need 1 or 2 sets of files: curves (obligatory) and
-curve_data (optional) with the following fields after the above 4.
-The file names should be of the form “curves.xyz” and “curve_data.xyz”
-with the same suffix (here “xyz”) to identify the dataset in some way.
-So far we have xyz=sample for the sample curves files, xyz=qsqrt5 for
-Alyson’s data and cubic-23 for Paul and Dan’s, but if they provide
-additional curves with (say) different conductor ranges then we would
-need to change these suffices to be more specific.  The intention is
-that these raw data files should be kept under revision control, by
-their creators and/or John, who has created the git repository
+Currently we cater for up to 3 sets of files: curves and isoclass
+(obligatory) and curve_data (optional) with the following fields after
+the above 4.  The file names should be of the form "curves.xyz",
+"isoclass.xyz" and "curve_data.xyz" with the same suffix (here "xyz")
+to identify the dataset in some way.  So far we have xyz=sample for
+the sample curves files, xyz=qsqrt5 for Alyson’s data and cubic-23 for
+Paul and Dan’s, but if they provide additional curves with (say)
+different conductor ranges then we would need to change these suffices
+to be more specific.  The intention is that these raw data files
+should be kept under revision control, by their creators and/or John,
+who has created the git repository
 https://github.com/JohnCremona/ecnf-data for this.
 
-Additional data fields in curves.xyz:
+-- Additional data fields in curves.xyz --
 
 5: conductor_ideal
 6: conductor_norm
@@ -162,7 +222,7 @@ Additional data fields in curves.xyz:
 
 Sample line: 2.2.5.1 31.1 a 1 [31,18,1] 31  1,0 -1,-1 0,1 0,0 0,0 0 0
 
-Additional data fields in curve_data.xyz:
+-- Additional data fields in curve_data.xyz --
 
 5: rank                   int or ?
 6: rank_bounds      [int,int] or ?
@@ -177,6 +237,26 @@ strings and no embedded spaces.
 Sample line:
 
 2.2.5.1 31.1 a 1 ? ? 0 0 ?
+
+-- Additional data fields in isoclass.xyz --
+
+5: a list of lists of positive integers, so that the (i,j) entry is
+the degree of a cyclic isogeny from curve i to curve j in the class.
+Symmetric, with diagonal entries 1.  For non-CM classes the degrees
+are uniquely determined by (i,j), and we will create an isogeny graph
+based on the "unfilled" version of the matrix with all non-prime
+entries replaced by 0 to indicate a non-edge.  For CM classes the
+situation is more complicated as there are multiple possible degrees
+between the i'th and j'th curves when these have the same endomorphism
+ring (strinctly greater than Z).  The current code has a small prime
+in each such position (i,j) with i!=j, even though this makes for a
+graph with too many edges when the class number is larger.
+
+Sample line:
+
+2.0.4.1 [65,18,1] a 1 [[1,6,3,2,6,3],[6,1,2,3,9,18],[3,2,1,6,18,9],[2,3,6,1,3,6],[6,9,18,3,1,2],[3,18,9,6,2,1]]
+
+-- Other fields --
 
 Some of the database fields (e.g. short_label, jinv) are trivially
 obtained from these, and the torsion structure and gens will also be
@@ -195,14 +275,15 @@ If all contributors agree to keep to this then we will be able to use
 the uniform upload scripts, which have been written (by John), based
 on the elliptic curve upload scripts.  See lmfdb/ecnf/import_ecnf_data.py.
 
-TODO (this is being changed…)
+-- TODO (this is being changed) --
+
 A mockup of a typical mongoDB entry:
 
 {
- “_id” : <chosen by mongodb and rather random>,
- “field” : [ <label>, <degree>, [ <sig1>, <sig2> ], <abs_disc> ],
- “label” : <curve label>,
- “
+ "_id" : <chosen by mongodb and rather random>,
+ "field" : [ <label>, <degree>, [ <sig1>, <sig2> ], <abs_disc> ],
+ "label" : <curve label>,
+ "
 
 the class structure (mapping the database entries to python classes)
 
