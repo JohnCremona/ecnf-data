@@ -2,36 +2,56 @@
 import sys
 from sage.schemes.elliptic_curves.ell_curve_isogeny import fill_isogeny_matrix
 
+# OLD version of curves.sage (up to August 2014).  Some of the
+# functionality here for detecting CM and computing isogeny classes
+# was implemented in Sage proper.  At time of writing (2014-08-14)
+# this had not yet been accepted into Sage (latest version 6.3) but
+# was awaiting review at http://trac.sagemath.org/ticket/16743 and the
+# dependency http://trac.sagemath.org/ticket/16764.  The (shorter!)
+# script curves.sage assumes the functionality provided by Sage-6.3 +
+# those tickets.
+
 # Adapted from Warren Moore's scripts.  The main function
 # basic_info(curves) takes a list of elliptic curves and outputs a
 # data file in the correct format.  Isogenous curves are computed and
 # sorted.
 
-# NB requires functionality of Sage-6.3 and code for computing isogeny
-# classes as implemented in Sage, but at present (2014-08-14) this has
-# not yet all been accepted into Sage (latest version 6.3) but is
-# awaiting review at http://trac.sagemath.org/ticket/16743 and the
-# dependency http://trac.sagemath.org/ticket/16764.
+# HNF comparison
+def hnf_cmp(I, J):
+        t = int(I.norm() - J.norm())
+	if t:
+		return t
+
+	hnf_I = I.pari_hnf()
+	hnf_J = J.pari_hnf()
+	return int(hnf_I[1][0] - hnf_J[1][0])
 
 # List of prime ideals
-from sage.schemes.elliptic_curves.isogeny_class import hnf_cmp
 def prime_ideals(F, B):
 	P = sum([p for p in [F.primes_above(p) for p in primes(B)]], [])
 	P.sort(cmp = hnf_cmp)
 	return P
 
 # cached field data
-Plists = {} # these will all be keyed by fields
+Plists = {} # will be keyed by fields
 Dlists = {} #
 Glists = {} #
 labels = {} #
 cm_j_invariants = {}
 used_curves = {}
 
+def curve_cmp(E1,E2):
+        ai1 = flatten([list(ai) for ai in E1.ainvs()])
+        ai2 = flatten([list(ai) for ai in E2.ainvs()])
+        return cmp(ai1,ai2)
+
 def add_field(K, charbound=200):
     if K in used_curves:
         return
     Plists[K] = prime_ideals(K, charbound)
+    # Note: with bound only 100, curve [0,0,0,0,1] over Q(sqrt(-2))
+    # passes the local isogeny test for l=499!
+    # With bound 121 curve [0, 0, 0, -11, 14] over Q(sqrt(5)) tried l=617
 
     absD = K.discriminant().abs()
     s = K.signature()[0] # number of real places
@@ -59,6 +79,8 @@ def ap(E, p):
 	elif E.has_additive_reduction(p):
 		return 0
 
+
+
 # Check if we've already found this curve
 def found(E, norm = None):
 	if norm == None:
@@ -70,13 +92,183 @@ def found(E, norm = None):
 				return True
 	return False
 
-# Functions for testing if E is a Q-curve
+# Functions which should be moved into the ell_number_field module:
+def is_cm_j_invariant(j):
+        if not j.is_integral():
+                return False, None
+        h = 1 if j in QQ else j.minpoly().degree()
+        if h>100:
+                raise NotImplementedError("CM data only available for class numbers up to 100")
+        for d,f in cm_orders(h):
+                pol = hilbert_class_polynomial(d*f^2)
+                if pol(j)==0:
+                        return True, (d,f)
+        return False, None
 
+def has_potential_cm(E):
+        return is_cm_j_invariant(E.j_invariant())
+
+def has_cm(E):
+        flag, df = has_potential_cm(E)
+        if not flag:
+                return False, None
+        d, f = df
+        if E.base_field()(d).is_square():
+                return True, d*f**2
+        return False, None
+
+# Determine the isogeny class of E
+easy_isog_degrees = [2,3,5,7,11,13,17,19,23,29,31,41,47,59,71] # the "easy" l
+
+def small_prime_value(Q):
+        # returns a prime represented by a positive definite binary
+        # quadratic form, not dividing its discriminant:
+        d = Q.discriminant()
+        for B in xsrange(10,1000,10):
+                llist = list(Set([Q(x,y)
+                                  for x in srange(-B,B) for y in srange(B)]))
+                #llist = [l for l in llist if l.is_prime() and not l.divides(d)]
+                llist = [l for l in llist if l.is_prime()]
+                llist.sort()
+                if llist:
+                        return llist[0]
+        raise ValueError("Unable to find a prime value of Q")
+
+def possible_isog_degrees_CM(E, d):
+        # First put in 2 and any odd primes l such that l* is a square:
+        add_field(E.base_field())
+        llist = K.absolute_discriminant().odd_part().prime_factors()
+        llist = [l if l%4==1 else -l for l in llist]
+        llist = [2] + [l.abs() for l in llist if K(l).is_square()]
+        #print "first list: %s" % llist
+
+        #Next put in primes which ramify in the CM order:
+        llist += [l for l in d.prime_divisors() if not l in llist]
+        #print "second list: %s" % llist
+        llist = [2]
+        # Now find primes (not dividing d) represented by each form of
+        # discriminant d:
+        Qs = BinaryQF_reduced_representatives(d, primitive_only=True)
+        # discard principal form (q[0]=1) and one from an inverse pair:
+        Qs = [q for q in Qs if q[0]>1 and q[1]>=0]
+        for Q in Qs:
+                l = small_prime_value(Q)
+                if not l in llist:
+                        llist.append(l)
+        llist.sort()
+        #print "final list: %s" % llist
+        return llist
+
+
+# NB for curves without CM we need to implement Billeray, but the
+# following would only be incorrect if there is an isogeny of prime
+# degree > 200 which is not very likely.
+
+def possible_isog_degrees(E, lmax=200):
+        add_field(E.base_field())
+        K = E.base_field()
+        flag, d = has_cm(E)
+        if flag:
+                return possible_isog_degrees_CM(E,d)
+        return E.galois_representation().non_surjective()
+        # dlist = [0 if E.has_bad_reduction(P) else ap(E,P)^2-4*P.norm()
+        #          for P in Plists[E.base_field()]]
+        # return [l for l in prime_range(lmax) if all([Mod(d,l).is_square()
+        #                                                      for d in dlist])]
+
+def isog_class(E, verbose=False):
+        add_field(E.base_field())
+        degs = possible_isog_degrees(E, lmax=1000)
+        if verbose:
+                sys.stdout.write(" possible isogeny degrees: %s" % degs)
+                sys.stdout.flush()
+        bigdegs = [d for d in degs if d>100]
+        if bigdegs:
+                print " --Warning:  some large isogeny degrees %s will be tested!" % degs
+	isogenies = E.isogenies_prime_degree(degs)
+        if verbose:
+                sys.stdout.write(" -actual isogeny degrees: %s" % Set([phi.degree() for phi in isogenies]))
+                sys.stdout.flush()
+        # Add all new codomains to the list and collect degrees:
+	curves = [E]
+        ncurves = 1
+        degs = []
+        # triples (i,j,l) where curve i is l-isogenous to curve j
+        triples = []
+        def add_trip(t):
+                for T in [t, [t[1],t[0],t[2]]]:
+                        if not T in triples:
+                                triples.append(T)
+                                if verbose:
+                                        sys.stdout.write(" -added triple %s..." % T)
+                                        sys.stdout.flush()
+
+        for phi in isogenies:
+                E2 = phi.codomain()
+                d = phi.degree()
+                if not any([E2.is_isomorphic(E3) for E3 in curves]):
+                        try:
+                                E2 = E2.global_minimal_model()
+                        except:
+                                pass
+                        curves.append(E2)
+                        if verbose:
+                                sys.stdout.write(" -added curve #%s (degree %s)..." % (ncurves,d))
+                                sys.stdout.flush()
+                        add_trip([0,ncurves,d])
+                        ncurves += 1
+                        if not d in degs:
+                                degs.append(phi.degree())
+        if verbose:
+                sys.stdout.write("... relevant degrees: %s..." % degs)
+                sys.stdout.write(" -now completing the isogeny class...")
+                sys.stdout.flush()
+
+        i = 1
+        while i < ncurves:
+                E1 = curves[i]
+                if verbose:
+                        sys.stdout.write(" -processing curve #%s..." % i)
+                        sys.stdout.flush()
+
+                isogenies = E1.isogenies_prime_degree(degs)
+
+                for phi in isogenies:
+                        E2 = phi.codomain()
+                        d = phi.degree()
+                        js = [j for j,E3 in enumerate(curves) if E2.is_isomorphic(E3)]
+                        if js: # seen codomain already
+                                add_trip([i,js[0],d])
+                        else:
+                                try:
+                                        E2 = E2.global_minimal_model()
+                                except:
+                                        pass
+                                curves.append(E2)
+                                if verbose:
+                                        sys.stdout.write(" -added curve #%s..." % ncurves)
+                                        sys.stdout.flush()
+                                add_trip([i,ncurves,d])
+                                ncurves += 1
+                i += 1
+
+        scurves = sorted(curves,cmp=curve_cmp)
+        perm = dict([(i,scurves.index(E)) for i,E in enumerate(curves)])
+        if verbose:
+                print "Sorting permutation = %s" % perm
+
+        mat = MatrixSpace(ZZ,ncurves)(0)
+        for i,j,l in triples:
+                mat[perm[i],perm[j]] = l
+        mat = fill_isogeny_matrix(mat)
+
+        if verbose:
+                print
+                print("... isogeny class has size %s" % ncurves)
+                #print("Matrix = \n%s" % mat)
+	return curves, mat
 
 def is_Galois_invariant(N):
-        r"""
-        Return True if this number field element or ideal is Galois-invariant.
-        """
         try:
                 K = N.number_field()
         except AttributeError:
@@ -91,55 +283,21 @@ def is_Galois_invariant(N):
         return all([sigma(N)==NL for sigma in G.gens()])
 
 def conj_curve(E,sigma):
-        r"""
-        Return the Galois conjugate elliptic curve under sigma.
-        """
         return EllipticCurve([sigma(a) for a in E.ainvs()])
 
-def is_Q_curve(E):
-        r"""
-        Return True if this elliptic curve is isogenous to all its
-        Galois conjugates.
-
-        Note: if the base field K is not Galois we compute the Galois
-        group of its Galois closure L, and test for isogeny over L.
-        Is this right?  Following Elkies ('On elliptic K-curves',
-        2004) this is the correct set of Galois conjugates but we
-        should be looking for isogeny over the algebraic closure.
-
-        If E does not have CM (defined over L) and there is an isogeny
-        phi from E to E' where E' is defined over L but phi need not
-        be, then considering the composite of phi with the dual of its
-        Galois conjugates shows that each of these conjugates is equal
-        to phi up to sign.  If the signs are all +1 then phi is also
-        defined over L, but otherwise it is only defined over a
-        quadratic extension M of L.  In that case, replacing E' by its
-        quadratic twist and phi by its composite with the isomorphism
-        (defined over M) from E' to its twist gives a new curve
-        defined over L and isogenous to E via an L-rational isogeny of
-        the same degree as the original phi.  For our test for being a
-        Q-curve to be correct (in this non-CM case) -- i.e., agree
-        with Elkies' definition -- we require that no quadratic twist
-        of a curve L-isogenous to E is a Galois conjugate of E.
-        """
+def is_Q_curve(E,isogs=None):
         K = E.base_field()
         if K is QQ: return True
-        add_field(K)
-
-        # first quick test: are the a-invariants Galois invariant?
-        if all([is_Galois_invariant(a) for a in E.ainvs()]):
-                return True
-
-        # second quick test: is the conductor invariant?
         if not is_Galois_invariant(E.conductor()):
                 return False
-
-        # Retrieve precomputed Galois group and isogeny class and test
+        if all([is_Galois_invariant(a) for a in E.ainvs()]):
+                return True
+        add_field(K)
         G = Glists[K]
         EL = conj_curve(E,G[0]) # base-change to Galois closure
-        C = EL.isogeny_class() # cached
-        # Here, 'in' does test up to isomorphism!
-        return all([conj_curve(E,sigma) in C for sigma in G.gens()])
+        if isogs is None:
+                isogs, mat = isog_class(E)
+        return all([any([conj_curve(E,sigma).is_isomorphic(EL) for E2 in isogs]) for sigma in G.gens()])
 
 def field_data(s):
     r"""
@@ -156,28 +314,12 @@ def parse_NFelt(K, s):
     return K([QQ(c) for c in s.split(",")])
 
 def ainvs_to_string(ainvs):
-        r"""
-        Convert a list of n NF elements to a string consisting of n
-        substrings separated by spaces, each substring being a
-        comma-separated list of strings representing rational numbers
-        representing the NF element with respect to its (power) basis.
-        """
         return " ".join([",".join([str(c) for c in list(ai)]) for ai in ainvs])
 
 def ainvs_from_strings(K, ainv_string_list):
-        r"""
-        Reverse of the previous function: converts a list of strings,
-        each representing an NF element, to a list of actual NF
-        elements in K.
-        """
         return [parse_NFelt(K,ai) for ai in ainv_string_list]
 
 def curve_from_strings(K, ainv_string_list):
-        r"""
-        Given a number field K and a list of 5 strings, each
-        representing an NF element, converts these to elements of K
-        and returns the elliptic curve with these a-invariants.
-        """
         return EllipticCurve(ainvs_from_strings(K,ainv_string_list))
 
 # Isogeny class comparison
@@ -188,12 +330,12 @@ def isog_class_cmp1(k, I, J):
 
 	for p in Plists[k]:
 		c = int(ap(E_I, p) - ap(E_J, p))
-		if c: return cmp(c,0)
+		if c: return c
 
 	raise NotImplementedError("Bound on primes is too small to determine...")
 
 
-fields = {} # keys are field labels, values are NumberFields
+fields = {}
 def field_from_label(lab):
         if lab in fields:
                 return fields[lab]
@@ -214,23 +356,12 @@ def field_from_label(lab):
         print "Created field from label %s: %s" % (lab,K)
         return K
 
-def read_curves(infile, only_one=False):
-        r"""
-        Iterator to loop through lines of a curves.* file each
-        containing 13 data fields as defined the in the ecnf-format.txt file,
-        yielding its curves as EllipticCurve objects.
-
-        If only_one is True, skips curves whose 4th data field is
-        *not* 1, hence only yielding one curve per isogeny class.
-        """
-
+def read_curves(infile):
         for L in file(infile).readlines():
                 #sys.stdout.write(L)
                 data = L.split()
                 if len(data)!=13:
                         print "line %s does not have 13 fields, skipping" % L
-                        continue
-                if only_one and data[3]!='1':
                         continue
                 K = field_from_label(data[0])
                 E = curve_from_strings(K, data[6:11])
@@ -238,33 +369,6 @@ def read_curves(infile, only_one=False):
 
 # Basic info about the curves
 def basic_info(curves, outfile = None, verbose=0):
-        r"""
-        Given a list or iterator yielding a sequence of elliptic
-        curves (which could be either an actual list of elliptic
-        curves, or something like read_curves(file_name)), processses
-        these and writes the results to an output file (if given) and
-        to the screen (if verbose>0).
-
-        The input curves do not have to be defined over the same base
-        field; the output will be sorted first by field.
-
-        Each curve is first compared with a list of curves previously
-        encountered to see if it is isomorphic *or isogenous* to any
-        of these, in which case it is ignored.  Hence, if the input
-        file contains several curves in an isogeny class, all but the
-        first will effectively be ignored.  After that the complete
-        isogeny class is computed, sorted, and data for output
-        computed for each curve.
-
-        Finally, after all the input and processing are complete, the
-        whole lot is output to the file and/or screen, sorted as
-        follows: by field, then conductor norm, then conductor (sorted
-        using the HNF of the ideal), then by isogeny class (with
-        letter labels created on the fly after sorting), then by
-        curves in the class.
-
-        TODO:  Also output isogeny matrix information into a separate file.
-        """
         if outfile:
                 outfile = file(outfile, mode="a")
 
