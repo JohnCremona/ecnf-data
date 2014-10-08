@@ -1,5 +1,6 @@
 ecnf-data
 =========
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/JohnCremona/ecnf-data?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Raw data files for elliptic curves over number fields for upload to LMFDB
 
