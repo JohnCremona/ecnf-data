@@ -94,8 +94,8 @@ def found(E, norm = None):
 	if norm in used_curves[K]:
 		for E2 in used_curves[K][norm]:
 			if E.is_isomorphic(E2):
-				return True
-	return False
+				return E2
+	return None
 
 # Functions for testing if E is a Q-curve
 
@@ -494,7 +494,7 @@ def field_from_label(lab):
         print "Created field from label %s: %s" % (lab,K)
         return K
 
-def read_curves(infile, only_one=False, ncurves=0):
+def read_curves(infile, only_one=False, ncurves=0, add_conjugates=False):
         r"""
         Iterator to loop through lines of a curves.* file each
         containing 13 data fields as defined the in the ecnf-format.txt file,
@@ -504,6 +504,8 @@ def read_curves(infile, only_one=False, ncurves=0):
         *not* 1, hence only yielding one curve per isogeny class.
         """
         count=0
+        if add_conjugates:
+            G = Glists[K]
         for L in file(infile).readlines():
                 #sys.stdout.write(L)
                 data = L.split()
@@ -516,11 +518,14 @@ def read_curves(infile, only_one=False, ncurves=0):
                 if ncurves and count>ncurves:
                        raise StopIteration
                 K = field_from_label(data[0])
-                E = curve_from_strings(K, data[6:11])
                 N_label = data[1]
-                yield (N_label,E)
-                G = Glists[K]
-                yield conj_curve(E,G[1])
+                iso_label = data[2]
+                c_num = data[3]
+                N_def = data[4]
+                E = curve_from_strings(K, data[6:11])
+                yield (N_label,N_def,iso_label,c_num,E)
+                if add_conjugates:
+                    yield conj_curve(E,G[1])
 
 def get_isoclass_letter(N, E):
         K = E.base_field()
@@ -600,9 +605,9 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 	for E in curves:
                 N_label = None
                 if isinstance(E,tuple):
-                        N_label, E = E
+                        N_label, N_def, iso_label, c_num, E = E
                         if verbose>0:
-                                print("processing E = %s with conductor %s..." % (list(E.ainvs()),N_label))
+                                print("processing E = %s with conductor %s, label %s-%s%s..." % (list(E.ainvs()),N_def,N_label,iso_label,c_num))
                 else:
                         if verbose>0:
                                 print("processing E = %s..." % list(E.ainvs()))
@@ -625,23 +630,29 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 		N = E.conductor()
 		norm = N.norm()
 
-		if found(E, norm):
-                        if verbose>0:
-                                print(" -- isogenous to a previous curve")
+                E2 = found(E, norm)
+		if E2:
+                    if verbose>0:
+                        print(" -- isogenous to previous curve %s" % list(E2.ainvs()))
                 else:
                         if verbose>1:
                                 print(" -- new isogeny class")
 			# Conductor
 			hnf = N.pari_hnf()
                         if N_label:
-                                cond_label = N_label
+                            cond_label = N_label
+                            cond_def = N_def
                         else:
-                                cond_label = "[%i,%s,%s]" % (norm, hnf[1][0], hnf[1][1])
+                            cond_def = "[%i,%s,%s]" % (norm, hnf[1][0], hnf[1][1])
+                            cond_label = cond_def
                         if nf_data_k:
-                                isog = get_isoclass_letter(cond_label,E)
-                                if verbose>0:
-                                        print("Isogeny class label = %s.%s" % (cond_label,isog))
+                            isog = get_isoclass_letter(cond_label,E)
+                            if verbose>0:
+                                print("Isogeny class label = %s.%s" % (cond_label,isog))
                         else:  # default
+                            if N_label:
+                                isog = iso_label
+                            else:
                                 isog = ":isog"
 
 			# Setup data
@@ -688,6 +699,10 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 
 			if norm not in used:
 				used[norm] = []
+                        if verbose and len(clist)>1:
+                            print("Adding these isogenous curves to the list:")
+                            for E2 in clist[1:]:
+                                print list(E2.ainvs())
 			used[norm] += clist
 
                         matlist = str([list(r) for r in mat]).replace(' ','')
@@ -711,7 +726,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 				j = E2.j_invariant()
 				disc = cm_j_invariants.get(j, 0)
 
-                                curve_line = "%s %s %s %i %s %i %s %i %i" % (field_label, cond_label, isog, n + 1, cond_label, norm, ainv_string, disc, q_curve)
+                                curve_line = "%s %s %s %i %s %i %s %i %i" % (field_label, cond_label, isog, n + 1, cond_def, norm, ainv_string, disc, q_curve)
                                 if verbose>1:
                                         print("curve_line: %s" % curve_line)
 				tmp.append(curve_line)
