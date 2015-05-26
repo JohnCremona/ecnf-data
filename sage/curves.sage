@@ -676,8 +676,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 ainvs = E.a_invariants()
 				for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
                                         curve_data = found_isog_class[0].split()
-					if E.is_isogenous(curve_from_strings(k, curve_data[6:11]), proof = False):
-                                                print("Warning: input curve %s isogenous to a previous curve but not found by isogeny class computation!" % list(E.ainvs()))
+					if E.is_isogenous(curve_from_strings(k, curve_data[6:11]), maxnorm=200):
+                                                print("Warning: input curve %s isogenous to previous curve %s but not found by isogeny class computation!" % (list(E.ainvs()),curve_data[6:11]))
 						curve_data[3] = len(found_isog_class)+1
 						curve_data[6:11] = [",".join([str(c) for c in ai]) for ai in ainvs]
 						data_k[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
