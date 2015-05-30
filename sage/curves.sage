@@ -206,6 +206,37 @@ def curve_from_strings(K, ainv_string_list):
         """
         return EllipticCurve(ainvs_from_strings(K,ainv_string_list))
 
+def reduced_model(E):
+    r""" Return a model of E reduced with respect to scaling, then
+    w.r.t. q1,q2,q3 mod 2,3,2.  The latter is in Sage
+    (E._reduce_model()), the former not but the function here is
+    similar to both one which Nook write for Magma and the
+    ReducedModel() function in Magma; only for real quadratic fields
+    so far.  """
+    E = minimal_model(E.integral_model())
+    K = E.base_field()
+    if not K.signature()==(2,0):
+        return E
+
+    embs = K.embeddings(RealField(500)) # lower precision works badly!
+    u = K.units()[0]
+    uv = [e(u).abs().log() for e in embs]
+
+    c4, c6 = E.c_invariants()
+    c4s = [e(c4) for e in embs]
+    c6s = [e(c6) for e in embs]
+    v = [(x4.abs()^(1/4)+x6.abs()^(1/6)).log() for x4,x6 in zip(c4s,c6s)]
+    kr = -(v[0]*uv[0]+v[1]*uv[1])/(uv[0]^2+uv[1]^2)
+    k1 = kr.floor()
+    k2 = kr.ceil()
+    nv1 = (v[0] + k1*uv[0])^2 + (v[1] + k1*uv[1])^2
+    nv2 = (v[0] + k2*uv[0])^2 + (v[1] + k2*uv[1])^2
+    if nv1 < nv2:
+        k=k1
+    else:
+        k=k2
+    return E.scale_curve(u^k)._reduce_model()
+
 def minimal_model(E):
         r"""
         Return a reduced minimal model if class number 1 else return same curve.
@@ -214,9 +245,9 @@ def minimal_model(E):
         minimisation or reduction of models.
         """
         try:
-                return E.global_minimal_model()
+            return E.global_minimal_model()
         except ValueError:
-                return E
+            return E
 
 def min_disc_norm(E):
         r"""
@@ -626,7 +657,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                 data_k = data[k]
                 isogdata_k = isogdata[k]
 
-                E = minimal_model(E) # does nothing if class no. >1
+                E = reduced_model(E)
 		N = E.conductor()
 		norm = N.norm()
 
@@ -687,22 +718,23 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         if verbose>1:
                                 print("computing the isogeny class")
 			Cl = E.isogeny_class()
-                        clist0 = [minimal_model(C) for C in Cl.curves]
+                        clist0 = [reduced_model(C) for C in Cl.curves]
                         mat0 = Cl.matrix()
                         # sort into new order (will be redundant later)
                         clist = sorted(clist0, key=isogeny_class_key)
+                        # perm[i]=j where sorted#i = unsorted#j
                         perm = dict([(i,clist0.index(E)) for i,E in enumerate(clist)])
                         mat = copy(mat0) # to set the size etc
                         for i in range(len(clist)):
                                 for j in range(len(clist)):
-                                        mat[perm[i],perm[j]] = mat0[i,j]
+                                        mat[i,j] = mat0[perm[i],perm[j]]
 
 			if norm not in used:
 				used[norm] = []
                         if verbose and len(clist)>1:
-                            print("Adding these isogenous curves to the list:")
-                            for E2 in clist[1:]:
-                                print list(E2.ainvs())
+                            print("Adding %s isogenous curves" % (len(clist)-1))
+                            #for E2 in clist[1:]:
+                            #    print list(E2.ainvs())
 			used[norm] += clist
 
                         matlist = str([list(r) for r in mat]).replace(' ','')
