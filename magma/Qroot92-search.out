@@ -1,0 +1,607 @@
+Magma V2.21-3     Sat May 30 2015 18:52:25 on atkin    [Seed = 1817461145]
+Type ? for help.  Type <Ctrl>-D to quit.
+Field 2.2.92.1
+Isogeny class  8.1-a
+Curve [0,-1,0,-80*w + 384,2072*w - 9937]
+Isogeny class  8.1-b
+Curve [0,1,0,-80*w + 384,-2072*w + 9937]
+Isogeny class  9.1-a
+Curve [1,0,0,715*w - 3429,-23270*w + 111599]
+Isogeny class  9.1-b
+Curve [-w,0,0,715*w - 3418,24700*w - 118450]
+Isogeny class  11.1-a
+Curve [w + 1,w + 1,w,6*w + 24,11*w + 45]
+Isogeny class  11.1-b
+Curve [w + 1,w - 1,w,4*w + 16,7*w + 26]
+Isogeny class  11.2-a
+Curve [w + 1,w + 1,1,7*w + 35,13*w + 62]
+Isogeny class  11.2-b
+Curve [w + 1,w - 1,1,5*w + 27,9*w + 43]
+Isogeny class  16.1-a
+Curve [0,-w - 1,0,11,-w - 2]
+Isogeny class  16.1-b
+Curve [0,-w + 1,0,11,-w + 2]
+Isogeny class  16.1-c
+Curve [0,w - 1,0,11,w - 2]
+Isogeny class  16.1-d
+Curve [0,w + 1,0,11,w + 2]
+Isogeny class  22.1-a
+Curve [w,0,1,2*w - 1,16*w - 70]
+Isogeny class  22.1-b
+Curve [1,0,w,2*w - 12,-11*w + 47]
+Isogeny class  22.2-a
+Curve [w,0,1,-3*w - 1,-16*w - 70]
+Isogeny class  22.2-b
+Curve [1,0,w,-3*w - 12,11*w + 47]
+Isogeny class  25.1-a
+Curve [0,-1,1,-160*w - 767,-6594*w - 31624]
+Isogeny class  25.1-b
+Curve [0,1,-w,-160*w - 767,6594*w + 31618]
+Isogeny class  26.1-a
+Curve [1,-w - 1,w + 1,w + 12,-31*w - 150]
+Isogeny class  26.1-b
+Curve [w,0,0,25*w - 109,-102*w + 496]
+Isogeny class  26.1-c
+Curve [1,0,0,25*w - 120,152*w - 729]
+Isogeny class  26.1-d
+Curve [w,w + 1,w + 1,5*w + 16,37*w + 174]
+Isogeny class  26.2-a
+Curve [1,w - 1,w + 1,-2*w + 12,30*w - 150]
+Isogeny class  26.2-b
+Curve [w,0,0,-25*w - 109,102*w + 496]
+Isogeny class  26.2-c
+Curve [1,0,0,-25*w - 120,-152*w - 729]
+Isogeny class  26.2-d
+Curve [w,-w + 1,w + 1,-6*w + 16,-38*w + 174]
+Isogeny class  28.1-a
+Curve [w + 1,w + 1,0,5*w + 24,0]
+Isogeny class  28.1-b
+Curve [w + 1,w - 1,w + 1,2*w + 4,-4]
+Isogeny class  28.2-a
+Curve [w + 1,w + 1,w + 1,8*w + 12,12*w + 40]
+Isogeny class  28.2-b
+Curve [w + 1,w - 1,0,7*w + 16,4*w + 48]
+Isogeny class  46.1-a
+Curve [1,-1,0,-10,-12]
+Isogeny class  46.1-b
+Curve [w,1,0,5,3]
+Isogeny class  50.1-a
+Curve [w,-w,1,-81*w - 349,951*w + 4604]
+Isogeny class  50.1-b
+Curve [1,-w,w,76*w - 360,1108*w - 5323]
+Isogeny class  50.1-c
+Curve [w,w,1,80*w - 349,-951*w + 4604]
+Isogeny class  50.1-d
+Curve [1,w,w,-77*w - 360,-1108*w - 5323]
+Isogeny class  56.1-a
+Curve [w + 1,-1,w + 1,10*w + 43,10*w + 45]
+Isogeny class  56.1-b
+Curve [w + 1,-w + 1,w + 1,6*w + 51,25*w + 147]
+Isogeny class  56.2-a
+Curve [w + 1,-w - 1,w + 1,-12*w + 43,-11*w + 45]
+Isogeny class  56.2-b
+Curve [w + 1,1,w + 1,-8*w + 51,-26*w + 147]
+Isogeny class  58.1-a
+Curve [1,-w - 1,w,35*w - 160,304*w - 1470]
+Isogeny class  58.1-b
+Curve [w,w,w + 1,-114*w - 557,1109*w + 5316]
+Isogeny class  58.1-c
+Curve [1,-w,w + 1,-118*w - 557,-1341*w - 6434]
+Isogeny class  58.1-d
+Curve [w,w + 1,1,39*w - 145,-229*w + 1155]
+Isogeny class  58.2-a
+Curve [1,w - 1,w,-36*w - 160,-304*w - 1470]
+Isogeny class  58.2-b
+Curve [w,-w,w + 1,113*w - 557,-1110*w + 5316]
+Isogeny class  58.2-c
+Curve [1,w,w + 1,117*w - 557,1340*w - 6434]
+Isogeny class  58.2-d
+Curve [w,-w + 1,1,-40*w - 145,229*w + 1155]
+Isogeny class  64.1-a
+Curve [0,0,0,-1,0]
+Isogeny class  72.1-a
+Curve [w + 1,-w,0,258*w - 1233,-3006*w + 14418]
+Isogeny class  72.1-b
+Curve [-w + 1,0,0,-2*w + 14,-2*w + 12]
+Isogeny class  72.1-c
+Curve [-w + 1,0,0,-2*w - 67,70*w - 150]
+Isogeny class  72.1-d
+Curve [0,1,0,-2080*w - 9975,111800*w + 536174]
+Isogeny class  72.1-e
+Curve [0,-1,0,-2080*w - 9975,-111800*w - 536174]
+Isogeny class  72.1-f
+Curve [-w + 1,w,0,2*w - 67,-70*w - 150]
+Isogeny class  72.1-g
+Curve [-w + 1,w,0,2*w + 14,2*w + 12]
+Isogeny class  72.1-h
+Curve [w + 1,0,0,262*w - 1233,4046*w - 19382]
+Isogeny class  76.1-a
+Curve [0,w - 1,0,-2*w + 15,11*w - 50]
+Isogeny class  76.1-b
+Curve [0,-w + 1,0,-2*w + 15,-11*w + 50]
+Isogeny class  76.2-a
+Curve [0,-w - 1,0,2*w + 15,-11*w - 50]
+Isogeny class  76.2-b
+Curve [0,w + 1,0,2*w + 15,11*w + 50]
+Isogeny class  77.2-a
+Curve [w,w - 1,0,150*w - 689,-628*w + 3044]
+Isogeny class  77.2-b
+Curve [w + 1,-w - 1,1,-1,0]
+Isogeny class  77.2-c
+Curve [w + 1,1,w,4*w - 4,10*w - 24]
+Isogeny class  77.2-d
+Curve [1,-w + 1,0,146*w - 696,924*w - 4433]
+Isogeny class  77.3-a
+Curve [w,-w - 1,0,-150*w - 689,628*w + 3044]
+Isogeny class  77.3-b
+Curve [w + 1,-1,1,-w - 1,0]
+Isogeny class  77.3-c
+Curve [w + 1,-w + 1,w,-5*w - 4,-10*w - 24]
+Isogeny class  77.3-d
+Curve [1,w + 1,0,-146*w - 696,-924*w - 4433]
+Isogeny class  81.1-a
+Curve [w,1,0,-6435*w - 30846,615420*w + 2951462]
+Isogeny class  81.1-b
+Curve [1,-1,0,-6435*w - 30861,-628290*w - 3013173]
+Isogeny class  82.1-a
+Curve [w,-w + 1,1,4*w + 66,-26*w - 68]
+Isogeny class  82.1-b
+Curve [w,-w - 1,w + 1,-5*w + 10,-3*w + 6]
+Isogeny class  82.1-c
+Curve [1,w - 1,w,8*w + 51,39*w + 175]
+Isogeny class  82.1-d
+Curve [1,w + 1,w + 1,-w + 14,-3*w + 14]
+Isogeny class  82.2-a
+Curve [w,w + 1,1,-5*w + 66,26*w - 68]
+Isogeny class  82.2-b
+Curve [w,w - 1,w + 1,4*w + 10,2*w + 6]
+Isogeny class  82.2-c
+Curve [1,-w - 1,w,-9*w + 51,-39*w + 175]
+Isogeny class  82.2-d
+Curve [1,-w + 1,w + 1,14,2*w + 14]
+Isogeny class  88.1-a
+Curve [w + 1,w + 1,w + 1,-241*w - 1163,-5758*w - 27618]
+Isogeny class  88.1-b
+Curve [w + 1,w - 1,0,5*w + 23,6*w + 31]
+Isogeny class  88.1-c
+Curve [w + 1,w + 1,w + 1,6*w + 19,9*w + 39]
+Isogeny class  88.1-d
+Curve [w + 1,w - 1,0,-242*w - 1159,3603*w + 17279]
+Isogeny class  88.2-a
+Curve [w + 1,w + 1,0,254*w - 1151,4595*w - 21931]
+Isogeny class  88.2-b
+Curve [w + 1,w - 1,w + 1,4*w + 11,5*w + 25]
+Isogeny class  88.2-c
+Curve [w + 1,w + 1,0,7*w + 31,10*w + 45]
+Isogeny class  88.2-d
+Curve [w + 1,w - 1,w + 1,251*w - 1171,-4774*w + 22954]
+Isogeny class  91.1-a
+Curve [w,1,w,1854*w - 8888,99334*w - 476384]
+Isogeny class  91.1-b
+Curve [1,-1,1,1854*w - 8892,-95626*w + 458606]
+Isogeny class  91.4-a
+Curve [w,1,w,-1854*w - 8888,-99334*w - 476384]
+Isogeny class  91.4-b
+Curve [1,-1,1,-1854*w - 8892,95626*w + 458606]
+Isogeny class  92.1-a
+Curve [0,0,0,-1,-1]
+Isogeny class  92.1-b
+Curve [0,1,0,2,1]
+Isogeny class  92.1-c
+Curve [0,-1,0,2,-1]
+Isogeny class  92.1-d
+Curve [0,0,0,-1,1]
+Isogeny class  98.1-a
+Curve [w,-1,w + 1,-67*w - 323,-714*w - 3424]
+Isogeny class  98.1-b
+Curve [w,w + 1,w,3*w + 4,2*w + 4]
+Isogeny class  98.1-c
+Curve [w,-1,w + 1,66*w - 323,713*w - 3424]
+Isogeny class  98.1-d
+Curve [-w,1,-w,-75*w - 356,15363*w + 73684]
+Isogeny class  98.1-e
+Curve [1,0,1,4,-6]
+Isogeny class  98.1-f
+Curve [w,0,w,4,16]
+Isogeny class  98.1-g
+Curve [w,-w + 1,w,-3*w + 4,-2*w + 4]
+Isogeny class  98.1-h
+Curve [1,1,w + 1,-67*w - 319,580*w + 2778]
+Isogeny class  98.1-i
+Curve [w,1,w,75*w - 356,-15363*w + 73684]
+Isogeny class  98.1-j
+Curve [1,-w - 1,1,-w,2]
+Isogeny class  98.1-k
+Curve [1,w - 1,1,w,2]
+Isogeny class  98.1-l
+Curve [1,1,w + 1,66*w - 319,-581*w + 2778]
+Isogeny class  100.1-a
+Curve [0,-w + 1,0,118*w - 561,1769*w - 8486]
+Isogeny class  100.1-b
+Curve [0,w + 1,0,-118*w - 561,-1769*w - 8486]
+Isogeny class  100.1-c
+Curve [0,-w - 1,0,-118*w - 561,1769*w + 8486]
+Isogeny class  100.1-d
+Curve [0,0,0,240*w + 1151,55224*w + 264845]
+Isogeny class  100.1-e
+Curve [0,w - 1,0,118*w - 561,-1769*w + 8486]
+Isogeny class  100.1-f
+Curve [w + 1,-w,0,-222*w + 1069,3327*w - 15954]
+Isogeny class  100.1-g
+Curve [0,1,0,4240*w - 20334,330712*w - 1586039]
+Isogeny class  100.1-h
+Curve [0,0,0,240*w + 1151,-55224*w - 264845]
+Isogeny class  100.1-i
+Curve [0,1,0,-4240*w - 20334,-330712*w - 1586039]
+Isogeny class  100.1-j
+Curve [0,-w,-w + 1,-3,6*w - 6]
+Isogeny class  100.1-k
+Curve [0,w,w + 1,-3,-6*w - 6]
+Isogeny class  100.1-l
+Curve [w + 1,0,0,-218*w + 1069,-4207*w + 20198]
+Isogeny class  101.1-a
+Curve [w,w,w + 1,-48*w - 239,247*w + 1181]
+Isogeny class  101.1-b
+Curve [1,-w,w + 1,-52*w - 239,-347*w - 1663]
+Isogeny class  101.2-a
+Curve [w,-w,w + 1,47*w - 239,-248*w + 1181]
+Isogeny class  101.2-b
+Curve [1,w,w + 1,51*w - 239,346*w - 1663]
+Isogeny class  103.1-a
+Curve [0,w + 1,1,-w,-16*w - 79]
+Isogeny class  103.1-b
+Curve [0,-w - 1,w,-w,16*w + 73]
+Isogeny class  103.2-a
+Curve [0,-w + 1,1,w,16*w - 79]
+Isogeny class  103.2-b
+Curve [0,w - 1,w,w,-16*w + 73]
+Isogeny class  104.1-a
+Curve [w + 1,w + 1,0,5*w + 24,5*w + 24]
+Isogeny class  104.1-b
+Curve [w + 1,w - 1,w + 1,2*w + 4,-5*w - 28]
+Isogeny class  104.2-a
+Curve [w + 1,w + 1,w + 1,8*w + 12,7*w + 64]
+Isogeny class  104.2-b
+Curve [w + 1,w - 1,0,7*w + 16,9*w + 24]
+Isogeny class  112.1-a
+Curve [w + 1,-1,0,2*w + 10,2*w + 8]
+Isogeny class  112.1-b
+Curve [w + 1,w,0,-517*w - 2479,11936*w + 57243]
+Isogeny class  112.1-c
+Curve [w + 1,w,w + 1,10*w - 7,17*w - 6]
+Isogeny class  112.1-d
+Curve [w + 1,-1,0,38*w - 164,-142*w + 696]
+Isogeny class  112.1-e
+Curve [w + 1,w,0,11*w + 5,-4*w + 103]
+Isogeny class  112.1-f
+Curve [w + 1,w,w + 1,-518*w - 2491,-16519*w - 79226]
+Isogeny class  112.1-g
+Curve [w + 1,-w + 1,0,-2*w + 18,-2*w + 16]
+Isogeny class  112.1-h
+Curve [w + 1,-w + 1,0,34*w - 156,286*w - 1368]
+Isogeny class  112.2-a
+Curve [w + 1,-w - 1,0,-2*w + 10,-2*w + 8]
+Isogeny class  112.2-b
+Curve [w + 1,w,w + 1,528*w - 2491,-14427*w + 69266]
+Isogeny class  112.2-c
+Curve [w + 1,w,0,w + 5,-24*w - 115]
+Isogeny class  112.2-d
+Curve [w + 1,-w - 1,0,-38*w - 164,142*w + 696]
+Isogeny class  112.2-e
+Curve [w + 1,w,w + 1,-7,-3*w - 18]
+Isogeny class  112.2-f
+Curve [w + 1,w,0,529*w - 2479,14028*w - 67191]
+Isogeny class  112.2-g
+Curve [w + 1,1,0,2*w + 18,2*w + 16]
+Isogeny class  112.2-h
+Curve [w + 1,1,0,-34*w - 156,-286*w - 1368]
+Isogeny class  121.1-a
+Curve [0,-1,1,-10,-20]
+Isogeny class  121.1-b
+Curve [0,1,w,-10,14]
+Isogeny class  121.2-a
+Curve [w + 1,w,1,41*w + 199,165*w + 791]
+Isogeny class  121.2-b
+Curve [w + 1,-w,1,-432*w - 2045,10051*w + 48227]
+Isogeny class  121.2-c
+Curve [w,1,0,-26*w - 138,126*w + 493]
+Isogeny class  121.2-d
+Curve [w + 1,0,w,-428*w - 2056,-11769*w - 56443]
+Isogeny class  121.2-e
+Curve [1,-1,0,-26*w - 153,-178*w - 788]
+Isogeny class  121.3-a
+Curve [w + 1,w,w,-30*w + 188,23*w - 31]
+Isogeny class  121.3-b
+Curve [w + 1,0,1,431*w - 2045,-10051*w + 48227]
+Isogeny class  121.3-c
+Curve [w,1,0,26*w - 138,-126*w + 493]
+Isogeny class  121.3-d
+Curve [w + 1,-w,w,427*w - 2056,11769*w - 56443]
+Isogeny class  121.3-e
+Curve [1,-1,0,26*w - 153,178*w - 788]
+Isogeny class  126.1-a
+Curve [1,-w,w + 1,11,-3*w - 12]
+Isogeny class  126.1-b
+Curve [w,w,w + 1,4*w + 11,7*w + 30]
+Isogeny class  126.2-a
+Curve [1,w,w + 1,-w + 11,2*w - 12]
+Isogeny class  126.2-b
+Curve [w,-w,w + 1,-5*w + 11,-8*w + 30]
+Isogeny class  128.1-a
+Curve [w + 1,-w - 1,w + 1,-15,10*w - 56]
+Isogeny class  128.1-b
+Curve [0,w - 1,0,w,44*w - 209]
+Isogeny class  128.1-c
+Curve [w + 1,-w + 1,w + 1,-6*w - 7,-2*w + 16]
+Isogeny class  128.1-d
+Curve [0,w + 1,0,-w,44*w + 209]
+Isogeny class  128.1-e
+Curve [0,-w - 1,0,-w,-44*w - 209]
+Isogeny class  128.1-f
+Curve [w + 1,-1,w + 1,-2*w - 15,-11*w - 56]
+Isogeny class  128.1-g
+Curve [0,-w + 1,0,w,-44*w + 209]
+Isogeny class  128.1-h
+Curve [w + 1,1,w + 1,4*w - 7,w + 16]
+Isogeny class  144.1-a
+Curve [w + 1,-w,w + 1,2*w - 22,-2*w + 3]
+Isogeny class  144.1-b
+Curve [w + 1,-w,w + 1,-8*w - 22,-22*w - 87]
+Isogeny class  144.1-c
+Curve [w + 1,0,w + 1,-4*w - 22,w + 3]
+Isogeny class  144.1-d
+Curve [w + 1,0,w + 1,6*w - 22,21*w - 87]
+Isogeny class  152.1-a
+Curve [0,-w - 1,0,498*w + 2393,10231*w + 49068]
+Isogeny class  152.1-b
+Curve [0,-w - 1,0,-40*w + 203,-107*w + 506]
+Isogeny class  152.1-c
+Curve [0,-1,0,-18*w - 86,-152*w - 729]
+Isogeny class  152.1-d
+Curve [0,1,0,-18*w - 86,152*w + 729]
+Isogeny class  152.1-e
+Curve [0,w + 1,0,498*w + 2393,-10231*w - 49068]
+Isogeny class  152.1-f
+Curve [0,w + 1,0,-40*w + 203,107*w - 506]
+Isogeny class  152.2-a
+Curve [0,w - 1,0,-498*w + 2393,-10231*w + 49068]
+Isogeny class  152.2-b
+Curve [0,w - 1,0,40*w + 203,107*w + 506]
+Isogeny class  152.2-c
+Curve [0,-1,0,18*w - 86,152*w - 729]
+Isogeny class  152.2-d
+Curve [0,1,0,18*w - 86,-152*w + 729]
+Isogeny class  152.2-e
+Curve [0,-w + 1,0,-498*w + 2393,10231*w - 49068]
+Isogeny class  152.2-f
+Curve [0,-w + 1,0,40*w + 203,-107*w - 506]
+Isogeny class  154.1-a
+Curve [1,-w,w,-w + 9,-w - 4]
+Isogeny class  154.1-b
+Curve [w,w,1,3*w + 20,4*w + 23]
+Isogeny class  154.1-c
+Curve [1,w - 1,w,323*w - 1546,6550*w - 31416]
+Isogeny class  154.1-d
+Curve [w,-w + 1,1,319*w - 1531,-5907*w + 28329]
+Isogeny class  154.2-a
+Curve [w,w + 1,1,147*w - 663,-1815*w + 8761]
+Isogeny class  154.2-b
+Curve [1,-w + 1,w + 1,219*w - 1049,4712*w - 22608]
+Isogeny class  154.2-c
+Curve [w,w - 1,w + 1,223*w - 1053,-4270*w + 20502]
+Isogeny class  154.2-d
+Curve [1,-w - 1,w,143*w - 678,2106*w - 10112]
+Isogeny class  154.4-a
+Curve [1,w,w,9,w - 4]
+Isogeny class  154.4-b
+Curve [w,-w,1,-4*w + 20,-4*w + 23]
+Isogeny class  154.4-c
+Curve [1,-w - 1,w,-324*w - 1546,-6550*w - 31416]
+Isogeny class  154.4-d
+Curve [w,w + 1,1,-320*w - 1531,5907*w + 28329]
+Isogeny class  154.3-a
+Curve [w,-w + 1,1,-148*w - 663,1815*w + 8761]
+Isogeny class  154.3-b
+Curve [1,w + 1,w + 1,-220*w - 1049,-4713*w - 22608]
+Isogeny class  154.3-c
+Curve [w,-w - 1,w + 1,-224*w - 1053,4269*w + 20502]
+Isogeny class  154.3-d
+Curve [1,w - 1,w,-144*w - 678,-2106*w - 10112]
+Isogeny class  158.1-a
+Curve [w,-w - 1,w,14*w + 86,51*w + 271]
+Isogeny class  158.1-b
+Curve [1,w + 1,1,18*w + 90,-19*w - 93]
+Isogeny class  158.2-a
+Curve [w,w - 1,w,-14*w + 86,-51*w + 271]
+Isogeny class  158.2-b
+Curve [1,-w + 1,1,-18*w + 90,19*w - 93]
+Isogeny class  164.1-a
+Curve [w + 1,-w,w + 1,-414*w + 1973,188911*w - 905992]
+Isogeny class  164.1-b
+Curve [w + 1,0,w + 1,-410*w + 1973,-190556*w + 913888]
+Isogeny class  164.2-a
+Curve [w + 1,0,w + 1,412*w + 1973,-188912*w - 905992]
+Isogeny class  164.2-b
+Curve [w + 1,-w,w + 1,408*w + 1973,190555*w + 913888]
+Isogeny class  169.1-a
+Curve [0,1,w,320*w + 1535,25162*w + 120667]
+Isogeny class  169.1-b
+Curve [0,-1,1,320*w + 1535,-25162*w - 120673]
+Isogeny class  169.2-a
+Curve [w + 1,w,1,7*w + 15,5*w + 32]
+Isogeny class  169.3-a
+Curve [w + 1,w,w,-1568*w + 7564,635*w - 2966]
+Isogeny class  172.1-a
+Curve [w + 1,0,0,-w - 1,1]
+Isogeny class  172.1-b
+Curve [w + 1,-w,0,-5*w - 1,-12*w - 37]
+Isogeny class  172.2-a
+Curve [w + 1,-w,0,w - 1,1]
+Isogeny class  172.2-b
+Curve [w + 1,0,0,5*w - 1,12*w - 37]
+Isogeny class  176.1-a
+Curve [w + 1,w + 1,w + 1,-94*w - 458,-1296*w - 6219]
+Isogeny class  176.1-b
+Curve [w + 1,w + 1,0,34*w - 96,-154*w + 844]
+Isogeny class  176.1-c
+Curve [0,w,0,-6*w + 16,-14*w + 74]
+Isogeny class  176.1-d
+Curve [w + 1,w - 1,0,-95*w - 454,434*w + 2081]
+Isogeny class  176.1-e
+Curve [w + 1,1,w + 1,-13*w + 74,-63*w + 321]
+Isogeny class  176.1-f
+Curve [w + 1,-w - 1,w + 1,-17*w + 66,6*w - 37]
+Isogeny class  176.1-g
+Curve [w + 1,0,w + 1,2598*w - 12453,-156690*w + 751472]
+Isogeny class  176.1-h
+Curve [w + 1,w - 1,w + 1,31*w - 116,150*w - 661]
+Isogeny class  176.1-i
+Curve [w + 1,-w - 1,w + 1,-39*w - 176,-194*w - 919]
+Isogeny class  176.1-j
+Curve [w + 1,1,w + 1,-35*w - 168,49*w + 235]
+Isogeny class  176.1-k
+Curve [0,-w,0,-6*w + 16,14*w - 74]
+Isogeny class  176.1-l
+Curve [w + 1,-w,w + 1,2594*w - 12453,167077*w - 801280]
+Isogeny class  176.2-a
+Curve [w + 1,w + 1,0,107*w - 446,838*w - 3913]
+Isogeny class  176.2-b
+Curve [w + 1,w + 1,w + 1,-21*w - 108,46*w + 217]
+Isogeny class  176.2-c
+Curve [0,-w,0,6*w + 16,14*w + 74]
+Isogeny class  176.2-d
+Curve [w + 1,w - 1,w + 1,104*w - 466,-900*w + 4375]
+Isogeny class  176.2-e
+Curve [w + 1,-w + 1,w + 1,11*w + 74,62*w + 321]
+Isogeny class  176.2-f
+Curve [w + 1,-1,w + 1,15*w + 66,-7*w - 37]
+Isogeny class  176.2-g
+Curve [w + 1,-w,w + 1,-2600*w - 12453,156689*w + 751472]
+Isogeny class  176.2-h
+Curve [w + 1,w - 1,0,-22*w - 104,-266*w - 1276]
+Isogeny class  176.2-i
+Curve [w + 1,-1,w + 1,37*w - 176,193*w - 919]
+Isogeny class  176.2-j
+Curve [w + 1,-w + 1,w + 1,33*w - 168,-50*w + 235]
+Isogeny class  176.2-k
+Curve [0,w,0,6*w + 16,-14*w - 74]
+Isogeny class  176.2-l
+Curve [w + 1,0,w + 1,-2596*w - 12453,-167078*w - 801280]
+Isogeny class  182.1-a
+Curve [w,0,0,w + 3,4*w - 16]
+Isogeny class  182.1-b
+Curve [1,0,0,w - 8,-2*w + 7]
+Isogeny class  182.2-a
+Curve [1,w + 1,1,4,-w - 7]
+Isogeny class  182.2-b
+Curve [1,1,w,5642*w - 27060,-502895*w + 2411794]
+Isogeny class  182.2-c
+Curve [w,-w - 1,w,-4*w,-3*w + 13]
+Isogeny class  182.2-d
+Curve [w,-1,1,5642*w - 27053,514180*w - 2465917]
+Isogeny class  182.2-e
+Curve [1,-w + 1,w + 1,-5034*w - 24132,-419694*w - 2012782]
+Isogeny class  182.2-f
+Curve [w,w - 1,w + 1,-5030*w - 24136,409630*w + 1964510]
+Isogeny class  182.4-a
+Curve [w,0,0,-w + 3,-4*w - 16]
+Isogeny class  182.4-b
+Curve [1,0,0,-w - 8,2*w + 7]
+Isogeny class  182.3-a
+Curve [1,-w + 1,1,4,w - 7]
+Isogeny class  182.3-b
+Curve [1,1,w,-5643*w - 27060,502895*w + 2411794]
+Isogeny class  182.3-c
+Curve [w,w - 1,w,4*w,3*w + 13]
+Isogeny class  182.3-d
+Curve [w,-1,1,-5643*w - 27053,-514180*w - 2465917]
+Isogeny class  182.3-e
+Curve [1,w + 1,w + 1,5033*w - 24132,419693*w - 2012782]
+Isogeny class  182.3-f
+Curve [w,-w - 1,w + 1,5029*w - 24136,-409631*w + 1964510]
+Isogeny class  184.1-a
+Curve [0,-1,0,-4,5]
+Isogeny class  184.1-b
+Curve [0,1,0,-4,-5]
+Isogeny class  184.1-c
+Curve [0,1,0,0,-1]
+Isogeny class  184.1-d
+Curve [w + 1,w,w + 1,305*w + 1456,9964*w + 47782]
+Isogeny class  184.1-e
+Curve [0,0,0,-55,-157]
+Isogeny class  184.1-f
+Curve [w + 1,w,0,306*w + 1468,-7308*w - 35048]
+Isogeny class  184.1-g
+Curve [0,0,0,-55,157]
+Isogeny class  184.1-h
+Curve [0,-1,0,0,1]
+Isogeny class  196.1-a
+Curve [w + 1,0,w + 1,376*w - 1829,-8318*w + 39906]
+Isogeny class  196.1-b
+Curve [0,-w - 1,0,-114*w - 521,-1203*w - 5794]
+Isogeny class  196.1-c
+Curve [w + 1,0,w + 1,-374*w - 1829,-9818*w - 47218]
+Isogeny class  196.1-d
+Curve [0,-w + 1,0,114*w - 521,-1203*w + 5794]
+Isogeny class  196.1-e
+Curve [0,w + 1,0,-114*w - 521,1203*w + 5794]
+Isogeny class  196.1-f
+Curve [w + 1,-w,w + 1,372*w - 1829,9817*w - 47218]
+Isogeny class  196.1-g
+Curve [0,w - 1,0,114*w - 521,1203*w - 5794]
+Isogeny class  196.1-h
+Curve [w + 1,-w,w + 1,-378*w - 1829,8317*w + 39906]
+Isogeny class  196.2-a
+Curve [w + 1,1,w + 1,156*w + 748,6813*w + 32674]
+Isogeny class  196.2-b
+Curve [w + 1,-w - 1,w + 1,152*w + 740,-6194*w - 29694]
+Isogeny class  196.3-a
+Curve [w + 1,-w + 1,w + 1,-158*w + 748,-6814*w + 32674]
+Isogeny class  196.3-b
+Curve [w + 1,-1,w + 1,-154*w + 740,6193*w - 29694]
+Isogeny class  197.1-a
+Curve [w + 1,-w,1,2*w + 35,-26*w - 103]
+Isogeny class  197.1-b
+Curve [w + 1,0,w,6*w + 24,44*w + 207]
+Isogeny class  197.2-a
+Curve [w + 1,0,1,-3*w + 35,26*w - 103]
+Isogeny class  197.2-b
+Curve [w + 1,-w,w,-7*w + 24,-44*w + 207]
+Isogeny class  198.1-a
+Curve [1,1,0,5449*w - 26132,-475632*w + 2281051]
+Isogeny class  198.1-b
+Curve [1,-w,1,136*w - 646,-1663*w + 7972]
+Isogeny class  198.1-c
+Curve [1,1,w + 1,67*w - 340,-659*w + 3120]
+Isogeny class  198.1-d
+Curve [1,0,w + 1,29*w + 141,-96*w - 464]
+Isogeny class  198.1-e
+Curve [w,0,w + 1,29*w + 141,154*w + 742]
+Isogeny class  198.1-f
+Curve [w,-1,w + 1,67*w - 344,793*w - 3808]
+Isogeny class  198.1-g
+Curve [w,w,w,140*w - 646,1939*w - 9262]
+Isogeny class  198.1-h
+Curve [w,-1,0,5449*w - 26125,486530*w - 2333312]
+Isogeny class  198.2-a
+Curve [1,1,0,-5449*w - 26132,475632*w + 2281051]
+Isogeny class  198.2-b
+Curve [1,w,1,-136*w - 646,1663*w + 7972]
+Isogeny class  198.2-c
+Curve [1,1,w + 1,-68*w - 340,658*w + 3120]
+Isogeny class  198.2-d
+Curve [1,0,w + 1,-30*w + 141,95*w - 464]
+Isogeny class  198.2-e
+Curve [w,0,w + 1,-30*w + 141,-155*w + 742]
+Isogeny class  198.2-f
+Curve [w,-1,w + 1,-68*w - 344,-794*w - 3808]
+Isogeny class  198.2-g
+Curve [w,-w,w,-140*w - 646,-1939*w - 9262]
+Isogeny class  198.2-h
+Curve [w,-1,0,-5449*w - 26125,-486530*w - 2333312]
+Isogeny class  200.1-a
+Curve [w + 1,w,0,-414*w - 1985,6798*w + 32602]
+Isogeny class  200.1-b
+Curve [w + 1,w,w + 1,-415*w - 1997,-10475*w - 50240]
+
+Total time: 499.259 seconds, Total memory usage: 87.44MB

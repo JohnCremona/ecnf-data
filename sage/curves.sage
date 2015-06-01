@@ -218,7 +218,8 @@ def reduced_model(E):
     if not K.signature()==(2,0):
         return E
 
-    embs = K.embeddings(RealField(500)) # lower precision works badly!
+    #embs = K.embeddings(RealField(500)) # lower precision works badly!
+    embs = K.embeddings(RealField(1000)) # lower precision works badly!
     u = K.units()[0]
     uv = [e(u).abs().log() for e in embs]
 
