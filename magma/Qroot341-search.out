@@ -1,0 +1,20 @@
+Magma V2.21-4     Wed Jun  3 2015 16:29:41 on atkin    [Seed = 87880741]
+Type ? for help.  Type <Ctrl>-D to quit.
+Field 2.2.341.1
+Isogeny class  1.1-a
+Curve [0,1,1,-10*w - 87,-57*w - 498]
+Curve [0,1,1,10*w - 97,57*w - 555]
+Isogeny class  5.1-a
+Curve [0,w + 1,w + 1,6*w - 20,-236*w + 2314]
+Isogeny class  5.1-b
+Curve [0,w + 1,w + 1,-4*w - 15,-34*w - 329]
+Isogeny class  5.2-a
+Curve [0,-w - 1,w,-4*w - 15,240*w + 2094]
+Isogeny class  5.2-b
+Curve [0,-w - 1,w,6*w - 20,28*w - 342]
+Isogeny class  11.1-a
+Curve [0,-1,1,-10,-20]
+Isogeny class  11.1-b
+Curve [0,-1,1,-42935*w - 374955,26666635*w + 232882194]
+
+Total time: 1.740 seconds, Total memory usage: 56.06MB

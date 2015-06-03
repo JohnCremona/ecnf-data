@@ -1,0 +1,12 @@
+Magma V2.21-4     Wed Jun  3 2015 15:58:57 on atkin    [Seed = 1006989169]
+Type ? for help.  Type <Ctrl>-D to quit.
+Field 2.2.437.1
+Isogeny class  1.1-a
+Curve [0,0,1,-2*w - 20,-5*w - 50]
+Curve [0,0,1,2*w - 22,5*w - 55]
+Isogeny class  4.1-a
+Curve [-w + 1,w - 2,-w + 2,14*w + 181,58*w + 764]
+Isogeny class  4.1-b
+Curve [-w + 2,1,1,-14*w + 304,-71*w + 1126]
+
+Total time: 1.209 seconds, Total memory usage: 56.06MB

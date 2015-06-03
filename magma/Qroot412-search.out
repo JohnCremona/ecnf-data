@@ -1,0 +1,49 @@
+Magma V2.21-4     Wed Jun  3 2015 15:58:17 on atkin    [Seed = 1081679689]
+Type ? for help.  Type <Ctrl>-D to quit.
+Field 2.2.412.1
+Isogeny class  3.1-a
+Curve [1,w - 1,w,-253*w - 2523,-7081*w - 71938]
+Isogeny class  3.1-b
+Curve [w,-w - 1,1,-269*w - 2319,4997*w + 52288]
+Isogeny class  3.2-a
+Curve [1,-w - 1,w,252*w - 2523,7081*w - 71938]
+Isogeny class  3.2-b
+Curve [w,w - 1,1,268*w - 2319,-4997*w + 52288]
+Isogeny class  6.1-a
+Curve [1,0,w,-1604376*w + 16282633,-2438953728*w + 24752676892]
+Isogeny class  6.1-b
+Curve [w,1,w + 1,-1604376*w + 16282820,2424514348*w - 24606132538]
+Isogeny class  6.2-a
+Curve [1,0,w,1604375*w + 16282633,2438953728*w + 24752676892]
+Isogeny class  6.2-b
+Curve [w,1,w + 1,1604375*w + 16282820,-2424514349*w - 24606132538]
+Isogeny class  8.1-a
+Curve [w + 1,w,0,28*w + 288,132*w + 1340]
+Isogeny class  8.1-b
+Curve [w + 1,w - 1,w + 1,22*w + 219,89*w + 929]
+Isogeny class  8.1-c
+Curve [w + 1,w,w + 1,23*w + 236,104*w + 1108]
+Isogeny class  8.1-d
+Curve [w + 1,w - 1,0,27*w + 271,130*w + 1161]
+Isogeny class  9.2-a
+Curve [w + 1,w + 1,w,3309963606*w - 33592461184,247572308734684*w - 2512584515865079]
+Isogeny class  9.2-b
+Curve [w + 1,w + 1,w,45846900*w - 465294679,179974522*w - 1826539146]
+Isogeny class  9.2-c
+Curve [w + 1,-w,1,-2297312304*w - 23315173138,-270729498567703*w - 2747604324434296]
+Isogeny class  9.2-d
+Curve [w + 1,-1,1,-2297312287*w - 23315173155,270690444258688*w + 2747207966488357]
+Isogeny class  9.2-e
+Curve [w + 1,w + 1,w,3309963606*w - 33592461184,-247546321851437*w + 2512320777810415]
+Isogeny class  9.3-a
+Curve [w + 1,w + 1,1,-3309963553*w - 33592461133,-247605901195868*w - 2512925442113742]
+Isogeny class  9.3-b
+Curve [w + 1,w + 1,1,45*w + 132,207*w + 687]
+Isogeny class  9.3-c
+Curve [w + 1,0,1,2297312303*w - 23315173138,270729498567703*w - 2747604324434296]
+Isogeny class  9.3-d
+Curve [w + 1,-w - 1,1,2297312286*w - 23315173155,-270690444258688*w + 2747207966488357]
+Isogeny class  9.3-e
+Curve [w + 1,w + 1,1,-3309963553*w - 33592461133,247512729390253*w + 2511979851561752]
+
+Total time: 38.210 seconds, Total memory usage: 88.09MB
