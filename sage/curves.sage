@@ -245,10 +245,7 @@ def minimal_model(E):
         NB The isogeny_class function does not currently do any
         minimisation or reduction of models.
         """
-        try:
-            return E.global_minimal_model()
-        except ValueError:
-            return E
+        return E.global_minimal_model(E, semi_global=True)
 
 def min_disc_norm(E):
         r"""
@@ -502,6 +499,9 @@ def isog_class_cmp2(k, I, J):
         return curve_cmp_via_L(E1,E2)
 
 fields = {} # keys are field labels, values are NumberFields
+import yaml
+field_dict = yaml.load(file("HMField_data.yaml")) # all the totally real fields in the LMFDB
+
 def field_from_label(lab):
         if lab in fields:
                 return fields[lab]
@@ -520,6 +520,10 @@ def field_from_label(lab):
         elif lab=='3.1.23.1':
                 pol = x**3 - x**2 +1
         else:
+            if lab in field_dict:
+                coeffs = field_dict[lab]['coeffs']
+                pol = x.parent()(coeffs)
+            else:
                 raise NotImplementedError("cannot yet handle field %s" % lab)
         K = NumberField(pol, name)
         fields[lab] = K
@@ -658,7 +662,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                 data_k = data[k]
                 isogdata_k = isogdata[k]
 
-                E = reduced_model(E)
+                E = minimal_model(E)
 		N = E.conductor()
 		norm = N.norm()
 
@@ -719,7 +723,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         if verbose>1:
                                 print("computing the isogeny class")
 			Cl = E.isogeny_class()
-                        clist0 = [reduced_model(C) for C in Cl.curves]
+                        clist0 = [minimal_model(C) for C in Cl.curves]
                         mat0 = Cl.matrix()
                         # sort into new order (will be redundant later)
                         clist = sorted(clist0, key=isogeny_class_key)
