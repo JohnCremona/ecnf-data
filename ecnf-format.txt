@@ -92,6 +92,8 @@ gens                             list of 3-lists of NFelts
 torsion_gens                     list of 3-lists of NFelts
 sha_an                           int
 isogeny_matrix         *         list of list of ints (degrees)
+non-surjective_primes            list of ints
+galois_images                    list of strings
 
 There is no need for the Weierstrass coefficients to have any
 properties such as minimal / reduced model, but they should be
@@ -255,6 +257,15 @@ graph with too many edges when the class number is larger.
 Sample line:
 
 2.0.4.1 [65,18,1] a 1 [[1,6,3,2,6,3],[6,1,2,3,9,18],[3,2,1,6,18,9],[2,3,6,1,3,6],[6,9,18,3,1,2],[3,18,9,6,2,1]]
+
+-- Additional data fields in galrep.xyz --
+
+5++: 0 or more strings representing images of mod-p representations of
+     non-maximal image
+
+Sample line:
+
+2.2.437.1 4.1 a 1 3Nn
 
 -- Other fields --
 
