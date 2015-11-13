@@ -213,7 +213,7 @@ def reduced_model(E):
     similar to both one which Nook write for Magma and the
     ReducedModel() function in Magma; only for real quadratic fields
     so far.  """
-    E = minimal_model(E.integral_model())
+    E = E.global_minimal_model(semi_global=True)
     K = E.base_field()
     if not K.signature()==(2,0):
         return E
@@ -662,7 +662,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                 data_k = data[k]
                 isogdata_k = isogdata[k]
 
-                E = minimal_model(E)
+                E = reduced_model(E)
 		N = E.conductor()
 		norm = N.norm()
 
@@ -723,7 +723,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         if verbose>1:
                                 print("computing the isogeny class")
 			Cl = E.isogeny_class()
-                        clist0 = [minimal_model(C) for C in Cl.curves]
+                        clist0 = [reduced_model(C) for C in Cl.curves]
                         mat0 = Cl.matrix()
                         # sort into new order (will be redundant later)
                         clist = sorted(clist0, key=isogeny_class_key)
@@ -881,10 +881,7 @@ def basic_info(curves, outfile = None, classfile=None, verbose=0):
                 isogdata_k = isogdata[k]
 
 		# Get a global minimal model for E if possible
-                try:
-                        E = E.global_minimal_model()
-                except:
-                        pass
+                E = E.global_minimal_model(semi_global=True)
 		N = E.conductor()
 		norm = N.norm()
 
@@ -933,7 +930,7 @@ def basic_info(curves, outfile = None, classfile=None, verbose=0):
                         if verbose>1:
                                 print("computing the isogeny class")
 			Cl = E.isogeny_class()
-                        clist0 = [minimal_model(C) for C in Cl.curves]
+                        clist0 = [reduced_model(C) for C in Cl.curves]
                         mat0 = Cl.matrix()
                         # sort into new order (will be redundant later)
                         clist = sorted(clist0, cmp=curve_cmp)
