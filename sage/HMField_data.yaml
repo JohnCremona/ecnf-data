@@ -1,0 +1,1600 @@
+2.2.101.1:
+  coeffs: [-25, -1, 1]
+  degree: 2
+  disc: 101
+2.2.104.1:
+  coeffs: [-26, 0, 1]
+  degree: 2
+  disc: 104
+2.2.105.1:
+  coeffs: [-26, -1, 1]
+  degree: 2
+  disc: 105
+2.2.109.1:
+  coeffs: [-27, -1, 1]
+  degree: 2
+  disc: 109
+2.2.113.1:
+  coeffs: [-28, -1, 1]
+  degree: 2
+  disc: 113
+2.2.12.1:
+  coeffs: [-3, 0, 1]
+  degree: 2
+  disc: 12
+2.2.120.1:
+  coeffs: [-30, 0, 1]
+  degree: 2
+  disc: 120
+2.2.124.1:
+  coeffs: [-31, 0, 1]
+  degree: 2
+  disc: 124
+2.2.129.1:
+  coeffs: [-32, -1, 1]
+  degree: 2
+  disc: 129
+2.2.13.1:
+  coeffs: [-3, -1, 1]
+  degree: 2
+  disc: 13
+2.2.133.1:
+  coeffs: [-33, -1, 1]
+  degree: 2
+  disc: 133
+2.2.136.1:
+  coeffs: [-34, 0, 1]
+  degree: 2
+  disc: 136
+2.2.137.1:
+  coeffs: [-34, -1, 1]
+  degree: 2
+  disc: 137
+2.2.140.1:
+  coeffs: [-35, 0, 1]
+  degree: 2
+  disc: 140
+2.2.141.1:
+  coeffs: [-35, -1, 1]
+  degree: 2
+  disc: 141
+2.2.145.1:
+  coeffs: [-36, -1, 1]
+  degree: 2
+  disc: 145
+2.2.149.1:
+  coeffs: [-37, -1, 1]
+  degree: 2
+  disc: 149
+2.2.152.1:
+  coeffs: [-38, 0, 1]
+  degree: 2
+  disc: 152
+2.2.156.1:
+  coeffs: [-39, 0, 1]
+  degree: 2
+  disc: 156
+2.2.157.1:
+  coeffs: [-39, -1, 1]
+  degree: 2
+  disc: 157
+2.2.161.1:
+  coeffs: [-40, -1, 1]
+  degree: 2
+  disc: 161
+2.2.165.1:
+  coeffs: [-41, -1, 1]
+  degree: 2
+  disc: 165
+2.2.168.1:
+  coeffs: [-42, 0, 1]
+  degree: 2
+  disc: 168
+2.2.17.1:
+  coeffs: [-4, -1, 1]
+  degree: 2
+  disc: 17
+2.2.172.1:
+  coeffs: [-43, 0, 1]
+  degree: 2
+  disc: 172
+2.2.173.1:
+  coeffs: [-43, -1, 1]
+  degree: 2
+  disc: 173
+2.2.177.1:
+  coeffs: [-44, -1, 1]
+  degree: 2
+  disc: 177
+2.2.181.1:
+  coeffs: [-45, -1, 1]
+  degree: 2
+  disc: 181
+2.2.184.1:
+  coeffs: [-46, 0, 1]
+  degree: 2
+  disc: 184
+2.2.185.1:
+  coeffs: [-46, -1, 1]
+  degree: 2
+  disc: 185
+2.2.188.1:
+  coeffs: [-47, 0, 1]
+  degree: 2
+  disc: 188
+2.2.193.1:
+  coeffs: [-48, -1, 1]
+  degree: 2
+  disc: 193
+2.2.197.1:
+  coeffs: [-49, -1, 1]
+  degree: 2
+  disc: 197
+2.2.201.1:
+  coeffs: [-50, -1, 1]
+  degree: 2
+  disc: 201
+2.2.204.1:
+  coeffs: [-51, 0, 1]
+  degree: 2
+  disc: 204
+2.2.205.1:
+  coeffs: [-51, -1, 1]
+  degree: 2
+  disc: 205
+2.2.209.1:
+  coeffs: [-52, -1, 1]
+  degree: 2
+  disc: 209
+2.2.21.1:
+  coeffs: [-5, -1, 1]
+  degree: 2
+  disc: 21
+2.2.213.1:
+  coeffs: [-53, -1, 1]
+  degree: 2
+  disc: 213
+2.2.217.1:
+  coeffs: [-54, -1, 1]
+  degree: 2
+  disc: 217
+2.2.220.1:
+  coeffs: [-55, 0, 1]
+  degree: 2
+  disc: 220
+2.2.221.1:
+  coeffs: [-55, -1, 1]
+  degree: 2
+  disc: 221
+2.2.229.1:
+  coeffs: [-57, -1, 1]
+  degree: 2
+  disc: 229
+2.2.232.1:
+  coeffs: [-58, 0, 1]
+  degree: 2
+  disc: 232
+2.2.233.1:
+  coeffs: [-58, -1, 1]
+  degree: 2
+  disc: 233
+2.2.236.1:
+  coeffs: [-59, 0, 1]
+  degree: 2
+  disc: 236
+2.2.237.1:
+  coeffs: [-59, -1, 1]
+  degree: 2
+  disc: 237
+2.2.24.1:
+  coeffs: [-6, 0, 1]
+  degree: 2
+  disc: 24
+2.2.241.1:
+  coeffs: [-60, -1, 1]
+  degree: 2
+  disc: 241
+2.2.248.1:
+  coeffs: [-62, 0, 1]
+  degree: 2
+  disc: 248
+2.2.249.1:
+  coeffs: [-62, -1, 1]
+  degree: 2
+  disc: 249
+2.2.265.1:
+  coeffs: [-66, -1, 1]
+  degree: 2
+  disc: 265
+2.2.268.1:
+  coeffs: [-67, 0, 1]
+  degree: 2
+  disc: 268
+2.2.269.1:
+  coeffs: [-67, -1, 1]
+  degree: 2
+  disc: 269
+2.2.273.1:
+  coeffs: [-68, -1, 1]
+  degree: 2
+  disc: 273
+2.2.277.1:
+  coeffs: [-69, -1, 1]
+  degree: 2
+  disc: 277
+2.2.28.1:
+  coeffs: [-7, 0, 1]
+  degree: 2
+  disc: 28
+2.2.280.1:
+  coeffs: [-70, 0, 1]
+  degree: 2
+  disc: 280
+2.2.281.1:
+  coeffs: [-70, -1, 1]
+  degree: 2
+  disc: 281
+2.2.284.1:
+  coeffs: [-71, 0, 1]
+  degree: 2
+  disc: 284
+2.2.285.1:
+  coeffs: [-71, -1, 1]
+  degree: 2
+  disc: 285
+2.2.29.1:
+  coeffs: [-7, -1, 1]
+  degree: 2
+  disc: 29
+2.2.293.1:
+  coeffs: [-73, -1, 1]
+  degree: 2
+  disc: 293
+2.2.296.1:
+  coeffs: [-74, 0, 1]
+  degree: 2
+  disc: 296
+2.2.301.1:
+  coeffs: [-75, -1, 1]
+  degree: 2
+  disc: 301
+2.2.305.1:
+  coeffs: [-76, -1, 1]
+  degree: 2
+  disc: 305
+2.2.313.1:
+  coeffs: [-78, -1, 1]
+  degree: 2
+  disc: 313
+2.2.316.1:
+  coeffs: [-79, 0, 1]
+  degree: 2
+  disc: 316
+2.2.317.1:
+  coeffs: [-79, -1, 1]
+  degree: 2
+  disc: 317
+2.2.321.1:
+  coeffs: [-80, -1, 1]
+  degree: 2
+  disc: 321
+2.2.328.1:
+  coeffs: [-82, 0, 1]
+  degree: 2
+  disc: 328
+2.2.329.1:
+  coeffs: [-82, -1, 1]
+  degree: 2
+  disc: 329
+2.2.33.1:
+  coeffs: [-8, -1, 1]
+  degree: 2
+  disc: 33
+2.2.332.1:
+  coeffs: [-83, 0, 1]
+  degree: 2
+  disc: 332
+2.2.337.1:
+  coeffs: [-84, -1, 1]
+  degree: 2
+  disc: 337
+2.2.341.1:
+  coeffs: [-85, -1, 1]
+  degree: 2
+  disc: 341
+2.2.344.1:
+  coeffs: [-86, 0, 1]
+  degree: 2
+  disc: 344
+2.2.345.1:
+  coeffs: [-86, -1, 1]
+  degree: 2
+  disc: 345
+2.2.348.1:
+  coeffs: [-87, 0, 1]
+  degree: 2
+  disc: 348
+2.2.349.1:
+  coeffs: [-87, -1, 1]
+  degree: 2
+  disc: 349
+2.2.353.1:
+  coeffs: [-88, -1, 1]
+  degree: 2
+  disc: 353
+2.2.357.1:
+  coeffs: [-89, -1, 1]
+  degree: 2
+  disc: 357
+2.2.364.1:
+  coeffs: [-91, 0, 1]
+  degree: 2
+  disc: 364
+2.2.365.1:
+  coeffs: [-91, -1, 1]
+  degree: 2
+  disc: 365
+2.2.37.1:
+  coeffs: [-9, -1, 1]
+  degree: 2
+  disc: 37
+2.2.373.1:
+  coeffs: [-93, -1, 1]
+  degree: 2
+  disc: 373
+2.2.376.1:
+  coeffs: [-94, 0, 1]
+  degree: 2
+  disc: 376
+2.2.377.1:
+  coeffs: [-94, -1, 1]
+  degree: 2
+  disc: 377
+2.2.380.1:
+  coeffs: [-95, 0, 1]
+  degree: 2
+  disc: 380
+2.2.381.1:
+  coeffs: [-95, -1, 1]
+  degree: 2
+  disc: 381
+2.2.385.1:
+  coeffs: [-96, -1, 1]
+  degree: 2
+  disc: 385
+2.2.389.1:
+  coeffs: [-97, -1, 1]
+  degree: 2
+  disc: 389
+2.2.393.1:
+  coeffs: [-98, -1, 1]
+  degree: 2
+  disc: 393
+2.2.397.1:
+  coeffs: [-99, -1, 1]
+  degree: 2
+  disc: 397
+2.2.40.1:
+  coeffs: [-10, 0, 1]
+  degree: 2
+  disc: 40
+2.2.401.1:
+  coeffs: [-100, -1, 1]
+  degree: 2
+  disc: 401
+2.2.408.1:
+  coeffs: [-102, 0, 1]
+  degree: 2
+  disc: 408
+2.2.409.1:
+  coeffs: [-102, -1, 1]
+  degree: 2
+  disc: 409
+2.2.41.1:
+  coeffs: [-10, -1, 1]
+  degree: 2
+  disc: 41
+2.2.412.1:
+  coeffs: [-103, 0, 1]
+  degree: 2
+  disc: 412
+2.2.413.1:
+  coeffs: [-103, -1, 1]
+  degree: 2
+  disc: 413
+2.2.417.1:
+  coeffs: [-104, -1, 1]
+  degree: 2
+  disc: 417
+2.2.421.1:
+  coeffs: [-105, -1, 1]
+  degree: 2
+  disc: 421
+2.2.424.1:
+  coeffs: [-106, 0, 1]
+  degree: 2
+  disc: 424
+2.2.428.1:
+  coeffs: [-107, 0, 1]
+  degree: 2
+  disc: 428
+2.2.429.1:
+  coeffs: [-107, -1, 1]
+  degree: 2
+  disc: 429
+2.2.433.1:
+  coeffs: [-108, -1, 1]
+  degree: 2
+  disc: 433
+2.2.437.1:
+  coeffs: [-109, -1, 1]
+  degree: 2
+  disc: 437
+2.2.44.1:
+  coeffs: [-11, 0, 1]
+  degree: 2
+  disc: 44
+2.2.440.1:
+  coeffs: [-110, 0, 1]
+  degree: 2
+  disc: 440
+2.2.444.1:
+  coeffs: [-111, 0, 1]
+  degree: 2
+  disc: 444
+2.2.445.1:
+  coeffs: [-111, -1, 1]
+  degree: 2
+  disc: 445
+2.2.449.1:
+  coeffs: [-112, -1, 1]
+  degree: 2
+  disc: 449
+2.2.453.1:
+  coeffs: [-113, -1, 1]
+  degree: 2
+  disc: 453
+2.2.456.1:
+  coeffs: [-114, 0, 1]
+  degree: 2
+  disc: 456
+2.2.457.1:
+  coeffs: [-114, -1, 1]
+  degree: 2
+  disc: 457
+2.2.460.1:
+  coeffs: [-115, 0, 1]
+  degree: 2
+  disc: 460
+2.2.461.1:
+  coeffs: [-115, -1, 1]
+  degree: 2
+  disc: 461
+2.2.465.1:
+  coeffs: [-116, -1, 1]
+  degree: 2
+  disc: 465
+2.2.469.1:
+  coeffs: [-117, -1, 1]
+  degree: 2
+  disc: 469
+2.2.472.1:
+  coeffs: [-118, 0, 1]
+  degree: 2
+  disc: 472
+2.2.473.1:
+  coeffs: [-118, -1, 1]
+  degree: 2
+  disc: 473
+2.2.476.1:
+  coeffs: [-119, 0, 1]
+  degree: 2
+  disc: 476
+2.2.481.1:
+  coeffs: [-120, -1, 1]
+  degree: 2
+  disc: 481
+2.2.485.1:
+  coeffs: [-121, -1, 1]
+  degree: 2
+  disc: 485
+2.2.488.1:
+  coeffs: [-122, 0, 1]
+  degree: 2
+  disc: 488
+2.2.489.1:
+  coeffs: [-122, -1, 1]
+  degree: 2
+  disc: 489
+2.2.492.1:
+  coeffs: [-123, 0, 1]
+  degree: 2
+  disc: 492
+2.2.493.1:
+  coeffs: [-123, -1, 1]
+  degree: 2
+  disc: 493
+2.2.497.1:
+  coeffs: [-124, -1, 1]
+  degree: 2
+  disc: 497
+2.2.5.1:
+  coeffs: [-1, -1, 1]
+  degree: 2
+  disc: 5
+2.2.53.1:
+  coeffs: [-13, -1, 1]
+  degree: 2
+  disc: 53
+2.2.56.1:
+  coeffs: [-14, 0, 1]
+  degree: 2
+  disc: 56
+2.2.57.1:
+  coeffs: [-14, -1, 1]
+  degree: 2
+  disc: 57
+2.2.60.1:
+  coeffs: [-15, 0, 1]
+  degree: 2
+  disc: 60
+2.2.61.1:
+  coeffs: [-15, -1, 1]
+  degree: 2
+  disc: 61
+2.2.65.1:
+  coeffs: [-16, -1, 1]
+  degree: 2
+  disc: 65
+2.2.69.1:
+  coeffs: [-17, -1, 1]
+  degree: 2
+  disc: 69
+2.2.73.1:
+  coeffs: [-18, -1, 1]
+  degree: 2
+  disc: 73
+2.2.76.1:
+  coeffs: [-19, 0, 1]
+  degree: 2
+  disc: 76
+2.2.77.1:
+  coeffs: [-19, -1, 1]
+  degree: 2
+  disc: 77
+2.2.8.1:
+  coeffs: [-2, 0, 1]
+  degree: 2
+  disc: 8
+2.2.85.1:
+  coeffs: [-21, -1, 1]
+  degree: 2
+  disc: 85
+2.2.88.1:
+  coeffs: [-22, 0, 1]
+  degree: 2
+  disc: 88
+2.2.89.1:
+  coeffs: [-22, -1, 1]
+  degree: 2
+  disc: 89
+2.2.92.1:
+  coeffs: [-23, 0, 1]
+  degree: 2
+  disc: 92
+2.2.93.1:
+  coeffs: [-23, -1, 1]
+  degree: 2
+  disc: 93
+2.2.97.1:
+  coeffs: [-24, -1, 1]
+  degree: 2
+  disc: 97
+3.3.1016.1:
+  coeffs: [2, -6, -1, 1]
+  degree: 3
+  disc: 1016
+3.3.1076.1:
+  coeffs: [-6, -8, 0, 1]
+  degree: 3
+  disc: 1076
+3.3.1101.1:
+  coeffs: [12, -9, -1, 1]
+  degree: 3
+  disc: 1101
+3.3.1129.1:
+  coeffs: [-3, -7, 0, 1]
+  degree: 3
+  disc: 1129
+3.3.1229.1:
+  coeffs: [6, -7, -1, 1]
+  degree: 3
+  disc: 1229
+3.3.1257.1:
+  coeffs: [9, -8, -1, 1]
+  degree: 3
+  disc: 1257
+3.3.1300.1:
+  coeffs: [-10, -10, 0, 1]
+  degree: 3
+  disc: 1300
+3.3.1304.1:
+  coeffs: [-2, -11, 0, 1]
+  degree: 3
+  disc: 1304
+3.3.1345.1:
+  coeffs: [-1, -7, 0, 1]
+  degree: 3
+  disc: 1345
+3.3.1369.1:
+  coeffs: [-11, -12, -1, 1]
+  degree: 3
+  disc: 1369
+3.3.1373.1:
+  coeffs: [-5, -8, 0, 1]
+  degree: 3
+  disc: 1373
+3.3.1384.1:
+  coeffs: [14, -10, -1, 1]
+  degree: 3
+  disc: 1384
+3.3.1396.1:
+  coeffs: [5, -7, -1, 1]
+  degree: 3
+  disc: 1396
+3.3.1425.1:
+  coeffs: [-3, -8, -1, 1]
+  degree: 3
+  disc: 1425
+3.3.1436.1:
+  coeffs: [-12, -11, 0, 1]
+  degree: 3
+  disc: 1436
+3.3.148.1:
+  coeffs: [1, -3, -1, 1]
+  degree: 3
+  disc: 148
+3.3.1489.1:
+  coeffs: [-7, -10, -1, 1]
+  degree: 3
+  disc: 1489
+3.3.1492.1:
+  coeffs: [-5, -9, -1, 1]
+  degree: 3
+  disc: 1492
+3.3.1509.1:
+  coeffs: [4, -7, -1, 1]
+  degree: 3
+  disc: 1509
+3.3.1524.1:
+  coeffs: [1, -7, -1, 1]
+  degree: 3
+  disc: 1524
+3.3.1556.1:
+  coeffs: [11, -9, -1, 1]
+  degree: 3
+  disc: 1556
+3.3.1573.1:
+  coeffs: [2, -7, -1, 1]
+  degree: 3
+  disc: 1573
+3.3.1593.1:
+  coeffs: [-7, -9, 0, 1]
+  degree: 3
+  disc: 1593
+3.3.1620.1:
+  coeffs: [-14, -12, 0, 1]
+  degree: 3
+  disc: 1620
+3.3.169.1:
+  coeffs: [-1, -4, -1, 1]
+  degree: 3
+  disc: 169
+3.3.1708.1:
+  coeffs: [-2, -8, -1, 1]
+  degree: 3
+  disc: 1708
+3.3.1765.1:
+  coeffs: [16, -11, -1, 1]
+  degree: 3
+  disc: 1765
+3.3.1772.1:
+  coeffs: [8, -12, -1, 1]
+  degree: 3
+  disc: 1772
+3.3.1825.1:
+  coeffs: [7, -8, -1, 1]
+  degree: 3
+  disc: 1825
+3.3.1849.1:
+  coeffs: [-8, -14, -1, 1]
+  degree: 3
+  disc: 1849
+3.3.1901.1:
+  coeffs: [-4, -9, -1, 1]
+  degree: 3
+  disc: 1901
+3.3.1929.1:
+  coeffs: [13, -10, -1, 1]
+  degree: 3
+  disc: 1929
+3.3.1937.1:
+  coeffs: [-1, -8, -1, 1]
+  degree: 3
+  disc: 1937
+3.3.1940.1:
+  coeffs: [-2, -8, 0, 1]
+  degree: 3
+  disc: 1940
+3.3.1944.1:
+  coeffs: [-6, -9, 0, 1]
+  degree: 3
+  disc: 1944
+3.3.1957.1:
+  coeffs: [10, -9, -1, 1]
+  degree: 3
+  disc: 1957
+3.3.229.1:
+  coeffs: [-1, -4, 0, 1]
+  degree: 3
+  disc: 229
+3.3.257.1:
+  coeffs: [3, -4, -1, 1]
+  degree: 3
+  disc: 257
+3.3.316.1:
+  coeffs: [2, -4, -1, 1]
+  degree: 3
+  disc: 316
+3.3.321.1:
+  coeffs: [1, -4, -1, 1]
+  degree: 3
+  disc: 321
+3.3.361.1:
+  coeffs: [7, -6, -1, 1]
+  degree: 3
+  disc: 361
+3.3.404.1:
+  coeffs: [-1, -5, -1, 1]
+  degree: 3
+  disc: 404
+3.3.469.1:
+  coeffs: [4, -5, -1, 1]
+  degree: 3
+  disc: 469
+3.3.473.1:
+  coeffs: [-1, -5, 0, 1]
+  degree: 3
+  disc: 473
+3.3.49.1:
+  coeffs: [1, -2, -1, 1]
+  degree: 3
+  disc: 49
+3.3.564.1:
+  coeffs: [3, -5, -1, 1]
+  degree: 3
+  disc: 564
+3.3.568.1:
+  coeffs: [-2, -6, -1, 1]
+  degree: 3
+  disc: 568
+3.3.621.1:
+  coeffs: [-3, -6, 0, 1]
+  degree: 3
+  disc: 621
+3.3.697.1:
+  coeffs: [-5, -7, 0, 1]
+  degree: 3
+  disc: 697
+3.3.733.1:
+  coeffs: [8, -7, -1, 1]
+  degree: 3
+  disc: 733
+3.3.756.1:
+  coeffs: [-2, -6, 0, 1]
+  degree: 3
+  disc: 756
+3.3.761.1:
+  coeffs: [-1, -6, -1, 1]
+  degree: 3
+  disc: 761
+3.3.785.1:
+  coeffs: [5, -6, -1, 1]
+  degree: 3
+  disc: 785
+3.3.788.1:
+  coeffs: [-3, -7, -1, 1]
+  degree: 3
+  disc: 788
+3.3.81.1:
+  coeffs: [-1, -3, 0, 1]
+  degree: 3
+  disc: 81
+3.3.837.1:
+  coeffs: [-1, -6, 0, 1]
+  degree: 3
+  disc: 837
+3.3.892.1:
+  coeffs: [10, -8, -1, 1]
+  degree: 3
+  disc: 892
+3.3.940.1:
+  coeffs: [-4, -7, 0, 1]
+  degree: 3
+  disc: 940
+3.3.961.1:
+  coeffs: [8, -10, -1, 1]
+  degree: 3
+  disc: 961
+3.3.985.1:
+  coeffs: [1, -6, -1, 1]
+  degree: 3
+  disc: 985
+3.3.993.1:
+  coeffs: [3, -6, -1, 1]
+  degree: 3
+  disc: 993
+4.4.10025.1:
+  coeffs: [20, 10, -11, -1, 1]
+  degree: 4
+  disc: 10025
+4.4.10273.1:
+  coeffs: [2, 1, -5, -2, 1]
+  degree: 4
+  disc: 10273
+4.4.10304.1:
+  coeffs: [8, 8, -7, -2, 1]
+  degree: 4
+  disc: 10304
+4.4.10309.1:
+  coeffs: [-1, 8, -6, -1, 1]
+  degree: 4
+  disc: 10309
+4.4.10512.1:
+  coeffs: [1, -6, -7, 0, 1]
+  degree: 4
+  disc: 10512
+4.4.10816.1:
+  coeffs: [-1, 10, -9, -2, 1]
+  degree: 4
+  disc: 10816
+4.4.10889.1:
+  coeffs: [1, 2, -5, -1, 1]
+  degree: 4
+  disc: 10889
+4.4.11025.1:
+  coeffs: [16, 0, -13, 0, 1]
+  degree: 4
+  disc: 11025
+4.4.11197.1:
+  coeffs: [1, 3, -4, -2, 1]
+  degree: 4
+  disc: 11197
+4.4.1125.1:
+  coeffs: [1, 4, -4, -1, 1]
+  degree: 4
+  disc: 1125
+4.4.11324.1:
+  coeffs: [2, 4, -5, -1, 1]
+  degree: 4
+  disc: 11324
+4.4.11344.1:
+  coeffs: [3, 4, -4, -2, 1]
+  degree: 4
+  disc: 11344
+4.4.11348.1:
+  coeffs: [2, 1, -5, -1, 1]
+  degree: 4
+  disc: 11348
+4.4.11525.1:
+  coeffs: [25, 5, -11, -1, 1]
+  degree: 4
+  disc: 11525
+4.4.11661.1:
+  coeffs: [3, 5, -4, -2, 1]
+  degree: 4
+  disc: 11661
+4.4.12197.1:
+  coeffs: [1, 3, -5, -1, 1]
+  degree: 4
+  disc: 12197
+4.4.12357.1:
+  coeffs: [3, 3, -5, -1, 1]
+  degree: 4
+  disc: 12357
+4.4.12400.1:
+  coeffs: [31, 0, -12, 0, 1]
+  degree: 4
+  disc: 12400
+4.4.12544.1:
+  coeffs: [9, 0, -8, 0, 1]
+  degree: 4
+  disc: 12544
+4.4.12725.1:
+  coeffs: [29, 11, -10, -2, 1]
+  degree: 4
+  disc: 12725
+4.4.13025.1:
+  coeffs: [29, 3, -12, -1, 1]
+  degree: 4
+  disc: 13025
+4.4.13068.1:
+  coeffs: [1, -1, -6, -1, 1]
+  degree: 4
+  disc: 13068
+4.4.13448.1:
+  coeffs: [2, 0, -7, 0, 1]
+  degree: 4
+  disc: 13448
+4.4.13525.1:
+  coeffs: [29, 8, -12, -1, 1]
+  degree: 4
+  disc: 13525
+4.4.13625.1:
+  coeffs: [31, 12, -11, -2, 1]
+  degree: 4
+  disc: 13625
+4.4.13676.1:
+  coeffs: [1, 7, -6, -1, 1]
+  degree: 4
+  disc: 13676
+4.4.13725.1:
+  coeffs: [31, 1, -13, -1, 1]
+  degree: 4
+  disc: 13725
+4.4.13768.1:
+  coeffs: [2, 2, -5, -1, 1]
+  degree: 4
+  disc: 13768
+4.4.13824.1:
+  coeffs: [6, 0, -6, 0, 1]
+  degree: 4
+  disc: 13824
+4.4.13888.1:
+  coeffs: [9, 6, -7, -2, 1]
+  degree: 4
+  disc: 13888
+4.4.13968.1:
+  coeffs: [4, 8, -7, -2, 1]
+  degree: 4
+  disc: 13968
+4.4.14013.1:
+  coeffs: [3, 6, -6, -1, 1]
+  degree: 4
+  disc: 14013
+4.4.14197.1:
+  coeffs: [1, -3, -6, 0, 1]
+  degree: 4
+  disc: 14197
+4.4.14272.1:
+  coeffs: [3, 2, -5, -2, 1]
+  degree: 4
+  disc: 14272
+4.4.14336.1:
+  coeffs: [14, 0, -8, 0, 1]
+  degree: 4
+  disc: 14336
+4.4.14400.1:
+  coeffs: [19, 14, -13, -2, 1]
+  degree: 4
+  disc: 14400
+4.4.14656.1:
+  coeffs: [2, 4, -4, -2, 1]
+  degree: 4
+  disc: 14656
+4.4.14725.1:
+  coeffs: [31, 11, -13, -1, 1]
+  degree: 4
+  disc: 14725
+4.4.15125.1:
+  coeffs: [31, 14, -14, -1, 1]
+  degree: 4
+  disc: 15125
+4.4.15188.1:
+  coeffs: [2, 1, -7, -1, 1]
+  degree: 4
+  disc: 15188
+4.4.15317.1:
+  coeffs: [2, 5, -4, -2, 1]
+  degree: 4
+  disc: 15317
+4.4.15529.1:
+  coeffs: [2, -1, -6, -1, 1]
+  degree: 4
+  disc: 15529
+4.4.15952.1:
+  coeffs: [1, -2, -6, 0, 1]
+  degree: 4
+  disc: 15952
+4.4.1600.1:
+  coeffs: [4, 0, -6, 0, 1]
+  degree: 4
+  disc: 1600
+4.4.16225.1:
+  coeffs: [36, 6, -13, -1, 1]
+  degree: 4
+  disc: 16225
+4.4.16317.1:
+  coeffs: [1, 5, -4, -2, 1]
+  degree: 4
+  disc: 16317
+4.4.16357.1:
+  coeffs: [1, -1, -6, 0, 1]
+  degree: 4
+  disc: 16357
+4.4.16400.1:
+  coeffs: [41, 0, -13, 0, 1]
+  degree: 4
+  disc: 16400
+4.4.16448.1:
+  coeffs: [2, 0, -6, -2, 1]
+  degree: 4
+  disc: 16448
+4.4.16448.2:
+  coeffs: [14, 8, -7, -2, 1]
+  degree: 4
+  disc: 16448
+4.4.16609.1:
+  coeffs: [9, -1, -7, 0, 1]
+  degree: 4
+  disc: 16609
+4.4.16997.1:
+  coeffs: [5, -1, -6, 0, 1]
+  degree: 4
+  disc: 16997
+4.4.17069.1:
+  coeffs: [3, -4, -8, -1, 1]
+  degree: 4
+  disc: 17069
+4.4.17417.1:
+  coeffs: [4, 3, -5, -2, 1]
+  degree: 4
+  disc: 17417
+4.4.17424.1:
+  coeffs: [4, 0, -7, 0, 1]
+  degree: 4
+  disc: 17424
+4.4.17428.1:
+  coeffs: [6, 4, -6, -1, 1]
+  degree: 4
+  disc: 17428
+4.4.17600.1:
+  coeffs: [44, 0, -14, 0, 1]
+  degree: 4
+  disc: 17600
+4.4.17609.1:
+  coeffs: [-1, 10, -7, -1, 1]
+  degree: 4
+  disc: 17609
+4.4.17725.1:
+  coeffs: [41, 13, -12, -2, 1]
+  degree: 4
+  disc: 17725
+4.4.17989.1:
+  coeffs: [1, -3, -7, -1, 1]
+  degree: 4
+  disc: 17989
+4.4.18097.1:
+  coeffs: [4, 6, -7, -1, 1]
+  degree: 4
+  disc: 18097
+4.4.18432.1:
+  coeffs: [18, 0, -12, 0, 1]
+  degree: 4
+  disc: 18432
+4.4.18496.1:
+  coeffs: [2, 12, -11, -2, 1]
+  degree: 4
+  disc: 18496
+4.4.18625.1:
+  coeffs: [41, 9, -14, -1, 1]
+  degree: 4
+  disc: 18625
+4.4.18688.1:
+  coeffs: [14, -4, -10, 0, 1]
+  degree: 4
+  disc: 18688
+4.4.18736.1:
+  coeffs: [5, 4, -5, -2, 1]
+  degree: 4
+  disc: 18736
+4.4.19025.1:
+  coeffs: [44, 14, -13, -2, 1]
+  degree: 4
+  disc: 19025
+4.4.19225.1:
+  coeffs: [44, 2, -15, -1, 1]
+  degree: 4
+  disc: 19225
+4.4.19429.1:
+  coeffs: [5, -1, -7, -1, 1]
+  degree: 4
+  disc: 19429
+4.4.19525.1:
+  coeffs: [45, 15, -14, -2, 1]
+  degree: 4
+  disc: 19525
+4.4.1957.1:
+  coeffs: [1, -1, -4, 0, 1]
+  degree: 4
+  disc: 1957
+4.4.19600.1:
+  coeffs: [29, 16, -15, -2, 1]
+  degree: 4
+  disc: 19600
+4.4.19664.1:
+  coeffs: [2, 2, -5, -2, 1]
+  degree: 4
+  disc: 19664
+4.4.19773.1:
+  coeffs: [3, -9, -11, -1, 1]
+  degree: 4
+  disc: 19773
+4.4.19796.1:
+  coeffs: [8, 1, -7, -1, 1]
+  degree: 4
+  disc: 19796
+4.4.19821.1:
+  coeffs: [3, 6, -8, -1, 1]
+  degree: 4
+  disc: 19821
+4.4.2000.1:
+  coeffs: [5, 0, -5, 0, 1]
+  degree: 4
+  disc: 2000
+4.4.2048.1:
+  coeffs: [2, 0, -4, 0, 1]
+  degree: 4
+  disc: 2048
+4.4.2225.1:
+  coeffs: [4, 2, -5, -1, 1]
+  degree: 4
+  disc: 2225
+4.4.2304.1:
+  coeffs: [1, 0, -4, 0, 1]
+  degree: 4
+  disc: 2304
+4.4.2525.1:
+  coeffs: [5, 5, -4, -2, 1]
+  degree: 4
+  disc: 2525
+4.4.2624.1:
+  coeffs: [1, 2, -3, -2, 1]
+  degree: 4
+  disc: 2624
+4.4.2777.1:
+  coeffs: [2, 1, -4, -1, 1]
+  degree: 4
+  disc: 2777
+4.4.3600.1:
+  coeffs: [1, 8, -7, -2, 1]
+  degree: 4
+  disc: 3600
+4.4.3981.1:
+  coeffs: [1, 2, -4, -1, 1]
+  degree: 4
+  disc: 3981
+4.4.4205.1:
+  coeffs: [1, -1, -5, -1, 1]
+  degree: 4
+  disc: 4205
+4.4.4225.1:
+  coeffs: [4, 0, -9, 0, 1]
+  degree: 4
+  disc: 4225
+4.4.4352.1:
+  coeffs: [2, -4, -6, 0, 1]
+  degree: 4
+  disc: 4352
+4.4.4400.1:
+  coeffs: [11, 0, -7, 0, 1]
+  degree: 4
+  disc: 4400
+4.4.4525.1:
+  coeffs: [9, 3, -7, -1, 1]
+  degree: 4
+  disc: 4525
+4.4.4752.1:
+  coeffs: [1, 4, -3, -2, 1]
+  degree: 4
+  disc: 4752
+4.4.4913.1:
+  coeffs: [1, 1, -6, -1, 1]
+  degree: 4
+  disc: 4913
+4.4.5125.1:
+  coeffs: [11, 7, -6, -2, 1]
+  degree: 4
+  disc: 5125
+4.4.5225.1:
+  coeffs: [11, 1, -8, -1, 1]
+  degree: 4
+  disc: 5225
+4.4.5725.1:
+  coeffs: [11, 6, -8, -1, 1]
+  degree: 4
+  disc: 5725
+4.4.5744.1:
+  coeffs: [1, -2, -5, 0, 1]
+  degree: 4
+  disc: 5744
+4.4.6125.1:
+  coeffs: [11, 9, -9, -1, 1]
+  degree: 4
+  disc: 6125
+4.4.6224.1:
+  coeffs: [5, -2, -6, 0, 1]
+  degree: 4
+  disc: 6224
+4.4.6809.1:
+  coeffs: [1, -1, -5, 0, 1]
+  degree: 4
+  disc: 6809
+4.4.7053.1:
+  coeffs: [3, 3, -4, -2, 1]
+  degree: 4
+  disc: 7053
+4.4.7056.1:
+  coeffs: [1, 0, -5, 0, 1]
+  degree: 4
+  disc: 7056
+4.4.7168.1:
+  coeffs: [7, 0, -6, 0, 1]
+  degree: 4
+  disc: 7168
+4.4.7225.1:
+  coeffs: [9, 0, -11, 0, 1]
+  degree: 4
+  disc: 7225
+4.4.7232.1:
+  coeffs: [4, 4, -5, -2, 1]
+  degree: 4
+  disc: 7232
+4.4.725.1:
+  coeffs: [1, 1, -3, -1, 1]
+  degree: 4
+  disc: 725
+4.4.7488.1:
+  coeffs: [1, 2, -4, -2, 1]
+  degree: 4
+  disc: 7488
+4.4.7537.1:
+  coeffs: [3, 4, -5, -1, 1]
+  degree: 4
+  disc: 7537
+4.4.7600.1:
+  coeffs: [19, 0, -9, 0, 1]
+  degree: 4
+  disc: 7600
+4.4.7625.1:
+  coeffs: [16, 4, -9, -1, 1]
+  degree: 4
+  disc: 7625
+4.4.8000.1:
+  coeffs: [20, 0, -10, 0, 1]
+  degree: 4
+  disc: 8000
+4.4.8069.1:
+  coeffs: [1, 5, -5, -1, 1]
+  degree: 4
+  disc: 8069
+4.4.8112.1:
+  coeffs: [3, 0, -5, 0, 1]
+  degree: 4
+  disc: 8112
+4.4.8468.1:
+  coeffs: [4, 3, -5, -1, 1]
+  degree: 4
+  disc: 8468
+4.4.8525.1:
+  coeffs: [19, 9, -8, -2, 1]
+  degree: 4
+  disc: 8525
+4.4.8725.1:
+  coeffs: [19, 2, -10, -1, 1]
+  degree: 4
+  disc: 8725
+4.4.8768.1:
+  coeffs: [7, 6, -5, -2, 1]
+  degree: 4
+  disc: 8768
+4.4.8789.1:
+  coeffs: [1, -2, -6, -1, 1]
+  degree: 4
+  disc: 8789
+4.4.8957.1:
+  coeffs: [1, 1, -5, -1, 1]
+  degree: 4
+  disc: 8957
+4.4.9225.1:
+  coeffs: [19, 7, -10, -1, 1]
+  degree: 4
+  disc: 9225
+4.4.9248.1:
+  coeffs: [2, 0, -5, 0, 1]
+  degree: 4
+  disc: 9248
+4.4.9301.1:
+  coeffs: [3, 1, -5, -1, 1]
+  degree: 4
+  disc: 9301
+4.4.9792.1:
+  coeffs: [7, 2, -7, -2, 1]
+  degree: 4
+  disc: 9792
+4.4.9909.1:
+  coeffs: [3, -3, -6, 0, 1]
+  degree: 4
+  disc: 9909
+5.5.101833.1:
+  coeffs: [-1, 2, 5, -5, -1, 1]
+  degree: 5
+  disc: 101833
+5.5.106069.1:
+  coeffs: [-4, 3, 7, -4, -2, 1]
+  degree: 5
+  disc: 106069
+5.5.117688.1:
+  coeffs: [-1, 4, 4, -5, -1, 1]
+  degree: 5
+  disc: 117688
+5.5.122821.1:
+  coeffs: [-1, 3, 4, -4, -2, 1]
+  degree: 5
+  disc: 122821
+5.5.124817.1:
+  coeffs: [1, 2, -6, -7, 0, 1]
+  degree: 5
+  disc: 124817
+5.5.126032.1:
+  coeffs: [-2, 6, 0, -6, 0, 1]
+  degree: 5
+  disc: 126032
+5.5.135076.1:
+  coeffs: [-2, 4, 4, -5, -1, 1]
+  degree: 5
+  disc: 135076
+5.5.138136.1:
+  coeffs: [-2, 4, 3, -6, -1, 1]
+  degree: 5
+  disc: 138136
+5.5.138917.1:
+  coeffs: [1, 3, -2, -6, 0, 1]
+  degree: 5
+  disc: 138917
+5.5.144209.1:
+  coeffs: [-1, 6, -1, -6, 0, 1]
+  degree: 5
+  disc: 144209
+5.5.14641.1:
+  coeffs: [-1, 3, 3, -4, -1, 1]
+  degree: 5
+  disc: 14641
+5.5.147109.1:
+  coeffs: [-2, 3, 5, -4, -2, 1]
+  degree: 5
+  disc: 147109
+5.5.149169.1:
+  coeffs: [1, 4, -3, -6, 0, 1]
+  degree: 5
+  disc: 149169
+5.5.153424.1:
+  coeffs: [-2, 0, 8, -4, -2, 1]
+  degree: 5
+  disc: 153424
+5.5.157457.1:
+  coeffs: [-1, 4, 5, -4, -2, 1]
+  degree: 5
+  disc: 157457
+5.5.160801.1:
+  coeffs: [-1, 3, 4, -5, -1, 1]
+  degree: 5
+  disc: 160801
+5.5.161121.1:
+  coeffs: [1, 5, 3, -6, -1, 1]
+  degree: 5
+  disc: 161121
+5.5.170701.1:
+  coeffs: [1, 4, 0, -6, -1, 1]
+  degree: 5
+  disc: 170701
+5.5.173513.1:
+  coeffs: [-1, 3, 3, -5, -2, 1]
+  degree: 5
+  disc: 173513
+5.5.176281.1:
+  coeffs: [-1, 4, 3, -5, -1, 1]
+  degree: 5
+  disc: 176281
+5.5.176684.1:
+  coeffs: [-1, 5, -1, -6, 0, 1]
+  degree: 5
+  disc: 176684
+5.5.179024.1:
+  coeffs: [-2, 6, 0, -8, 0, 1]
+  degree: 5
+  disc: 179024
+5.5.180769.1:
+  coeffs: [-1, 0, 7, -4, -2, 1]
+  degree: 5
+  disc: 180769
+5.5.181057.1:
+  coeffs: [-3, 2, 7, -4, -2, 1]
+  degree: 5
+  disc: 181057
+5.5.186037.1:
+  coeffs: [-2, 5, 2, -6, -1, 1]
+  degree: 5
+  disc: 186037
+5.5.195829.1:
+  coeffs: [1, 7, 6, -5, -2, 1]
+  degree: 5
+  disc: 195829
+5.5.24217.1:
+  coeffs: [1, 3, -1, -5, 0, 1]
+  degree: 5
+  disc: 24217
+5.5.36497.1:
+  coeffs: [-1, 1, 5, -3, -2, 1]
+  degree: 5
+  disc: 36497
+5.5.38569.1:
+  coeffs: [-1, 4, 0, -5, 0, 1]
+  degree: 5
+  disc: 38569
+5.5.65657.1:
+  coeffs: [1, 5, 2, -5, -1, 1]
+  degree: 5
+  disc: 65657
+5.5.70601.1:
+  coeffs: [-1, 3, 2, -5, -1, 1]
+  degree: 5
+  disc: 70601
+5.5.81509.1:
+  coeffs: [-2, 5, 3, -5, -1, 1]
+  degree: 5
+  disc: 81509
+5.5.81589.1:
+  coeffs: [-1, 8, 0, -6, 0, 1]
+  degree: 5
+  disc: 81589
+5.5.89417.1:
+  coeffs: [3, 8, -1, -6, 0, 1]
+  degree: 5
+  disc: 89417
+6.6.1075648.1:
+  coeffs: [-7, 0, 14, 0, -7, 0, 1]
+  degree: 6
+  disc: 1075648
+6.6.1081856.1:
+  coeffs: [-1, 2, 7, -2, -6, 0, 1]
+  degree: 6
+  disc: 1081856
+6.6.1134389.1:
+  coeffs: [-1, -3, 4, 6, -4, -2, 1]
+  degree: 6
+  disc: 1134389
+6.6.1202933.1:
+  coeffs: [-1, 1, 6, -2, -6, 0, 1]
+  degree: 6
+  disc: 1202933
+6.6.1229312.1:
+  coeffs: [-8, 0, 24, 0, -10, 0, 1]
+  degree: 6
+  disc: 1229312
+6.6.1241125.1:
+  coeffs: [1, 7, 11, -2, -7, 0, 1]
+  degree: 6
+  disc: 1241125
+6.6.1259712.1:
+  coeffs: [-3, 0, 9, 0, -6, 0, 1]
+  degree: 6
+  disc: 1259712
+6.6.1279733.1:
+  coeffs: [-1, -11, 10, 10, -6, -2, 1]
+  degree: 6
+  disc: 1279733
+6.6.1292517.1:
+  coeffs: [-1, 0, 6, -1, -6, 0, 1]
+  degree: 6
+  disc: 1292517
+6.6.1312625.1:
+  coeffs: [-1, -12, 12, 7, -7, -1, 1]
+  degree: 6
+  disc: 1312625
+6.6.1387029.1:
+  coeffs: [1, -4, -1, 9, -2, -3, 1]
+  degree: 6
+  disc: 1387029
+6.6.1397493.1:
+  coeffs: [1, -6, 3, 10, -3, -3, 1]
+  degree: 6
+  disc: 1397493
+6.6.1416125.1:
+  coeffs: [1, -9, 6, 9, -5, -2, 1]
+  degree: 6
+  disc: 1416125
+6.6.1528713.1:
+  coeffs: [-1, -3, 3, 7, -3, -3, 1]
+  degree: 6
+  disc: 1528713
+6.6.1541581.1:
+  coeffs: [-1, 1, 9, 2, -6, -1, 1]
+  degree: 6
+  disc: 1541581
+6.6.1683101.1:
+  coeffs: [-7, -14, 7, 13, -4, -3, 1]
+  degree: 6
+  disc: 1683101
+6.6.1767625.1:
+  coeffs: [-1, 1, 11, -1, -7, 0, 1]
+  degree: 6
+  disc: 1767625
+6.6.1868969.1:
+  coeffs: [-2, 1, 8, -1, -6, 0, 1]
+  degree: 6
+  disc: 1868969
+6.6.1922000.1:
+  coeffs: [1, 7, 12, -1, -8, -1, 1]
+  degree: 6
+  disc: 1922000
+6.6.1995125.1:
+  coeffs: [-1, 1, 12, 6, -6, -2, 1]
+  degree: 6
+  disc: 1995125
+6.6.1997632.1:
+  coeffs: [-13, 0, 19, 0, -8, 0, 1]
+  degree: 6
+  disc: 1997632
+6.6.300125.1:
+  coeffs: [-1, -2, 7, 2, -7, -1, 1]
+  degree: 6
+  disc: 300125
+6.6.371293.1:
+  coeffs: [-1, -3, 6, 4, -5, -1, 1]
+  degree: 6
+  disc: 371293
+6.6.434581.1:
+  coeffs: [-1, -2, 4, 5, -4, -2, 1]
+  degree: 6
+  disc: 434581
+6.6.453789.1:
+  coeffs: [1, -8, 8, 6, -6, -1, 1]
+  degree: 6
+  disc: 453789
+6.6.485125.1:
+  coeffs: [1, -5, 2, 8, -4, -2, 1]
+  degree: 6
+  disc: 485125
+6.6.592661.1:
+  coeffs: [-1, -2, 5, 4, -5, -1, 1]
+  degree: 6
+  disc: 592661
+6.6.703493.1:
+  coeffs: [1, -9, 2, 11, -5, -2, 1]
+  degree: 6
+  disc: 703493
+6.6.722000.1:
+  coeffs: [1, -5, 4, 7, -6, -1, 1]
+  degree: 6
+  disc: 722000
+6.6.810448.1:
+  coeffs: [1, -5, 0, 9, -2, -3, 1]
+  degree: 6
+  disc: 810448
+6.6.820125.1:
+  coeffs: [-1, 3, 9, -4, -9, 0, 1]
+  degree: 6
+  disc: 820125
+6.6.905177.1:
+  coeffs: [-1, -9, 7, 9, -7, -1, 1]
+  degree: 6
+  disc: 905177
+6.6.966125.1:
+  coeffs: [-1, 0, 8, 4, -6, -1, 1]
+  degree: 6
+  disc: 966125
+6.6.980125.1:
+  coeffs: [-1, -5, 7, 6, -6, -1, 1]
+  degree: 6
+  disc: 980125
