@@ -413,133 +413,51 @@ Missing:  49:   1681.4,5,6-a,b,c (3*3=9)
 Log of quartic field curves searches:
 =====================================================================================================
 
-COMPLETE (63):
+COMPLETE (70)
 
-4.4.725.1   found all 1992,isogs 4064, uploaded, checked
-4.4.1125.1  found all 563, isogs 1458, uploaded, checked
-4.4.1957.1  found all 751, isogs 1725, uploaded, checked
-4.4.2000.1  found all 675, isogs 1660, uploaded, checked
-4.4.4352.1  found all 826, isogs 2372, uploaded, checked
-4.4.4752.1  found all 559, isogs 1334, uploaded, checked
-4.4.4913.1  found all 467, isogs 1272, uploaded, checked
-4.4.5125.1  found all 318, isogs  698, uploaded, checked
-4.4.5225.1  found all 220, isogs  682, uploaded, checked
-4.4.5725.1  found all 222, isogs  421, uploaded, checked
-4.4.6125.1  found all 252, isogs  476, uploaded, checked
-4.4.6224.1  found all 362, isogs 1006, uploaded, checked
-4.4.7537.1  found all 126, isogs  402, uploaded, checked
-4.4.7600.1  found all 216, isogs  476, uploaded, checked
-4.4.7625.1  found all 326, isogs 1054, uploaded, checked
-4.4.8069.1  found all 172, isogs  386, uploaded, checked
-4.4.8525.1  found all 138, isogs  292, uploaded, checked
-4.4.8768.1  found all 241, isogs  388, uploaded, checked
-4.4.9909.1  found all 186, isogs  388, uploaded, checked
-4.4.10273.1 found all 288, isogs  891, uploaded, checked
-4.4.10309.1 found all  90, isogs  189, uploaded, checked
-4.4.10512.1 found all 104, isogs  328, uploaded, checked
-4.4.10816.1 found all 138, isogs  276, uploaded, checked
-4.4.10889.1 found all 178, isogs  550, uploaded, checked
-4.4.11197.1 found all 108, isogs  226, uploaded, checked
-4.4.11344.1 found all 254, isogs  682, uploaded, checked
-4.4.11348.1 found all 120, isogs  388, uploaded, checked
-4.4.11661.1 found all 262, isogs  724, uploaded, checked
-4.4.12197.1 found all  99, isogs  172, uploaded, checked
-4.4.13068.1 found all 208, isogs  836, uploaded, checked
-4.4.13525.1 found all  63, isogs  105, uploaded, checked
-4.4.13625.1 found all  92, isogs  328, uploaded, checked
-4.4.13888.1 found all  94, isogs  228, uploaded, checked
-4.4.14013.1 found all 186, isogs  454, uploaded, checked
-4.4.14197.1 found all  72, isogs  170, uploaded, checked
-4.4.14656.1 found all 184, isogs  508, uploaded, checked
-4.4.14725.1 found all  46, isogs  116, uploaded, checked
-4.4.15125.1 found all  40, isogs  176, uploaded, checked
-4.4.15529.1 found all 110, isogs  346, uploaded, checked
-4.4.16400.1 found all  97, isogs  184, uploaded, checked
-4.4.16997.1 found all  51, isogs   73, uploaded, checked
-4.4.18625.1 found all  80, isogs  248, uploaded, checked
-4.4.11525.1 found all  88, isogs  134, uploaded, checked
-4.4.13725.1 found all  48, isogs   98, uploaded, checked
-4.4.16225.1 found all  58, isogs  120, uploaded, checked
-4.4.13448.1 found all 224, isogs  719, uploaded, checked
-4.4.16317.1 found all  94, isogs  144, uploaded, checked
-4.4.16448.1 found all 122, isogs  266, uploaded, checked
-4.4.17069.1 found all  99, isogs  204, uploaded, checked
-4.4.17600.1 found all  80, isogs  172, uploaded, checked
-4.4.17609.1 found all 146, isogs  350, uploaded, checked
-4.4.17725.1 found all  14, isogs   32, uploaded, checked
-4.4.18688.1 found all 138, isogs  212, uploaded, checked
-4.4.18097.1 found all 124, isogs  380, uploaded, checked
-4.4.18496.1 found all 226, isogs  836, uploaded, checked
-4.4.18736.1 found all 136, isogs  256, uploaded, checked
-4.4.19225.1 found all  84, isogs  257, uploaded, checked
-4.4.19773.1 found all 128, isogs  392, uploaded, checked
-4.4.16357.1 found all 114, isogs  274, uploaded, checked
-4.4.15188.1 found all 266, isogs  698, uploaded, checked
-4.4.17417.1 found all 130, isogs  278, uploaded, checked
-4.4.19525.1 found all  52, isogs   96, uploaded, checked
-4.4.13768.1 found all 226, isogs  760, uploaded, checked
-
-SECOND SEARCH DONE & UPLOADED BUT SOME GAPS REMAIN (42):
+INCOMPLETE, few missing (112 missing curves in all)
 
 4.4.2225.1 found 1278 of 1279, isogs 4104, uploaded, 1 missing 619.3-e
-
-1 curves found by Magma, first is Elliptic Curve defined by y^2 +
-(1/2*w^3+1/2*w^2+1/2*w+1)*x*y + (w^2+1)*y = x^3 + (w^2+w-1)*x^2 +
-(48*w^3+21*w^2-45*w-46)*x + (400*w^3-241*w^2-360*w+132) over Number
-Field in w with defining polynomial x^4 - x^3 - 5*x^2 + 2*x + 4
-
-BUT this curve has the wrong ap, so even though it was uploaded it was then removed
-
-4.4.2048.1 found 2303 of 2310, isogs 6173, uploaded, 7 missing
-4.4.2525.1 found  809 of 811, isogs 1561, uploaded 2 missing 725.6-g
-4.4.2624.1 found 1065 of 1069, isogs 2239, uploaded, 4 missing
+4.4.3600.1 found 743 of 758, isogs 1845, uploaded, 15 missing: 396.1-a, 396.1-d, 396.4-a, 396.3-a, 396.2-a, 396.4-d, 396.2-d, 484.7-l, 484.7-b, 484.10-l, 484.8-l, 484.9-l, 484.10-b, 484.8-b, 484.9-b
+4.4.2525.1 found  809 of 811, isogs 1561, uploaded 3 missing 71.1-a, 71.4-a, 725.6-g
+4.4.2624.1 found 1067 of 1069, isogs 2241, uploaded, 2 missing 476.3-g, 476.4-g
 4.4.2777.1 found 1162 of 1164, isogs 3321, uploaded, 2 missing 648.1-b, 706.1-b
-4.4.3600.1 found  743 of 758, isogs 1845, uploaded,  15 missing
-4.4.3981.1 found  644 of 645, isogs 1478, uploaded, 1 missing 201.1-d
-4.4.4205.1 found  337 of 338, isogs 708, uploaded, 1 missing 179.1-c
-4.4.4400.1 found  595 of 600, isogs 1410, uploaded, 5 missing
 4.4.4525.1 found  331 of 333, isogs 722, uploaded, 2  missing 109.1-a, 109.2-a
-4.4.5744.1 found  322 of 326, isogs 680, uploaded, 4  missing 140.1-c, 148.1-a,148.1-e, 140.1-e
+4.4.5744.1 found  324 of 326, isogs 684, uploaded, 2  missing 148.1-a, 148.1-e
 4.4.6809.1 found  301 of 302, isogs 816, uploaded, 1 missing 137.1-a
 4.4.7053.1 found  250 of 251, isogs 471, uploaded, 1 missing 229.1-a
 4.4.7232.1 found  707 of 710, isogs 2325, uploaded, 3  missing 272.4-c, 284.4-g, 284.5-g
 4.4.7488.1 found  410 of 418, isogs 1188, uploaded, 8 missing 234.1-c, 234.1-j, 234.2-c, 234.2-j, 242.3-c, 242.3-d, 242.4-c, 242.4-d
-4.4.8000.1 found  183 of 184, isogs 384, uploaded, 1 missing: 79.1-e
+4.4.8468.1 found  270 of 272, isogs 881, uploaded, 2 missing 116.5-a, 118.3-a
 4.4.8112.1 found  291 of 294, isogs 794, uploaded, 3 missing 192.1-d, 192.1-m, 192.1-s
-4.4.8468.1 found  270 of 272, isogs 881, uploaded, 2 missing
-4.4.8725.1 found  135 of 137, isogs 217, uploaded, 2 missing 191.1-b, 191.4-b
-4.4.8789.1 found  114 of 117, isogs 195, uploaded, 2 missing 119.1-a, 175.1-b, 175.1-h
+4.4.8789.1 found  114 of 117, isogs 195, uploaded, 3 missing 119.1-a, 175.1-b, 175.1-h
 4.4.8957.1 found  254 of 256, isogs 595, uploaded, 2 missing 144.1-d, 144.1-h
 4.4.9225.1 found  180 of 185, isogs 569, uploaded, 5 missing 144.1-b, 144.1-f, 144.1-g, 144.1-l, 144.1-s
 4.4.9301.1 found  193 of 195, isogs 389, uploaded, 2 missing 135.2-f, 135.2-o
 4.4.9792.1 found  121 of 125, isogs 284, uploaded, 4 missing 164.1-d, 164.1-b, 164.2-d, 164.2-b
 4.4.10025.1 found 164 of 168, isogs 440, uploaded, 4 missing 100.1-c, 100.1-d, 100.6-c, 100.6-d
-4.4.10304.1 found 369 of 370, isogs 1239, uploaded, 1 missing 100.4-e
 4.4.12357.1 found  156 of 160, isogs 368, uploaded, 4 missing 63.1-a, 63.1-h, 81.2-a, 81.2-e
-4.4.12725.1 found   76 of  80, isogs 109, uploaded, 4 missing 16.1-a, 25.1-a, 25.1-g, 121.1-b
+4.4.12725.1 found   77 of  80, isogs 110, uploaded, 4 missing 16.1-a, 25.1-a, 25.1-g
+4.4.15952.1 found  164 of 166, isogs 416, uploaded, 2 missing 66.1-c, 66.1-d
+4.4.14272.1 found   99 of 102, isogs 225, uploaded, 3 missing 33.1-d, 33.1-a, 76.2-f
 4.4.13025.1 found  148 of 150, isogs 418, uploaded, 2 missing 116.7-a, 116.8-a
 4.4.13676.1 found  185 of 186, isogs 554, uploaded, 1 missing 74.1-d
-4.4.14272.1 found   99 of 102, isogs 225, uploaded, 3 missing 33.1-d, 33.1-a, 76.2-f
-4.4.15952.1 found  164 of 166, isogs 416, uploaded, 2 missing 66.1-c, 66.1-d
-4.4.17428.1 found  193 of 194, isogs 712, uploaded, 2 missing 54.2-a
-4.4.17989.1 found   83 of  85, isogs 138, uploaded, 2 missing 65.1-a, 85.2-b
-4.4.14400.1 found 152 of 155, isogs 349, uploaded, 3 missing 109.2-c, 109.2-b, 109.3-c, 109.3-b?
 4.4.13968.1 found 249 of 253, isogs 910, uploaded, 4 missing 109.2-b, 109.2-c, 109.3-b, 109.3-c
-4.4.18432.1 found 157 of 165, isogs 384, uploaded, 8 missing 82.1-a, 82.1-b, 82.4-a, 82.3-a, 82.2-a, 82.4-b, 82.3-b, 82.2-b
-4.4.19821.1 found  57 of  58, isogs 108, uploaded, 1 missing 39.1-a
-4.4.19025.1 found  85 of  87, isogs 236, uploaded, 2 missing 44.1-b, 44.4-b
-4.4.19429.1 found  80 of  82, isogs 154, uploaded, 2 missing 48.1-a, 95.1-a
-4.4.19796.1 found 145 of 147, isogs 396, uploaded, 2 missing 68.2-k, 68.2-m
-4.4.15317.1 found 240 of 242, isogs 959, uploaded, 2 missing 16.1-b, 64.7-d
+4.4.17989.1 found   84 of  85, isogs 139, uploaded, 1 missing 65.1-a
+4.4.17428.1 found  193 of 194, isogs 712, uploaded, 1 missing 54.2-a
 4.4.19664.1 found 325 of 330, isogs 935, uploaded, 5 missing 50.1-f, 56.4-b, 56.4-i, 1002.-n, 100.2-u
+4.4.19796.1 found 145 of 147, isogs 396, uploaded, 2 missing 68.2-k, 68.2-m
+4.4.19025.1 found  85 of  87, isogs 236, uploaded, 2 missing 44.1-b, 44.4-b
+4.4.19821.1 found  57 of  58, isogs 108, uploaded, 1 missing 39.1-a
+4.4.18432.1 found 157 of 165, isogs 384, uploaded, 8 missing 82.1-a, 82.1-b, 82.4-a, 82.3-a, 82.2-a, 82.4-b, 82.3-b, 82.2-b
 
-SECOND SEARCH DONE, COMPLETE, NOT YET PROCESSED/UPLOADED
+4.4.15317.1 found 241 of 242, isogs 961, uploaded, 1 missing 16.1-b
+4.4.2048.1 found 2306 of 2310, isogs 6176, uploaded, checked, 4 missing 1598.1-b, 1598.16-b, 1598.10-b, 1598.7-b
+4.4.19429.1 found  81 of  82, isogs 155, uploaded, 1 missing 48.1-a
+4.4.14400.1 found 154 of 155, isogs 351, uploaded, missing 1 100.1-a
 
-FIRST SEARCH HAD PROBLEMS, FEW FOUND (15):
+INCOMPLETE, FEW FOUND (15), NO FURTHER SEARCH YET:
 
-4.4.1600.1 found    24 of 579, isogs 156, uploaded (problems)
-4.4.2304.1 found     5 of 1473, isogs 62, uploaded (problems)
-4.4.4225.1 found    18 of 642, isogs 122, uploaded (problems)
 4.4.7056.1 found    39 of 380, isogs 192, uploaded (problems)
 4.4.7168.1 found    78 of 402, isogs 388, uploaded (problems)
 4.4.7225.1 found     6 of 337, isogs  22, uploaded (problems)
@@ -553,15 +471,11 @@ FIRST SEARCH HAD PROBLEMS, FEW FOUND (15):
 4.4.17424.1 found   29 of 291, isogs 118, uploaded (problems)
 4.4.19600.1 found    7 of  35, isogs  26, uploaded (problems)
 
-FIRST SEARCH DONE, NOT COMPLETE,  PROCESSED, UPLOADED, SECOND RUNNING
-
-FIRST SEARCH DONE, COMPLETE, NOT YET PROCESSED
-
-FIRST SEARCH IN PROGRESS
-
-4.4.16609.1 212 searching...0 so far...
-
 SECOND SEARCH IN PROGRESS
+
+4.4.1600.1 found    24 of 579, isogs 156, uploaded (problems) 555 missing...
+4.4.2304.1 found     5 of 1473, isogs 62, uploaded (problems) 1468 missing...
+4.4.4225.1 found    18 of 642, isogs 122, uploaded (problems) 624 missing...
 
 =====================================================================================================
 Log of quintic field curves searches:
