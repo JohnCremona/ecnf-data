@@ -651,6 +651,11 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                 E = minimal_model(E)
 		N = E.conductor()
 		norm = N.norm()
+                if N_label:
+                    if not norm==ZZ(N_label.split(".")[0]):
+                        print("****************************")
+                        print("Conductor norm = %s, does not match label %s" % (norm, N_label))
+                        print("****************************")
 
                 E2 = found(E, norm)
 		if E2:
