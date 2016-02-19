@@ -30,7 +30,7 @@ cm_counts = {} # dict with keys conductor labels, values counts of
 cm_j_invariants = {} # key: CM j-invariants (in any field)
                      # value: associated negative discriminant
 
-def add_field(K, prime_norm_bound=200):
+def add_field(K, field_label=None, prime_norm_bound=200):
     if K in used_curves:
         return
 
@@ -44,8 +44,14 @@ def add_field(K, prime_norm_bound=200):
 # Warning: number fields whose label's 4'th component is not 1 will
 # not be handled correctly here; this is only an issue when there is
 # more than one field of given signature and abs(disc), so fine for
-# quadratic fields.
-    labels[K] = '%s.%s.%s.1' % (str(d),str(s),str(absD))
+# quadratic fields.  This problem first hit for field 4.4.16448.2.
+# When we processed te curves for that field they were in a different
+# input file so were not mixed up with curves for 4.4.16448.1 luckily,
+# and manual editing of the output was sufficient.
+
+    if field_label==None:
+        field_label = '%s.%s.%s.1' % (str(d),str(s),str(absD))
+    labels[K] = field_label
     Dlists[K] = absD
     Glists[K] = K.galois_group(names='b')
     for dd, f, j in cm_j_invariants_and_orders(K):
@@ -99,7 +105,7 @@ def found(E, norm = None):
 
 # Functions for testing if E is a Q-curve
 
-def is_Galois_invariant(N):
+def is_Galois_invariant(N, field_label=None):
         r"""
         Return ``True`` if this number field element or ideal is Galois-invariant.
         """
@@ -111,7 +117,7 @@ def is_Galois_invariant(N):
                 except AttributeError:
                         raise ValueError("unable to determine field from %s" % N)
         if K is QQ: return True
-        add_field(K)
+        add_field(K, field_label=field_label)
         G = Glists[K]
         NL = G[0](N) # base-change to Galois closure
         return all([sigma(N)==NL for sigma in G.gens()])
@@ -122,7 +128,7 @@ def conj_curve(E,sigma):
         """
         return EllipticCurve([sigma(a) for a in E.ainvs()])
 
-def is_Q_curve(E):
+def is_Q_curve(E, field_label=None):
         r"""
         Return True if this elliptic curve is isogenous to all its
         Galois conjugates.
@@ -150,14 +156,14 @@ def is_Q_curve(E):
         """
         K = E.base_field()
         if K is QQ: return True
-        add_field(K)
+        add_field(K, field_label=field_label)
 
         # first quick test: are the a-invariants Galois invariant?
-        if all([is_Galois_invariant(a) for a in E.ainvs()]):
+        if all([is_Galois_invariant(a,field_label) for a in E.ainvs()]):
                 return True
 
         # second quick test: is the conductor invariant?
-        if not is_Galois_invariant(E.conductor()):
+        if not is_Galois_invariant(E.conductor(),field_label):
                 return False
 
         # third test should catch all non-Q-curves: find primes of
@@ -516,7 +522,7 @@ def field_from_label(lab):
         print "Created field from label %s: %s" % (lab,K)
         return K
 
-def read_curves(infile, only_one=False, ncurves=0, add_conjugates=False):
+def read_curves(infile, only_one=False, ncurves=0):
         r"""
         Iterator to loop through lines of a curves.* file each
         containing 13 data fields as defined the in the ecnf-format.txt file,
@@ -539,15 +545,14 @@ def read_curves(infile, only_one=False, ncurves=0, add_conjugates=False):
                 count +=1
                 if ncurves and count>ncurves:
                        raise StopIteration
-                K = field_from_label(data[0])
+                field_label = data[0]
+                K = field_from_label(field_label)
                 N_label = data[1]
                 iso_label = data[2]
                 c_num = data[3]
                 N_def = data[4]
                 E = curve_from_strings(K, data[6:11])
-                yield (N_label,N_def,iso_label,c_num,E)
-                if add_conjugates:
-                    yield conj_curve(E,G[1])
+                yield (field_label,N_label,N_def,iso_label,c_num,E)
 
 def get_isoclass_letter(N, E):
         K = E.base_field()
@@ -626,15 +631,16 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 
 	for E in curves:
                 N_label = None
+                field_label = None
                 if isinstance(E,tuple):
-                        N_label, N_def, iso_label, c_num, E = E
+                        field_label, N_label, N_def, iso_label, c_num, E = E
                         if verbose>0:
-                                print("processing E = %s with conductor %s, label %s-%s%s..." % (list(E.ainvs()),N_def,N_label,iso_label,c_num))
+                                print("processing E = %s with conductor %s, label %s-%s%s... over field %s" % (list(E.ainvs()),N_def,N_label,iso_label,c_num,field_label))
                 else:
                         if verbose>0:
                                 print("processing E = %s..." % list(E.ainvs()))
                 k = E.base_field()
-                add_field(k)
+                add_field(k, field_label=field_label)
                 D = Dlists[k]
                 G = Glists[k]
                 used = used_curves[k]
@@ -856,6 +862,7 @@ def basic_info(curves, outfile = None, classfile=None, verbose=0):
 
 	for E in curves:
                 N_label = None
+                field_label = None
                 if isinstance(E,tuple):
                         N_label, E = E
                         if verbose>0:
@@ -864,7 +871,7 @@ def basic_info(curves, outfile = None, classfile=None, verbose=0):
                         if verbose>0:
                                 print("processing E = %s..." % list(E.ainvs()))
                 k = E.base_field()
-                add_field(k)
+                add_field(k, field_label=field_label)
                 D = Dlists[k]
                 G = Glists[k]
                 used = used_curves[k]
