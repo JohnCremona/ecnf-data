@@ -532,8 +532,6 @@ def read_curves(infile, only_one=False, ncurves=0):
         *not* 1, hence only yielding one curve per isogeny class.
         """
         count=0
-        if add_conjugates:
-            G = Glists[K]
         for L in file(infile).readlines():
                 #sys.stdout.write(L)
                 data = L.split()
