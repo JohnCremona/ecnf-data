@@ -13,7 +13,7 @@ Procedure for adding curve to match existing Hilbert Modular Forms
 
    e.g.
 
-      find_curve_labels('2.2.5.1', 1800, 5000, 'curves.2.2.5.1.part', True)
+      find_curves('2.2.5.1', 1800, 5000, 'curves.2.2.5.1.part', True)
 
   to make a curves file (e.g. curves.2.2.5.1.part) containing (at
   most) one curve per newform.
@@ -78,31 +78,9 @@ data files up to date.
 Log  of cubic field curves searches:
 ====================================
 
-61 cubic fields, 17 curves in 8 fields:
+61 cubic fields, missing none!
 
-Field 3.3.49.1   has 1093 rational newforms but 1084 isogeny classes
-Field 3.3.733.1  has  475 rational newforms but  474 isogeny classes
-Field 3.3.1229.1 has  260 rational newforms but  258 isogeny classes
-Field 3.3.1373.1 has  267 rational newforms but  266 isogeny classes
-Field 3.3.1396.1 has  202 rational newforms but  201 isogeny classes
-Field 3.3.1492.1 has  122 rational newforms but  121 isogeny classes
-Field 3.3.1524.1 has  206 rational newforms but  205 isogeny classes
-Field 3.3.1708.1 has  185 rational newforms but  184 isogeny classes
-
-Missing:  49:   1681.4,5,6-a,b,c (3*3=9)
-          733:  146.1-a  (1)
-          1229: 96.2-g,h (2)
-          1373: 45.1-b   (1)
-          1396: 70.3-d   (1)
-          1492: 80.1-n   (1)
-          1524: 6.2-a    (1)
-          1708: 26.2-a   (1)
-
-3.3.49.1 found 1084 of 1093, isogs 2579, uploaded; checked, 9 missing:
-
- [u'1681.4-a', u'1681.4-b', u'1681.4-c', u'1681.6-a', u'1681.5-a',
-           u'1681.6-b', u'1681.5-b', u'1681.6-c', u'1681.5-c']
-
+3.3.49.1 found all 1093, isogs 2597, uploaded; checked
 3.3.81.1  found all 456, isogs 1262, uploaded, checked
 3.3.148.1 found all 480, isogs 1310, uploaded, checked
 3.3.169.1 found all 538, isogs 1118, uploaded, checked
@@ -118,7 +96,7 @@ Missing:  49:   1681.4,5,6-a,b,c (3*3=9)
 3.3.568.1 found all 278, isogs  768, uploaded, checked
 3.3.621.1 found all 534, isogs 1454, uploaded, checked
 3.3.697.1 found all 174, isogs  380, uploaded, checked
-3.3.733.1 found 474 of 475, isogs 1131, uploaded, checked, 1 missing: 146.1-a
+3.3.733.1 found all 475, isogs 1132, uploaded, checked
 3.3.756.1 found all 476, isogs  987, uploaded, checked
 3.3.761.1 found all 274, isogs  608, uploaded, checked
 3.3.785.1 found all 229, isogs  430, uploaded, checked
@@ -133,26 +111,26 @@ Missing:  49:   1681.4,5,6-a,b,c (3*3=9)
 3.3.1076.1 found all 276, isogs 682, uploaded, checked
 3.3.1101.1 found all 324, isogs 950, uploaded, checked
 3.3.1129.1 found all 254, isogs 576, uploaded, checked
-3.3.1229.1 found 258 of 260, isogs done, uploaded, checked, 2 missing: 96.2-g, 96.2-h
+3.3.1229.1 found all 260, isogs 634, uploaded, checked
 3.3.1257.1 found all 166, isogs 356, uploaded, checked
 3.3.1300.1 found all 135, isogs 242, uploaded, checked
 3.3.1304.1 found all 243, isogs 690, uploaded, checked
 3.3.1345.1 found all  28, isogs  42, uploaded, checked
 3.3.1369.1 found all  32, isogs  42, uploaded, checked
-3.3.1373.1 found 266 of 267, isogs 587, uploaded, checked, 1 missing: 45.1-b
+3.3.1373.1 found all 267, isogs 588, uploaded, checked
 3.3.1384.1 found all 190, isogs 404, uploaded, checked
-3.3.1396.1 found 201 of 202, isogs 378, uploaded, checked, 1 missing: 70.3-d
+3.3.1396.1 found all 202, isogs 380, uploaded, checked
 3.3.1425.1 found all 136, isogs 221, uploaded, checked
-3.3.1436.1 found all 54, isogs 182, uploaded, checked
-3.3.1489.1 found all 28, isogs 78, uploaded, checked
-3.3.1492.1 found 121 of 122, isogs 205, uploaded, checked, 1 missing: 80.1-n
+3.3.1436.1 found all  54, isogs 182, uploaded, checked
+3.3.1489.1 found all  28, isogs  78, uploaded, checked
+3.3.1492.1 found all 122, isogs 206, uploaded, checked
 3.3.1509.1 found all 250, isogs 714, uploaded, checked
-3.3.1524.1 found 204 of 206, isogs 399, uploaded, checked, 1 missing: 6.2-a
+3.3.1524.1 found all 206, isogs 401, uploaded, checked
 3.3.1556.1 found all 114, isogs 250, uploaded, checked
 3.3.1573.1 found all 137, isogs 263, uploaded, checked
 3.3.1593.1 found all 122, isogs 272, uploaded, checked
 3.3.1620.1 found all 189, isogs 348, uploaded, checked
-3.3.1708.1 found 184 of 185, isogs 369, uploaded, checked, 1 missing: 26.2-a
+3.3.1708.1 found all 185, isogs 370, uploaded, checked
 3.3.1765.1 found all 98,  isogs 208, uploaded, checked
 3.3.1772.1 found all 251, isogs 640, uploaded, checked
 3.3.1825.1 found all 28,  isogs 56,  uploaded, checked
@@ -174,110 +152,62 @@ Log of quartic field curves searches:
 
 52 incomplete, data files up-to-date:
 
-Field 4.4.1600.1 has 579 rational newforms but 24 isogeny classes
-Field 4.4.2048.1 has 2310 rational newforms but 2306 isogeny classes
-Field 4.4.2225.1 has 1279 rational newforms but 1278 isogeny classes
-Field 4.4.2304.1 has 1473 rational newforms but 5 isogeny classes
-Field 4.4.2624.1 has 1069 rational newforms but 1067 isogeny classes
-Field 4.4.2777.1 has 1164 rational newforms but 1162 isogeny classes
-Field 4.4.4225.1 has 642 rational newforms but 18 isogeny classes
-Field 4.4.4525.1 has 333 rational newforms but 331 isogeny classes
-Field 4.4.5744.1 has 326 rational newforms but 324 isogeny classes
-Field 4.4.6809.1 has 302 rational newforms but 301 isogeny classes
-Field 4.4.7053.1 has 251 rational newforms but 250 isogeny classes
-Field 4.4.7056.1 has 380 rational newforms but 39 isogeny classes
-Field 4.4.7168.1 has 402 rational newforms but 78 isogeny classes
-Field 4.4.7225.1 has 337 rational newforms but 4 isogeny classes
-Field 4.4.7232.1 has 710 rational newforms but 707 isogeny classes
-Field 4.4.7488.1 has 418 rational newforms but 410 isogeny classes
-Field 4.4.8112.1 has 294 rational newforms but 291 isogeny classes
-Field 4.4.8468.1 has 272 rational newforms but 270 isogeny classes
-Field 4.4.8789.1 has 117 rational newforms but 114 isogeny classes
-Field 4.4.8957.1 has 256 rational newforms but 254 isogeny classes
-Field 4.4.9225.1 has 185 rational newforms but 180 isogeny classes
-Field 4.4.9248.1 has 472 rational newforms but 34 isogeny classes
-Field 4.4.9301.1 has 195 rational newforms but 193 isogeny classes
-Field 4.4.9792.1 has 125 rational newforms but 121 isogeny classes
-Field 4.4.10025.1 has 168 rational newforms but 164 isogeny classes
-Field 4.4.11025.1 has 208 rational newforms but 17 isogeny classes
-Field 4.4.11324.1 has 222 rational newforms but 74 isogeny classes
-Field 4.4.12725.1 has 80 rational newforms but 77 isogeny classes
-Field 4.4.12357.1 has 160 rational newforms but 156 isogeny classes
-Field 4.4.12400.1 has 180 rational newforms but 1 isogeny classes
-Field 4.4.12544.1 has 240 rational newforms but 124 isogeny classes
-Field 4.4.13025.1 has 150 rational newforms but 148 isogeny classes
-Field 4.4.13676.1 has 186 rational newforms but 185 isogeny classes
-Field 4.4.13824.1 has 203 rational newforms but 51 isogeny classes
-Field 4.4.13968.1 has 253 rational newforms but 249 isogeny classes
-Field 4.4.14272.1 has 102 rational newforms but 99 isogeny classes
-Field 4.4.14336.1 has 142 rational newforms but 4 isogeny classes
-Field 4.4.15317.1 has 242 rational newforms but 241 isogeny classes
-Field 4.4.15952.1 has 166 rational newforms but 164 isogeny classes
-Field 4.4.17424.1 has 291 rational newforms but 29 isogeny classes
-Field 4.4.17428.1 has 194 rational newforms but 193 isogeny classes
-Field 4.4.17989.1 has 85 rational newforms but 84 isogeny classes
-Field 4.4.18432.1 has 165 rational newforms but 157 isogeny classes
-Field 4.4.19025.1 has 87 rational newforms but 85 isogeny classes
-Field 4.4.19429.1 has 82 rational newforms but 81 isogeny classes
-Field 4.4.19664.1 has 330 rational newforms but 325 isogeny classes
-Field 4.4.19796.1 has 147 rational newforms but 145 isogeny classes
-Field 4.4.19821.1 has 58 rational newforms but 57 isogeny classes
-Field 4.4.19600.1 has 35 rational newforms but 7 isogeny classes
-Field 4.4.3600.1 has 758 rational newforms but 743 isogeny classes
-Field 4.4.14400.1 has 155 rational newforms but 154 isogeny classes
-Field 4.4.2525.1 has 811 rational newforms but 809 isogeny classes
-
 1 field with label ending in 2, was missed, now running:
 
-Field 4.4.16448.2 has 196 rational newforms but 0 isogeny classes
-No file /home/jec/ecnf-data/quartics/isoclass.4.4.16448.2 exists
-No file /home/jec/ecnf-data/quartics/curves.4.4.16448.2 exists
-Searching...found 194 of 196, isogs 522, uploaded, checking, missing
-49.1-d, 62.3-d.  Second search finds 49.1-d, isogs, uploaded, checking again.
 
+4.4.4525.1 found all 333, isogs 722+, uploaded, checked
+4.4.5744.1 found all 326, isogs 684+, uploaded, checked
+4.4.6809.1 found all 302, isogs 816+, uploaded, checked
+4.4.7053.1 found all 251, isogs 471+, uploaded, checked
+4.4.7232.1 found all 710, isogs 2325+, uploaded, checked
+4.4.8112.1 found all 294, isogs 794+, uploaded, checked
+4.4.8468.1 found all 272, isogs 881+, uploaded, checked
+4.4.8789.1 found all 117, isogs 195+, uploaded, checked
+4.4.8957.1 found all 256, isogs 595+, uploaded, checked
+4.4.9301.1 found all 195, isogs 389+, uploaded, checked
+4.4.9792.1 found all 125, isogs 284+, uploaded, checked
+4.4.12725.1 found all  80, isogs 110+, uploaded, checked
+4.4.12357.1 found all 160, isogs 368+, uploaded, checked
+4.4.13025.1 found all 150, isogs 418+, uploaded, checked
+4.4.13676.1 found all 186, isogs 554+, uploaded, checked
+4.4.13968.1 found all 253, isogs 910+, uploaded, checked
+4.4.14272.1 found all 102, isogs 225+, uploaded,  checked
+4.4.15317.1 found all 242, isogs 961+, uploaded,  checked
+4.4.15952.1 found all 166, isogs 416+, uploaded,  checked
+4.4.17989.1 found all  85, isogs 139+, uploaded,  checked
+4.4.19025.1 found all  87, isogs 236+, uploaded,  checked
+4.4.14400.1 found all 155, isogs 351+, uploaded,  checked
+4.4.3600.1 found  all 758, isogs 1845+, uploaded, checked
+4.4.19821.1 found all  58, isogs 108+, uploaded, checked
+4.4.2525.1 found  all 811, isogs 1561+, uploaded, checked BUT Curve 71.1-a1 does NOT agree with newform
 
 INCOMPLETE (38), few missing (112 missing curves in all)
 
+4.4.18432.1 found 163 of 165, isogs 384+, uploaded, 2 missing 82.1-a, 82.4-b
+
+
+Ds = [7488,9225,10025,18432,19429,2225,2624,2777,17428,19664,19796]
+flds = ['4.4.%s.1' % d for d in Ds]
+
+4.4.7488.1 found 410 of 418, isogs 1188, uploaded, 8 missing 234.1-c,
+           234.1-j, 234.2-c, 234.2-j, 242.3-c, 242.3-d, 242.4-c, 242.4-d
+4.4.9225.1 found  184 of 185, isogs 569+, uploaded, 1 missing 144.1-l (findable)
+4.4.10025.1 found 164 of 168, isogs 440, uploaded, 4 missing 100.1-c, 100.1-d, 100.6-c, 100.6-d
+4.4.19429.1 found  81 of  82, isogs 155, uploaded, 1 missing 48.1-a
 4.4.2225.1 found 1278 of 1279, isogs 4104, uploaded, 1 missing 619.3-e
-4.4.3600.1 found 743 of 758, isogs 1845, uploaded, 15 missing: 396.1-a, 396.1-d, 396.4-a, 396.3-a, 396.2-a, 396.4-d, 396.2-d, 484.7-l, 484.7-b, 484.10-l, 484.8-l, 484.9-l, 484.10-b, 484.8-b, 484.9-b
-4.4.2525.1 found  809 of 811, isogs 1561, uploaded 3 missing 71.1-a, 71.4-a, 725.6-g
 4.4.2624.1 found 1067 of 1069, isogs 2241, uploaded, 2 missing 476.3-g, 476.4-g
 4.4.2777.1 found 1162 of 1164, isogs 3321, uploaded, 2 missing 648.1-b, 706.1-b
-4.4.4525.1 found  331 of 333, isogs 722, uploaded, 2  missing 109.1-a, 109.2-a
-4.4.5744.1 found  324 of 326, isogs 684, uploaded, 2  missing 148.1-a, 148.1-e
-4.4.6809.1 found  301 of 302, isogs 816, uploaded, 1 missing 137.1-a
-4.4.7053.1 found  250 of 251, isogs 471, uploaded, 1 missing 229.1-a
-4.4.7232.1 found  707 of 710, isogs 2325, uploaded, 3  missing 272.4-c, 284.4-g, 284.5-g
-4.4.7488.1 found  410 of 418, isogs 1188, uploaded, 8 missing 234.1-c, 234.1-j, 234.2-c, 234.2-j, 242.3-c, 242.3-d, 242.4-c, 242.4-d
-4.4.8468.1 found  270 of 272, isogs 881, uploaded, 2 missing 116.5-a, 118.3-a
-4.4.8112.1 found  291 of 294, isogs 794, uploaded, 3 missing 192.1-d, 192.1-m, 192.1-s
-4.4.8789.1 found  114 of 117, isogs 195, uploaded, 3 missing 119.1-a, 175.1-b, 175.1-h
-4.4.8957.1 found  254 of 256, isogs 595, uploaded, 2 missing 144.1-d, 144.1-h
-4.4.9225.1 found  180 of 185, isogs 569, uploaded, 5 missing 144.1-b, 144.1-f, 144.1-g, 144.1-l, 144.1-s
-4.4.9301.1 found  193 of 195, isogs 389, uploaded, 2 missing 135.2-f, 135.2-o
-4.4.9792.1 found  121 of 125, isogs 284, uploaded, 4 missing 164.1-d, 164.1-b, 164.2-d, 164.2-b
-4.4.10025.1 found 164 of 168, isogs 440, uploaded, 4 missing 100.1-c, 100.1-d, 100.6-c, 100.6-d
-4.4.12357.1 found  156 of 160, isogs 368, uploaded, 4 missing 63.1-a, 63.1-h, 81.2-a, 81.2-e
-4.4.12725.1 found   77 of  80, isogs 110, uploaded, 4 missing 16.1-a, 25.1-a, 25.1-g
-4.4.15952.1 found  164 of 166, isogs 416, uploaded, 2 missing 66.1-c, 66.1-d
-4.4.14272.1 found   99 of 102, isogs 225, uploaded, 3 missing 33.1-d, 33.1-a, 76.2-f
-4.4.13025.1 found  148 of 150, isogs 418, uploaded, 2 missing 116.7-a, 116.8-a
-4.4.13676.1 found  185 of 186, isogs 554, uploaded, 1 missing 74.1-d
-4.4.13968.1 found 249 of 253, isogs 910, uploaded, 4 missing 109.2-b, 109.2-c, 109.3-b, 109.3-c
-4.4.17989.1 found   84 of  85, isogs 139, uploaded, 1 missing 65.1-a
 4.4.17428.1 found  193 of 194, isogs 712, uploaded, 1 missing 54.2-a
 4.4.19664.1 found 325 of 330, isogs 935, uploaded, 5 missing 50.1-f, 56.4-b, 56.4-i, 1002.-n, 100.2-u
 4.4.19796.1 found 145 of 147, isogs 396, uploaded, 2 missing 68.2-k, 68.2-m
-4.4.19025.1 found  85 of  87, isogs 236, uploaded, 2 missing 44.1-b, 44.4-b
-4.4.19821.1 found  57 of  58, isogs 108, uploaded, 1 missing 39.1-a
-4.4.18432.1 found 157 of 165, isogs 384, uploaded, 8 missing 82.1-a, 82.1-b, 82.4-a, 82.3-a, 82.2-a, 82.4-b, 82.3-b, 82.2-b
-
-4.4.15317.1 found 241 of 242, isogs 961, uploaded, 1 missing 16.1-b
+4.4.16448.2 found 195 of 196, isogs 522+, uploaded, missing 62.3-d
 4.4.2048.1 found 2306 of 2310, isogs 6176, uploaded, checked, 4 missing 1598.1-b, 1598.16-b, 1598.10-b, 1598.7-b
-4.4.19429.1 found  81 of  82, isogs 155, uploaded, 1 missing 48.1-a
-4.4.14400.1 found 154 of 155, isogs 351, uploaded, missing 1 100.1-a
 
-INCOMPLETE, FEW FOUND (15), NO FURTHER SEARCH YET:
+INCOMPLETE, FEW FOUND (15)
+
+Ds = [1600,2304,4225,7056,7168,7225,9248,11025,11324,13824,12544,12400,14336,17424,19600]
+flds = ['4.4.%s.1' % d for d in Ds]
+running on #3
 
 4.4.1600.1 found    24 of 579, isogs 156, uploaded (problems) 555 missing...
 4.4.2304.1 found     5 of 1473, isogs 62, uploaded (problems) 1468 missing...
@@ -295,17 +225,18 @@ INCOMPLETE, FEW FOUND (15), NO FURTHER SEARCH YET:
 4.4.17424.1 found   29 of 291, isogs 118, uploaded (problems)
 4.4.19600.1 found    7 of  35, isogs  26, uploaded (problems)
 
-SECOND SEARCH IN PROGRESS
-
 =====================================================================================================
 Log of quintic field curves searches:
 =====================================================================================================
 
 5.5.14641.1 found all 385, isogs 792, uploaded, checked
 
-Below this point, conjugate forms have not yet been added.
+Below this point, no conjugate forms needed to be added since the
+fields have no nontrivial automorphisms.
 
-5.5.24217.1 393
+FIRST SEARCH RUNNING:
+
+5.5.24217.1 finding 393...238 found, isogs...
 5.5.36497.1 428
 5.5.38569.1 538
 5.5.65657.1 354
@@ -339,19 +270,19 @@ Below this point, conjugate forms have not yet been added.
 5.5.186037.1 104
 5.5.195829.1 103
 
+DEGREE 6:
 
+adding conjugates: done
 
-6.6.300125.1
-6.6.703493.1
-6.6.905177.1
-
-6.6.371293.1 95
 6.6.300125.1 353
+6.6.703493.1 186
+6.6.905177.1 232
+6.6.371293.1 422 searching...137 found, isogs 318, uploaded
+             285 searching...
 6.6.434581.1 112
 6.6.453789.1 56
 6.6.485125.1 195
 6.6.592661.1 203
-6.6.703493.1 186
 6.6.722000.1 78
 6.6.810448.1 36
 6.6.820125.1 43
@@ -378,4 +309,3 @@ Below this point, conjugate forms have not yet been added.
 6.6.1995125.1 53
 6.6.1997632.1 32
 6.6.1528713.1 49
-6.6.905177.1 232
