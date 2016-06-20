@@ -1,6 +1,7 @@
 # coding=utf-8
 import sys
 from sage.databases.cremona import cremona_letter_code
+from psort import (nf_key, primes_of_degree_iter)
 
 # Adapted from Warren Moore's scripts.  The main function
 # basic_info(curves) takes a list of elliptic curves and outputs a
@@ -14,7 +15,7 @@ from sage.databases.cremona import cremona_letter_code
 # dependency http://trac.sagemath.org/ticket/16764.
 
 # cached field data: these will all be keyed by fields k, values as shown:
-Plists = {} # list of primes of k, sorted by norm
+Plists = {} # sorted list of primes of k
 Dlists = {} # |disc(k)|
 Glists = {} # Gal(k/Q)
 labels = {} # label of k
@@ -22,25 +23,23 @@ nf_data = {} # newform data for k (if available)
 used_curves = {} # dict with key by norm(conductor), value a list of
                  # curves so far processed witth that norm-conductor
 ic_cmp = {} # dict whose values is the isogeny class cmp function
+ic_key = {} # dict whose values is the isogeny class sort key function
 cm_counts = {} # dict with keys conductor labels, values counts of
                # classes with rational CM (imaginary quadratic fields
                # only) for labelling of these, as they do not have
                # associated Bianchi newforms
-#
-cm_j_invariants = {} # key: CM j-invariants (in any field)
-                     # value: associated negative discriminant
+# cm_j_invariants = {} # key: CM j-invariants (in any field)
+                       # value: associated negative discriminant
 
 def add_field(K, field_label=None, prime_norm_bound=200):
     if K in used_curves:
         return
 
-    PP = K.primes_of_bounded_norm(prime_norm_bound)
-    PP.sort(key=lambda P: (P.norm(),P.pari_hnf().sage()))
-    Plists[K] = PP
-
+    Plists[K] = list(primes_iter(K,maxnorm=prime_norm_bound))
     absD = K.discriminant().abs()
     s = K.signature()[0] # number of real places
     d = K.degree()
+
 # Warning: number fields whose label's 4'th component is not 1 will
 # not be handled correctly here; this is only an issue when there is
 # more than one field of given signature and abs(disc), so fine for
@@ -248,75 +247,15 @@ def min_disc_norm(E):
 # Comparison of curves in one isogeny class using j-invariants, based
 # on Lemma: if E1 and E2 are isogenous and not isomorphic (over k)
 # then j(E1)!=j(E2) *except* when E1 has potential but not rational CM
-# by discriminant d<0 and E2 is the quadratic twist by d of E1.  A
+# by discriminant d<0 and E2 is the quadratic twist by d of E1.  One
 # solution for the tie-break situation was being worked on at ICTP in
-# September 2014 by Maarten Derrickx and Heline Deckonick.
+# September 2014 by Maarten Derrickx and Heline Deckonick.  The
+# solution implemented here was developed by Andrew Sutherland and
+# John Cremona in June 2016, and requires using the "first" degree 1
+# prime with certain properties, hence requires a fixed ordering of
+# prime ideals.  This was also developed by Andrew Sutherland, John
+# Cremona and Aurel Page in June 2016.
 
-# See below this for a key-function version (more efficient, same mathematics)
-
-def curve_cmp(E1,E2):
-        r"""
-        Comparison function for two isogenous elliptic curves.
-
-        INPUT:
-
-        - ``E1``, ``E2`` -- two isogenous elliptic curves defined over
-          the same number field `k`.
-
-        OUTPUT:
-
-        0,+1,-1 (for comparison)
-        """
-        if E1.is_isomorphic(E2):
-                return int(0)
-
-        if E1.has_rational_cm():
-                # Order first by the CM discriminant so that curves
-                # with the same endo ring are grouped together:
-                d1 = E1.cm_discriminant()
-                d2 = E2.cm_discriminant()
-                t = cmp(d2,d1) # NB the discriminants are negative!
-                               # We want -4 before -16
-                if t:
-                        return t
-        # Now either E1 does not have CM or E1, E2 have different endo rings
-
-        # Order by j-invariant if they are different (usually the case):
-        c = cmp(E1.j_invariant(),E2.j_invariant())
-        if c:
-                return c
-
-        # now E1 and E2 must have potential (not rational) CM and be
-        # quadratic twists by the CM field.  We do not yet have a good
-        # method to distinguish them.  We use the (minimal)
-        # discriminant norm, but we do not have a proof that these
-        # cannot be equal.
-        minD1 = min_disc_norm(E1)
-        c = cmp(minD1,min_disc_norm(E2))
-        if c:
-                return c
-
-        # The above does not distinguish the curves [0,1,0,=3,1] and
-        # [0,-i,0,3,i] over Q(i), which are 2-isogenous, i-twists,
-        # both have j=8000 and discriminant norm 2^18.  But they can
-        # be distinguished by their Tamagawa products (2 and 4),
-        # though not by their torsion orders, (both 2).
-
-        tor1 = E1.torsion_order()
-        c = cmp(tor1, E2.torsion_order())
-        if c:
-                return c
-
-        tam1 = E1.tamagawa_product_bsd()
-        c = cmp(tam1, E2.tamagawa_product_bsd())
-        if c:
-                return c
-
-        # todo: resolve the case where E1 and E2 are quadratic twists
-        # with the same minimal discriminant norm, torsion order and
-        # Tamagawa product!
-        print("curves %s and %s are isogenous twists, both with j-invariant %s, minimal discriminant norm %s, torsion order %s, Tamagawa product %s: tie-break condition!" % (E1.ainvs(),E2.ainvs(),E1.j_invariant(),minD1,tor1,tam1))
-        return int(0)
 
 # key functions for sorting curves in an isogeny class
 def isogeny_class_key_traditional(E):
@@ -326,13 +265,58 @@ def isogeny_class_key_cm(E):
         return (int(E.has_rational_cm() and -E.cm_discriminant()),
                 flatten([list(ai) for ai in E.ainvs()]))
 
+def cmj_key(E):
+    r""" Key to compare curves with non-rational CM which are quadratic
+    twists over the CM field
+    """
+    if not E.has_cm() or E.has_rational_cm():
+        return 0
+    d = E.cm_discriminant()
+    K = E.base_field()
+    try:
+        D = ZZ(K.defining_polynomial().dicriminant())
+    except AttributeError: # if K==QQ
+        D = 1
+    j = E.j_invariant()
+    c4, c6 = E.c_invariants()
+    if j!=1728:
+        jj = j-1728
+        c = c6
+        w = 6
+    else:
+        jj = j
+        c = c4
+        w = 4
+
+    try:
+        bad = 6*d*D*E.conductor().norm()
+    except AttributeError: # if K==QQ
+        bad = 6*d*D*E.conductor()
+    # Get the first degree 1 prime P, dividing a prime p not dividng
+    # bad for which d is a quadratic non-residue, such that j-1728 (or
+    # j when j=1728) is a P-unit:
+    ptest = lambda p: not p.divides(bad) and legendre(d,p)==-1
+    it = primes_of_degree_iter(K,deg=1, condition = ptest)
+    P = it.next()
+    while jj.valuation(P)!=0:
+        P = it.next()
+    p = P.smallest_integer() # = residue characteristic
+    print("E = {} with j = {}: tie-break prime = {} | {}".format(E.ainvs(), j, P, p))
+
+    # The key is now (c6|p) (or (c4|p) if c6=0) with c4, c6 from the
+    # P-minimal model.  Although E has good reduction at P the model
+    # may not be minimal, and some adjustment is necessary:
+    k = c.valuation(P)
+    if k>0:
+        assert w.divides(k)
+        pi = K.uniformizer(P,others='negative')
+        c = c/pi**(k//w) # still integral everywhere
+    return legendre_symbol(K.residue_field(P)(c),p)
+
 def isogeny_class_key_j(E):
         return (int(E.has_rational_cm() and -E.cm_discriminant()),
-                E.j_invariant(),
-                min_disc_norm(E),
-                E.torsion_order(),
-                E.tamagawa_product_bsd(),
-                flatten([list(ai) for ai in E.ainvs()])) # last resort tie-break
+                nf_key(E.j_invariant()),
+                cmj_key(E))
 
 isogeny_class_key = isogeny_class_key_j
 
