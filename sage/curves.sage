@@ -1,51 +1,48 @@
 # coding=utf-8
-import sys
+
+from sage.all import cm_j_invariants, cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, O
 from sage.databases.cremona import cremona_letter_code
+from psort import (nf_key, primes_of_degree_iter, primes_iter)
 
-# Adapted from Warren Moore's scripts.  The main function
-# basic_info(curves) takes a list of elliptic curves and outputs a
-# data file in the correct format.  Isogenous curves are computed and
-# sorted.
+# Originally adapted from Warren Moore's scripts.  The main function
+# process_curves(curves) takes a list of elliptic curves and outputs
+# data files.  Isogenous curves are computed and sorted.
 
-# NB requires functionality of Sage-6.3 and code for computing isogeny
-# classes as implemented in Sage, but at present (2014-08-14) this has
-# not yet all been accepted into Sage (latest version 6.3) but is
-# awaiting review at http://trac.sagemath.org/ticket/16743 and the
-# dependency http://trac.sagemath.org/ticket/16764.
+# NB requires functionality of Sage-7.1.
 
 # cached field data: these will all be keyed by fields k, values as shown:
-Plists = {} # list of primes of k, sorted by norm
+Plists = {} # sorted list of primes of k
 Dlists = {} # |disc(k)|
 Glists = {} # Gal(k/Q)
 labels = {} # label of k
 nf_data = {} # newform data for k (if available)
 used_curves = {} # dict with key by norm(conductor), value a list of
                  # curves so far processed witth that norm-conductor
-ic_cmp = {} # dict whose values is the isogeny class cmp function
+class_key = {} # dict whose values are the isogeny class sort key
+               # function (to be used with curves of the same
+               # conductor only)
 cm_counts = {} # dict with keys conductor labels, values counts of
                # classes with rational CM (imaginary quadratic fields
                # only) for labelling of these, as they do not have
                # associated Bianchi newforms
 #
-cm_j_invariants = {} # key: CM j-invariants (in any field)
-                     # value: associated negative discriminant
+cm_j_dict = {} # keys are CM j-invariants, values are associated discriminanrs
+
 
 def add_field(K, field_label=None, prime_norm_bound=200):
     if K in used_curves:
         return
 
-    PP = K.primes_of_bounded_norm(prime_norm_bound)
-    PP.sort(key=lambda P: (P.norm(),P.pari_hnf().sage()))
-    Plists[K] = PP
-
+    Plists[K] = list(primes_iter(K,maxnorm=prime_norm_bound))
     absD = K.discriminant().abs()
     s = K.signature()[0] # number of real places
     d = K.degree()
+
 # Warning: number fields whose label's 4'th component is not 1 will
 # not be handled correctly here; this is only an issue when there is
 # more than one field of given signature and abs(disc), so fine for
 # quadratic fields.  This problem first hit for field 4.4.16448.2.
-# When we processed te curves for that field they were in a different
+# When we processed the curves for that field they were in a different
 # input file so were not mixed up with curves for 4.4.16448.1 luckily,
 # and manual editing of the output was sufficient.
 
@@ -55,9 +52,8 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     Dlists[K] = absD
     Glists[K] = K.galois_group(names='b')
     for dd, f, j in cm_j_invariants_and_orders(K):
-	cm_j_invariants[j] = dd * (f ^ 2)
+	cm_j_dict[j] = dd * (f ^ 2)
     used_curves[K] = {}
-    ic_cmp[K] = lambda I,J: isog_class_cmp1(K,I,J)
     nf_data[K] = None
     cm_counts[K] = {}
     if d==2 and s==0 and absD in [3,4,7,8,11]:
@@ -72,7 +68,7 @@ def ap(E, p):
 
         - ``E`` - an elliptic curve defined over a number field `k`;
 
-        - ``p`` - a prime odeal of `k`.
+        - ``p`` - a prime ideal of `k`.
 
         OUTPUT:
 
@@ -88,6 +84,23 @@ def ap(E, p):
 		return -1
 	elif E.has_additive_reduction(p):
 		return 0
+
+def ap_list(E):
+        r"""
+        Return [a_p(E) for p in Plists[k]] where k=E.base_field().
+
+        INPUT:
+
+        - ``E`` - an elliptic curve defined over a number field `k`;
+
+        OUTPUT:
+
+        A list of a_P(E) for P in the standard, ordered list
+        Plists[k], where k is the base field of E.
+        """
+        K = E.base_field()
+        add_field(K)
+        return [ap(E,p) for p in Plists[K]]
 
 # Check if we've already found this curve
 def found(E, norm = None):
@@ -243,80 +256,23 @@ def min_disc_norm(E):
         r"""
         Return the norm of the minimal discriminant ideal of `E`.
         """
-        return prod([x.prime().norm()**x.discriminant_valuation() for x in E.local_data()], Integer(1))
+        I = E.minimal_discriminant_ideal()
+        if I.ring()==IntegerRing():
+            return I.gen()
+        return I.norm()
 
 # Comparison of curves in one isogeny class using j-invariants, based
 # on Lemma: if E1 and E2 are isogenous and not isomorphic (over k)
 # then j(E1)!=j(E2) *except* when E1 has potential but not rational CM
-# by discriminant d<0 and E2 is the quadratic twist by d of E1.  A
+# by discriminant d<0 and E2 is the quadratic twist by d of E1.  One
 # solution for the tie-break situation was being worked on at ICTP in
-# September 2014 by Maarten Derrickx and Heline Deckonick.
+# September 2014 by Maarten Derrickx and Heline Deckonick.  The
+# solution implemented here was developed by Andrew Sutherland and
+# John Cremona in June 2016, and requires using the "first" degree 1
+# prime with certain properties, hence requires a fixed ordering of
+# prime ideals.  This was also developed by Andrew Sutherland, John
+# Cremona and Aurel Page in June 2016.
 
-# See below this for a key-function version (more efficient, same mathematics)
-
-def curve_cmp(E1,E2):
-        r"""
-        Comparison function for two isogenous elliptic curves.
-
-        INPUT:
-
-        - ``E1``, ``E2`` -- two isogenous elliptic curves defined over
-          the same number field `k`.
-
-        OUTPUT:
-
-        0,+1,-1 (for comparison)
-        """
-        if E1.is_isomorphic(E2):
-                return int(0)
-
-        if E1.has_rational_cm():
-                # Order first by the CM discriminant so that curves
-                # with the same endo ring are grouped together:
-                d1 = E1.cm_discriminant()
-                d2 = E2.cm_discriminant()
-                t = cmp(d2,d1) # NB the discriminants are negative!
-                               # We want -4 before -16
-                if t:
-                        return t
-        # Now either E1 does not have CM or E1, E2 have different endo rings
-
-        # Order by j-invariant if they are different (usually the case):
-        c = cmp(E1.j_invariant(),E2.j_invariant())
-        if c:
-                return c
-
-        # now E1 and E2 must have potential (not rational) CM and be
-        # quadratic twists by the CM field.  We do not yet have a good
-        # method to distinguish them.  We use the (minimal)
-        # discriminant norm, but we do not have a proof that these
-        # cannot be equal.
-        minD1 = min_disc_norm(E1)
-        c = cmp(minD1,min_disc_norm(E2))
-        if c:
-                return c
-
-        # The above does not distinguish the curves [0,1,0,=3,1] and
-        # [0,-i,0,3,i] over Q(i), which are 2-isogenous, i-twists,
-        # both have j=8000 and discriminant norm 2^18.  But they can
-        # be distinguished by their Tamagawa products (2 and 4),
-        # though not by their torsion orders, (both 2).
-
-        tor1 = E1.torsion_order()
-        c = cmp(tor1, E2.torsion_order())
-        if c:
-                return c
-
-        tam1 = E1.tamagawa_product_bsd()
-        c = cmp(tam1, E2.tamagawa_product_bsd())
-        if c:
-                return c
-
-        # todo: resolve the case where E1 and E2 are quadratic twists
-        # with the same minimal discriminant norm, torsion order and
-        # Tamagawa product!
-        print("curves %s and %s are isogenous twists, both with j-invariant %s, minimal discriminant norm %s, torsion order %s, Tamagawa product %s: tie-break condition!" % (E1.ainvs(),E2.ainvs(),E1.j_invariant(),minD1,tor1,tam1))
-        return int(0)
 
 # key functions for sorting curves in an isogeny class
 def isogeny_class_key_traditional(E):
@@ -326,15 +282,65 @@ def isogeny_class_key_cm(E):
         return (int(E.has_rational_cm() and -E.cm_discriminant()),
                 flatten([list(ai) for ai in E.ainvs()]))
 
-def isogeny_class_key_j(E):
-        return (int(E.has_rational_cm() and -E.cm_discriminant()),
-                E.j_invariant(),
-                min_disc_norm(E),
-                E.torsion_order(),
-                E.tamagawa_product_bsd(),
-                flatten([list(ai) for ai in E.ainvs()])) # last resort tie-break
+# A version of primes_of_degree_iter for K=Q:
+def primes_iter_Q(condition):
+    for p in Primes():
+        if condition(p):
+            yield(p)
 
-isogeny_class_key = isogeny_class_key_j
+def cmj_key(E):
+    r""" Key to compare curves with non-rational CM which are quadratic
+    twists over the CM field.  This will be called on lots of curves
+    for which this tie-break comparison is not needed, so we return 0
+    instantly when we know that is the case.
+    """
+    if (not E.has_cm()) or E.has_rational_cm():
+        return 0
+    d = E.cm_discriminant()
+    K = E.base_field()
+    deg = K.absolute_degree()
+    D = 1 if deg==1 else ZZ(K.defining_polynomial().discriminant())
+    j = E.j_invariant()
+    c4, c6 = E.c_invariants()
+    jj, c, w = (j, c4, 4) if j==1728 else (j-1728, c6, 6)
+    NN = E.conductor() if deg==1 else E.conductor().norm()
+    bad = 6*d*D*NN
+
+    # Get the first degree 1 prime P, dividing a prime p not dividng
+    # bad for which d is a quadratic non-residue, such that j-1728 (or
+    # j when j=1728) is a P-unit:
+    ptest = lambda p: not p.divides(bad) and legendre_symbol(d,p)==-1
+    if deg==1:
+        it = primes_iter_Q(ptest)
+    else:
+        it = primes_of_degree_iter(K,deg=1, condition = ptest)
+    P = it.next()
+    while jj.valuation(P)!=0:
+        P = it.next()
+    p = P if deg==1 else P.smallest_integer() # = residue characteristic
+    print("E = {} with j = {}: tie-break prime P = {} above p = {}".format(E.ainvs(), j, P, p))
+
+    # The key is now (c6|p) (or (c4|p) if c6=0) with c4, c6 from the
+    # P-minimal model.  Although E has good reduction at P the model
+    # may not be minimal, and some adjustment is necessary:
+    k = c.valuation(P)
+    if k>0:
+        assert w.divides(k)
+        pi = K.uniformizer(P,others='negative')
+        c = c/pi**(k//w) # still integral everywhere
+    return legendre_symbol(K.residue_field(P)(c),p)
+
+def isomorphism_class_key_j(E):
+    """FOr isogenous curves, first sort by CM-discriminant, then by
+    j-invariant, then (only necessary when E has potential CM) the
+    tie-break.
+
+    """
+    return (int(E.has_rational_cm() and -E.cm_discriminant()),
+            nf_key(E.j_invariant()),
+            cmj_key(E))
+
+isomorphism_class_key = isomorphism_class_key_j
 
 def Euler_polynomial(E,P):
         r"""
@@ -490,6 +496,13 @@ def isog_class_cmp2(k, I, J):
 	E2 = curve_from_strings(k,J[0].split()[6:11])
         return curve_cmp_via_L(E1,E2)
 
+def isogeny_class_key(E):
+    """ Key function for sorting curves over the same field with the same conductor, using the sequence of a_P.
+    """
+    K = E.base_field()
+    Plist = Plists[k]
+    
+
 fields = {} # keys are field labels, values are NumberFields
 import yaml
 field_dict = yaml.load(file("HMField_data.yaml")) # all the totally real fields in the LMFDB
@@ -600,18 +613,18 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
         Finally, after all the input and processing are complete, the
         whole lot is output to the file and/or screen, sorted as
         follows: by field, then conductor norm, then conductor (sorted
-        using the HNF of the ideal), then by isogeny class, then by
-        curves in the class.  By default, the letter labels for
-        isogeny classes are generated on the fly, which should be fine
-        provided that the input is complete (at least one curve in
-        every isogeny class) for each conductor present.  Optionally,
-        they can be generated by comparison with the associated
-        newform: currently only available for Bianchi newforms over
-        K=Q(sqrt(-d)) for d=1,2,3,7,11.  In these cases, since curves
-        with CM rational over K are not attached to Bianchi newforms,
-        the letter labels are of the form "CMa", "CMb", etc and not
-        just "a", "b", etc.
-        """
+        using the LMFDB ordering of ideals of the same norm), then by
+        isogeny class (using the key ???), then by curves in the class
+        (using the key isogeny_class_key).  By default, the letter
+        labels for isogeny classes are generated on the fly, which
+        should be fine provided that the input is complete (at least
+        one curve in every isogeny class) for each conductor present.
+        Optionally, they can be generated by comparison with the
+        associated newform: currently only available for Bianchi
+        newforms over K=Q(sqrt(-d)) for d=1,2,3,7,11.  In these cases,
+        since curves with CM rational over K are not attached to
+        Bianchi newforms, the letter labels are of the form "CMa",
+        "CMb", etc and not just "a", "b", etc.  """
         if outfile:
                 outfile = file(outfile, mode="a")
         if classfile:
@@ -639,8 +652,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 print("processing E = %s..." % list(E.ainvs()))
                 k = E.base_field()
                 add_field(k, field_label=field_label)
-                D = Dlists[k]
-                G = Glists[k]
+                #D = Dlists[k]
+                #G = Glists[k]
                 used = used_curves[k]
                 isog_class_cmp = ic_cmp[k]
                 field_label = labels[k]
@@ -721,9 +734,9 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         clist0 = [minimal_model(C) for C in Cl.curves]
                         mat0 = Cl.matrix()
                         # sort into new order (will be redundant later)
-                        clist = sorted(clist0, key=isogeny_class_key)
+                        clist = sorted(clist0, key=isomorphism_class_key)
                         # perm[i]=j where sorted#i = unsorted#j
-                        perm = dict([(i,clist0.index(E)) for i,E in enumerate(clist)])
+                        perm = dict([(i,clist0.index(Ei)) for i,Ei in enumerate(clist)])
                         mat = copy(mat0) # to set the size etc
                         for i in range(len(clist)):
                                 for j in range(len(clist)):
@@ -809,202 +822,6 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                                 if isog==":isog":
                                                         isog_letter = cremona_letter_code(n)
                                                         line = line.replace(":isog", isog_letter)
-                                                if outfile:
-                                                        outfile.write(line+'\n')
-						if verbose>0:
-                                                        print line
-
-# Old version of previous function, will become redundant.
-
-# Basic info about the curves
-def basic_info(curves, outfile = None, classfile=None, verbose=0):
-        r"""
-        Given a list or iterator yielding a sequence of elliptic
-        curves (which could be either an actual list of elliptic
-        curves, or something like read_curves(file_name)), processses
-        these and writes the results to an output file (if given) and
-        to the screen (if verbose>0).
-
-        The input curves do not have to be defined over the same base
-        field; the output will be sorted first by field.
-
-        Each curve is first compared with a list of curves previously
-        encountered to see if it is isomorphic *or isogenous* to any
-        of these, in which case it is ignored.  Hence, if the input
-        file contains several curves in an isogeny class, all but the
-        first will effectively be ignored.  After that the complete
-        isogeny class is computed, sorted, and data for output
-        computed for each curve.
-
-        Finally, after all the input and processing are complete, the
-        whole lot is output to the file and/or screen, sorted as
-        follows: by field, then conductor norm, then conductor (sorted
-        using the HNF of the ideal), then by isogeny class (with
-        letter labels created on the fly after sorting), then by
-        curves in the class.
-        """
-        if outfile:
-                outfile = file(outfile, mode="a")
-        if classfile:
-                classfile = file(classfile, mode="a")
-
-	data = {} # holds line to be output into the main output file,
-                  # indexed by (1) field (2) conductor norm (3,4) HNF
-                  # generators (only sufficient for quadratic fields!)
-                  # i.e. data[k][n][c][d] is a list of strings to be
-                  # output, each defining one curve over field k,
-                  # conductor norm n, conductor HNF <n/d,c+d*alpha>
-                  # where Z[alpha] is the ring of integers.
-
-        isogdata = {} # ditto for isogeny classes & isog matrix data file.
-
-	for E in curves:
-                N_label = None
-                field_label = None
-                if isinstance(E,tuple):
-                        N_label, E = E
-                        if verbose>0:
-                                print("processing E = %s with conductor %s..." % (list(E.ainvs()),N_label))
-                else:
-                        if verbose>0:
-                                print("processing E = %s..." % list(E.ainvs()))
-                k = E.base_field()
-                add_field(k, field_label=field_label)
-                D = Dlists[k]
-                G = Glists[k]
-                used = used_curves[k]
-                isog_class_cmp = ic_cmp[k]
-                field_label = labels[k]
-                if not k in data:
-                        data[k] = {}
-                        isogdata[k] = {}
-                data_k = data[k]
-                isogdata_k = isogdata[k]
-
-		# Get a global minimal model for E if possible
-                E = E.global_minimal_model(semi_global=True)
-		N = E.conductor()
-		norm = N.norm()
-
-		if found(E, norm):
-                        if verbose>0:
-                                print(" -- isogenous to a previous curve")
-                else:
-                        if verbose>1:
-                                print(" -- new isogeny class")
-			# Conductor
-			hnf = N.pari_hnf()
-                        if N_label:
-                                cond_label = N_label
-                        else:
-                                cond_label = "[%i,%s,%s]" % (norm, hnf[1][0], hnf[1][1])
-
-			# Setup data
-			if norm not in data_k:
-				data_k[norm] = {}
-				isogdata_k[norm] = {}
-			if hnf[1][0] not in data_k[norm]:
-				data_k[norm][hnf[1][0]] = {}
-				isogdata_k[norm][hnf[1][0]] = {}
-			if hnf[1][1] not in data_k[norm][hnf[1][0]]:
-				data_k[norm][hnf[1][0]][hnf[1][1]] = []
-				isogdata_k[norm][hnf[1][0]][hnf[1][1]] = []
-			else:
-                                # This is only useful if we input a
-                                # curve which is isogenous to one
-                                # already processed but is not
-                                # isomorphic to any previously seen,
-                                # which only happens if the isog_class
-                                # function produced an incomplete list
-                                # from the earlier curve!
-                                ainvs = E.a_invariants()
-				for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
-                                        curve_data = found_isog_class[0].split()
-					if E.is_isogenous(curve_from_strings(k, curve_data[6:11]), proof = False):
-                                                print("Warning: input curve %s isogenous to a previous curve but not found by isogeny class computation!" % list(E.ainvs()))
-						curve_data[3] = len(found_isog_class)+1
-						curve_data[6:11] = [",".join([str(c) for c in ai]) for ai in ainvs]
-						data_k[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
-						break
-
-			# Find the isogeny class
-                        if verbose>1:
-                                print("computing the isogeny class")
-			Cl = E.isogeny_class()
-                        clist0 = [minimal_model(C) for C in Cl.curves]
-                        mat0 = Cl.matrix()
-                        # sort into new order (will be redundant later)
-                        clist = sorted(clist0, cmp=curve_cmp)
-                        perm = dict([(i,clist0.index(E)) for i,E in enumerate(clist)])
-                        mat = copy(mat0) # to set the size etc
-                        for i in range(len(clist)):
-                                for j in range(len(clist)):
-                                        mat[perm[i],perm[j]] = mat0[i,j]
-
-			if norm not in used:
-				used[norm] = []
-			used[norm] += clist
-
-                        matlist = str([list(r) for r in mat]).replace(' ','')
-                        isogdata_line = "%s %s :isog %i %s" % (field_label, cond_label, 1, matlist)
-			isogdata_k[norm][hnf[1][0]][hnf[1][1]].append([isogdata_line])
-                        if verbose>1:
-                                print("%s" % isogdata_line)
-
-                        # Q-curve? (isogeny class invariant)
-                        q_curve = int(is_Q_curve(E))
-
-			tmp = [] # list of output lines (with
-                                 # placeholder for isog code, filled
-                                 # in after sorting)
-
-			for n, E2 in enumerate(clist):
-				# a-invs
-				ainvs = E2.a_invariants()
-                                ainv_string = ainvs_to_string(ainvs)
-				# Disc
-				j = E2.j_invariant()
-				disc = cm_j_invariants.get(j, 0)
-
-				tmp.append("%s %s :isog %i %s %i %s %i %i" % (field_label, cond_label, n + 1, cond_label, norm, ainv_string, disc, q_curve))
-                        #print "appending %s curves" % len(tmp)
-			data_k[norm][hnf[1][0]][hnf[1][1]].append(tmp)
-
-	# Sort and output the data
-
-        ks = data.keys()
-        if verbose>0:
-                print
-                print "fields: %s" % ks
-        ks.sort()
-        for k in ks:
-            data_k = data[k]
-            isogdata_k = isogdata[k]
-            norms = data_k.keys()
-            norms.sort()
-            for norm in norms:
-                data_k_n = data_k[norm]
-                isogdata_k_n = isogdata_k[norm]
-		hnf0s = data_k_n.keys()
-		hnf0s.sort()
-		for hnf0 in hnf0s:
-                        data_k_n_h = data_k_n[hnf0]
-                        isogdata_k_n_h = isogdata_k_n[hnf0]
-			hnf1s = data_k_n_h.keys()
-			hnf1s.sort()
-			for hnf1 in hnf1s:
-                                dat = data_k_n_h[hnf1]
-                                isogdat = isogdata_k_n_h[hnf1]
-				dat.sort(cmp = isog_class_cmp)
-				for n, (cdata,isodata) in enumerate(zip(dat,isogdat)):
-					isog_letter = cremona_letter_code(n)
-                                        isoline = isodata[0].replace(":isog", isog_letter)
-                                        if classfile:
-                                                classfile.write(isoline+'\n')
-                                        if verbose>0:
-                                                print isoline
-					for E_data in cdata:
-                                                line = E_data.replace(":isog", isog_letter)
                                                 if outfile:
                                                         outfile.write(line+'\n')
 						if verbose>0:

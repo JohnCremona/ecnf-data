@@ -178,7 +178,7 @@ def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
 
 def nf_filename_from_D(absD):
     d=absD if absD%4 else absD//4
-    return "/home/jec/bianchi-data/nflist.%s.1-10000" % d
+    return "/home/jec/bianchi-data/nflist/nflist.%s.1-10000" % d
 
 def read_newform_data(nf_filename, verbose=False):
     r"""
