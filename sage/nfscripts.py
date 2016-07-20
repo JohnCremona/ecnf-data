@@ -175,7 +175,7 @@ def output_magma_field(K,Plist,outfilename=None, verbose=False):
 
 def nf_filename(absD):
     d=absD if absD%4 else absD//4
-    return "/home/jec/bianchi-data/nflist.%s.1-10000" % d
+    return "/home/jec/bianchi-data/nflist/nflist.%s.1-10000" % d
 
 def read_newform_data(nf_filename, verbose=False):
     r"""
