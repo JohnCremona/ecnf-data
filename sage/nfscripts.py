@@ -65,6 +65,26 @@ def field_from_label(lab):
     print "Created field from label %s: %s" % (lab,K)
     return K
 
+def field_label(K):
+    r"""
+    Returns the LMFDB label of a number field.
+
+    *** Only works when the label's last component is 1 ***
+
+    INPUT:
+
+    - ``K`` -- a number field
+
+    OUTPUT:
+
+    (string) the LMFDB label of K.
+    """
+    d = K.degree()
+    r = K.signature()[0] # number of real embeddings
+    D = K.discriminant().abs()
+    return "{}.{}.{}.1".format(d,r,D)
+    return "%s.%s.%s.1" % (d,r,D)
+
 def ideal_from_label(K,lab):
     r"""
     Returns an ideal in quadratic field K from its label.
@@ -87,6 +107,33 @@ def ideal_from_label(K,lab):
     P = K.ideal([a,c+d*K.gen()])
     return P
 
+
+# HNF of an ideal I in a quadratic field
+
+def ideal_HNF(I):
+    r"""
+    Returns an HNF triple defining the ideal I in a quadratic field
+    with integral basis [1,w].
+
+    This is a list [a,b,d] such that [a,c+d*w] is a Z-basis of I, with
+    a,d>0; c>=0; N = a*d = Norm(I); d|a and d|c; 0 <=c < a.
+    """
+    N = I.norm()
+    a, c, b, d = I.pari_hnf().python().list()
+    assert a > 0 and d > 0 and N == a * d and d.divides(a) and d.divides(b) and 0 <= c < a
+    return [a, c, d]
+
+# Label of an ideal I in a quadratic field: string formed from the
+# Norm and HNF of the ideal
+
+def ideal_label(I):
+    r"""
+    Returns the HNF-based label of an ideal I in a quadratic field
+    with integral basis [1,w].  This is the string 'N.c.d' where
+    [a,c,d] is the HNF form of I and N=a*d=Norm(I).
+    """
+    a, c, d = ideal_HNF(I)
+    return "%s.%s.%s" % (a * d, c, d)
 
 def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
     r"""
@@ -129,51 +176,7 @@ def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
     field_info_file.close()
     return K, Plist
 
-def output_magma_field(K,Plist,outfilename=None, verbose=False):
-    r"""
-    Writes Magma code to a file to define a number field and list of primes.
-
-    INPUT:
-
-    - ``K`` -- a number field.
-
-    - ``Plist`` -- a list of prime ideals of `K`.
-
-    - ``outfilename`` (string, default ``None``) -- name of file for output.
-
-    - ``verbose`` (boolean, default ``False``) -- verbosity flag.  If
-      True, all output written to stdout.
-
-    NOTE:
-
-    Assumes the primes are principal: only the first generator is used
-    in the Magma ideal construction.
-
-    OUTPUT:
-
-    (To file and/or screen, nothing is returned): Magma commands to
-    define the field `K` and the list `Plist` of primes.
-    """
-    if outfilename:
-        outfile=file(outfilename, mode="w")
-    disc = K.discriminant()
-    name = get_field_name(disc)
-    pol = K.defining_polynomial()
-    def output(L):
-        if outfilename:
-            outfile.write(L)
-        if verbose:
-            sys.stdout.write(L)
-    output("Qx<x> := PolynomialRing(RationalField());\n")
-    output("K<%s> := NumberField(%s);\n" % (name,pol))
-    output("OK := Integers(K);\n")
-    output("Plist := [];\n")
-    for P in Plist:
-        output("Append(~Plist,(%s)*OK);\n" % P.gens_reduced()[0])
-    if outfilename:
-        outfile.close()
-
-def nf_filename(absD):
+def nf_filename_from_D(absD):
     d=absD if absD%4 else absD//4
     return "/home/jec/bianchi-data/nflist.%s.1-10000" % d
 
@@ -229,16 +232,83 @@ def read_missing_levels(infile):
 
 bianchi_data_dir = "/home/jec/bianchi-data"
 
-def magma_search_script(field, missing_label_file, outfilename=None, verbose=False):
+def EllipticCurveSearch(K, Plist, N, aplist):
+    r""" Call Magma's own EllipticCurveSearch() function to find and
+    elliptic curve E defined over K with conductor N and ap as in the
+    list.
+
+    INPUT:
+
+    - `K` (number field) -- the base field
+    - `Plist` (list) -- a list of primes of K
+    - `N` (ideal) -- an integral ideal of K
+    - `aplist` (list) -- a list of integers a(P) indexed by the P in Plist not dividing N
+
+    OUTPUT:
+
+    A list (possibly empty) of elliptic curves defined over K with
+    conductor N and traces of Frobenius given by the a(P).
+    """
+    # Create a new magma instance for each search:
+    mag = Magma()
+    # Define the number field in Magma and the list of primes
+    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    name = K.gen()
+    pol = K.defining_polynomial()
+    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    mag.eval("K<%s> := NumberField(%s);\n" % (name, pol))
+    mag.eval("OK := Integers(K);\n")
+    mag.eval("Plist := [];\n")
+    for P in Plist:
+        Pgens = P.gens_reduced()
+        Pmagma = "(%s)*OK" % Pgens[0]
+        if len(Pgens) > 1:
+            Pmagma += "+(%s)*OK" % Pgens[1]
+        mag.eval("Append(~Plist,%s);\n" % Pmagma)
+
+    mag.eval('SetColumns(0);\n')
+    mag.eval('effort := 400;\n')
+
+    Ngens = N.gens_reduced()
+    Nmagma = "(%s)*OK" % Ngens[0]
+    if len(Ngens) > 1:
+        Nmagma += "+(%s)*OK" % Ngens[1]
+    mag.eval('N := %s;' % Nmagma)
+    mag.eval('aplist := %s;' % aplist)
+    mag.eval('goodP := [P: P in Plist | Valuation(N,P) eq 0];\n')
+    mag.eval('goodP := [goodP[i]: i in [1..#(aplist)]];\n')
+    mag.eval('curves := EllipticCurveSearch(N,effort : Primes:=goodP, Traces:=aplist);\n')
+    mag.eval('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
+    mag.eval('ncurves := #curves;')
+    ncurves = mag('ncurves;').sage()
+    if ncurves==0:
+        return []
+    Elist = [0 for i in range(ncurves)]
+    for i in range(ncurves):
+        mag.eval('E := curves[%s];\n' % (i+1))
+        Elist[i] = EllipticCurve(mag('aInvariants(E);\n').sage())
+    mag.quit()
+    return Elist
+
+def magma_search(field, missing_label_file=None, field_info_filename=None, nf_filename=None, outfilename=None, verbose=False):
     r"""
-    Creates Magma script to search for missing curves.
+    Uses Magma via EllipticCurveSearch() to search for missing curves.
 
     INPUT:
 
     - ``field`` (integer) -- 1, 2, 3, 7 or 11.
 
     - ``missing_label_file`` (string) -- filename of file containing
-      labels of missing isogeny classes.
+      labels of missing isogeny classes.  If absent, assumes all
+      newforms in the newforms file are to be treated.
+
+    - ``field_info_filename`` (string) -- filename of file containing
+      field information.  Defaults to
+      "/home/jec/bianchi-data/fieldinfo/findinfo-%s" % field
+
+    - ``nf_filename`` (string) -- filename of file containing
+      newforms.  Defaults to
+      "/home/jec/bianchi-data/nflist.%s.1-10000" % field
 
     - ``outfilename`` (string, default ``None``) -- name of output file
 
@@ -257,8 +327,186 @@ def magma_search_script(field, missing_label_file, outfilename=None, verbose=Fal
             outfile.write(L)
         if verbose:
             sys.stdout.write(L)
-    field_info_filename = "%s/fieldinfo-%s" % (bianchi_data_dir,str(field))
-    nf_filename = "%s/nflist.%s.1-10000" % (bianchi_data_dir,str(field))
+    if field_info_filename==None:
+        field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+    if nf_filename==None:
+        nf_filename = "%s/nflist/nflist.%s.1-10000" % (bianchi_data_dir,str(field))
+
+    K, Plist = get_field_info(field_info_filename, 200, verbose)
+    field_lab = field_label(K)
+    if outfilename:
+        outfile=file(outfilename, mode="a")
+    newforms = read_newform_data(nf_filename)
+    if verbose:
+        print("...read newform data finished")
+    if missing_label_file==None:
+        missing_label_file = nf_filename
+
+    for level in read_missing_levels(file(missing_label_file)):
+        N = ideal_from_label(K, level)
+        NN = N.norm()
+        goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
+        if verbose:
+            print("Missing level %s = %s" % (level,N))
+        nfs = newforms[level]
+        for id in nfs.keys():
+            nf = nfs[id]
+            label = "%s.%s" % (level,id)
+            if verbose:
+                print("\nWorking on form %s" % label)
+            # Create the array of traces for good primes:
+            aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
+            # Do the search:
+            try:
+                curves = EllipticCurveSearch(K, Plist, N, aplist)
+            except RuntimeError:
+                # Magma throws a run-time error if it finds no curves
+                # with the correct traces
+                curves = []
+            if curves:
+                print("Found {} curves matching {}: {}".format(len(curves),label," ".join([str(E.ainvs()) for E in curves])))
+                E = curves[0]
+            else:
+                print("**********No curve found to match newform {}*************".format(label))
+                E = None
+            if E!=None:
+                ec = {}
+                ec['field_label'] = field_lab
+                ec['conductor_label'] = ".".join(level[1:-1].split(","))
+                ec['iso_label'] = id
+                ec['number'] = int(1)
+                ec['conductor_ideal'] = level
+                ec['conductor_norm'] = NN
+                ai = E.ainvs()
+                ec['ainvs'] = [[str(c) for c in list(a)] for a in ai]
+                ec['cm'] = '?'
+                ec['base_change'] = []
+                output(make_curves_line(ec) + "\n")
+                if outfilename:
+                    outfile.flush()
+
+
+
+
+######################################################################
+# The functions output_magma_field(), magma_search_script() and
+# parse_magma_output() are only useful on a machine which does not
+# have Magma installed.  The first two create a magma input file,
+# which when run finds curves as requested; the last parses the output
+# of such a run.
+#
+# If Magma is available on the same machine it is easier to use
+# EllipticCurveSearch() above.
+######################################################################
+
+def output_magma_field(field_label, K, Plist, outfilename=None, verbose=False):
+    r"""
+    Writes Magma code to a file to define a number field and list of primes.
+
+    INPUT:
+
+    - ``field_label`` (str) -- a number field label
+
+    - ``K`` -- a number field.
+
+    - ``Plist`` -- a list of prime ideals of `K`.
+
+    - ``outfilename`` (string, default ``None``) -- name of file for output.
+
+    - ``verbose`` (boolean, default ``False``) -- verbosity flag.  If
+      True, all output written to stdout.
+
+    NOTE:
+
+    Does not assumes the primes are principal.
+
+    OUTPUT:
+
+    (To file and/or screen, nothing is returned): Magma commands to
+    define the field `K` and the list `Plist` of primes.
+    """
+    if outfilename:
+        outfile = file(outfilename, mode="w")
+    name = K.gen()
+    pol = K.defining_polynomial()
+
+    def output(L):
+        if outfilename:
+            outfile.write(L)
+        if verbose:
+            sys.stdout.write(L)
+    output('print "Field %s";\n' % field_label)
+    output("Qx<x> := PolynomialRing(RationalField());\n")
+    output("K<%s> := NumberField(%s);\n" % (name, pol))
+    output("OK := Integers(K);\n")
+    output("Plist := [];\n")
+    for P in Plist:
+        Pgens = P.gens_reduced()
+        Pmagma = "(%s)*OK" % Pgens[0]
+        if len(Pgens) > 1:
+            Pmagma += "+(%s)*OK" % Pgens[1]
+        output("Append(~Plist,%s);\n" % Pmagma)
+        # output("Append(~Plist,(%s)*OK);\n" % P.gens_reduced()[0])
+    output('effort := 400;\n')
+    # output definition of search function:
+    output('ECSearch := procedure(class_label, N, aplist);\n')
+    output('print "Isogeny class ", class_label;\n')
+    output('goodP := [P: P in Plist | Valuation(N,P) eq 0];\n')
+    output('goodP := [goodP[i]: i in [1..#(aplist)]];\n')
+    output('curves := EllipticCurveSearch(N,effort : Primes:=goodP, Traces:=aplist);\n')
+    output('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
+    output('if #curves eq 0 then print "No curve found"; end if;\n')
+    output('for E in curves do;\n ')
+    output('a1,a2,a3,a4,a6:=Explode(aInvariants(E));\n ')
+    output('printf "Curve [%o,%o,%o,%o,%o]\\n",a1,a2,a3,a4,a6;\n ')
+    output('end for;\n')
+    output('end procedure;\n')
+    output('SetColumns(0);\n')
+    if outfilename:
+        output("\n")
+        outfile.close()
+
+def magma_search_script(field, missing_label_file=None, field_info_filename=None, nf_filename=None, outfilename=None, verbose=False):
+    r"""
+    Creates Magma script to search for missing curves.
+
+    INPUT:
+
+    - ``field`` (integer) -- 1, 2, 3, 7 or 11.
+
+    - ``missing_label_file`` (string) -- filename of file containing
+      labels of missing isogeny classes.  If absent, assumes all
+      newforms in the newforms file are to be treated.
+
+    - ``field_info_filename`` (string) -- filename of file containing
+      field information.  Defaults to
+      "/home/jec/bianchi-data/fieldinfo/findinfo-%s" % field
+
+    - ``nf_filename`` (string) -- filename of file containing
+      newforms.  Defaults to
+      "/home/jec/bianchi-data/nflist.%s.1-10000" % field
+
+    - ``outfilename`` (string, default ``None``) -- name of output file
+
+    - ``verbose`` (boolean, default ``False``) -- verbosity flag.
+
+    OUTPUT:
+
+    (To file and/or screen, nothing is returned): Magma commands to
+    search for curves given their conductors and Traces of Frobenius,
+    the conductors taken from the given file and the traces from the
+    associated Bianchi newform file.  The output from the Magma run
+    can be parsed by the following function.
+    """
+    def output(L):
+        if outfilename:
+            outfile.write(L)
+        if verbose:
+            sys.stdout.write(L)
+    if field_info_filename==None:
+        field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+    if nf_filename==None:
+        nf_filename = "%s/nflist.%s.1-10000" % (bianchi_data_dir,str(field))
 
     K, Plist = get_field_info(field_info_filename, 200, verbose)
     if outfilename:
@@ -272,6 +520,9 @@ def magma_search_script(field, missing_label_file, outfilename=None, verbose=Fal
         print("...read newform data finished")
     effort = 400;
     output("effort := %s;\n" % effort);
+    if missing_label_file==None:
+        missing_label_file = nf_filename
+
     for level in read_missing_levels(file(missing_label_file)):
         N = ideal_from_label(K, level)
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
@@ -359,3 +610,129 @@ def parse_magma_output(d, infilename, outfilename=None, verbose=False):
             output(OL)
 
 ######################################################################
+
+# 3 functions taken from lmfdb/lmfdb/ecnf/import_ecnf_data.py to
+# create lines of output for files curves.*, curve_data.*, isoclass.*
+# from a dictionary containing the relevant curve data.
+
+def make_curves_line(ec):
+    r""" for ec a curve object from the database, create a line of text to
+    match the corresponding raw input line from a curves file.
+
+    ec should be a dict with these fields:
+
+    'field_label', 'conductor_label', 'iso_label', 'number',
+    'conductor_ideal', 'conductor_norm', 'ainvs', 'cm', 'base_change'
+
+    Output line fields (13):
+
+    field_label conductor_label iso_label number conductor_ideal conductor_norm a1 a2 a3 a4 a6 cm base_change
+
+    Sample output line:
+
+    2.0.4.1 65.18.1 a 1 [65,18,1] 65 1,1 1,1 0,1 -1,1 -1,0 0 0
+    """
+    output_fields = [ec['field_label'],
+                     ec['conductor_label'],
+                     ec['iso_label'],
+                     str(ec['number']),
+                     ec['conductor_ideal'],
+                     str(ec['conductor_norm'])
+                     ] + [",".join(t) for t in ec['ainvs']
+                          ] + [str(ec['cm']), str(int(len(ec['base_change']) > 0))]
+    return " ".join(output_fields)
+
+
+def make_curve_data_line(ec):
+    r""" for ec a curve object from the database, create a line of text to
+    match the corresponding raw input line from a curve_data file.
+
+    ec should be a dict with these fields:
+
+    'field_label', 'conductor_label', 'iso_label', 'number'
+
+    and optionally some or all of:
+
+    'rank', 'rank_bounds', 'analytic_rank', 'gens', 'sha_an'
+
+    Output line fields (9+n where n is the 8th); all but the first 4
+    are optional and if not known should contain"?" except that the 8th
+    should contain 0.
+
+    field_label conductor_label iso_label number rank rank_bounds analytic_rank ngens gen_1 ... gen_n sha_an
+
+    Sample output line:
+
+    2.0.4.1 65.18.1 a 1 0 ? 0 0 ?
+    """
+    rk = '?'
+    if 'rank' in ec:
+        rk = str(ec['rank'])
+    rk_bds = '?'
+    if 'rank_bounds' in ec:
+        rk_bds = str(ec['rank_bounds']).replace(" ", "")
+    an_rk = '?'
+    if 'analytic_rank' in ec:
+        an_rk = str(ec['analytic_rank'])
+    ngens = '0'
+    gens_str = []
+    if 'gens' in ec:
+        gens_str = ["[" + ":".join([c for c in P]) + "]" for P in ec['gens']]
+        ngens = str(len(gens_str))
+    sha = '?'
+    if 'sha_an' in ec:
+        sha = str(int(ec['sha_an']))
+
+    output_fields = [ec['field_label'],
+                     ec['conductor_label'],
+                     ec['iso_label'],
+                     str(ec['number']),
+                     rk, rk_bds, an_rk,
+                     ngens] + gens_str + [sha]
+    return " ".join(output_fields)
+
+
+def make_isoclass_line(ec):
+    r""" for ec a curve object from the database, create a line of text to
+    match the corresponding raw input line from an isoclass file.
+
+    ec should be a dict with these fields:
+
+    'field_label', 'conductor_label', 'iso_label', 'number'
+
+    and optionally:
+
+    'isogeny_matrix'
+
+    Output line fields (15):
+
+    field_label conductor_label iso_label number isogeny_matrix
+
+    Sample output line:
+
+    2.0.4.1 65.18.1 a 1 [[1,6,3,18,9,2],[6,1,2,3,6,3],[3,2,1,6,3,6],[18,3,6,1,2,9],[9,6,3,2,1,18],[2,3,6,9,18,1]]
+    """
+    mat = ''
+    if 'isogeny_matrix' in ec:
+        mat = str(ec['isogeny_matrix']).replace(' ', '')
+    else:
+        print("Making isogeny matrix for class %s" % ec['label'])
+        from lmfdb.ecnf.isog_class import permute_mat
+        from lmfdb.ecnf.WebEllipticCurve import FIELD
+        K = FIELD(ec['field_label'])
+        curves = nfcurves.find({'field_label': ec['field_label'],
+                                'conductor_label': ec['conductor_label'],
+                                'iso_label': ec['iso_label']}).sort('number')
+        Elist = [EllipticCurve([K.parse_NFelt(x) for x in c['ainvs']]) for c in curves]
+        cl = Elist[0].isogeny_class()
+        perm = dict([(i, cl.index(E)) for i, E in enumerate(Elist)])
+        mat = permute_mat(cl.matrix(), perm, True)
+        mat = str([list(ri) for ri in mat.rows()]).replace(" ", "")
+
+    output_fields = [ec['field_label'],
+                     ec['conductor_label'],
+                     ec['iso_label'],
+                     str(ec['number']),
+                     mat]
+    return " ".join(output_fields)
+
