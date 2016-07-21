@@ -838,3 +838,75 @@ def run2(pth,fld):
     outfile = "%s/curves.%s" % (pth,fld)
     classfile = "%s/isoclass.%s" % (pth,fld)
     process_curves(read_curves(infile), outfile=outfile, classfile=classfile, verbose=1)
+
+# The next 2 functions are copied from lmfdb/ecnf/WebEllipticCurve.py
+
+def ideal_from_string(K,s):
+    r"""Returns the ideal of K defined by the string s.  For imaginary
+    quadratic fields this is "[N,c,d]" or "N.c.d" with N,c,d as in a
+    label, while for other fields it is of the form "[N,a,alpha]"
+    where N is the norm, a the least positive integer in the ideal and
+    alpha a second generator so that the ideal is (a,alpha).  alpha is
+    a polynomial in the variable w which represents the generator of K
+    (but may actially be an integer).  """
+    N, a, alpha = s[1:-1].split(",")
+    N = ZZ(N)
+    a = ZZ(a)
+    if K.signature()==(0,1): # imaginary quadratic
+        d = ZZ(alpha)
+        I = K.ideal(N//d, K([a, d]))
+    else:
+        # 'w' is used for the generator name for all fields for
+        # numbers stored in the database
+        alpha = alpha.encode().replace('w',str(K.gen()))
+        I = K.ideal(a,K(alpha.encode()))
+    if I.norm()==N:
+        return I
+    else:
+        return "wrong" ## caller must check
+
+def ideal_to_string(I):
+    K = I.number_field()
+    if K.signature() == (0,1):
+        a, c, d = ideal_HNF(I)
+        return "[%s,%s,%s]" % (a * d, c, d)
+    N = I.norm()
+    a = I.smallest_integer()
+    gens = I.gens_reduced()
+    alpha = gens[-1]
+    assert I == K.ideal(a,alpha)
+    alpha = str(alpha).replace(str(K.gen()),'w')
+    return "[%s,%s,%s]" % (N,a,alpha)
+
+def fix_conductors(infile, outfile = None, verbose=False):
+    """Read curves from infile, check that their conductors as defined in
+    field #5 are correct, and if not replace them.
+    """
+    f = outfile
+    if f:
+        outfile = file(f,'w')
+    for L in file(infile).readlines():
+        data = L.split()
+        if len(data)!=13:
+            print "line %s does not have 13 fields, skipping" % L
+            continue
+        field_label = data[0]
+        K = field_from_label(field_label)
+        E = curve_from_strings(K, data[6:11])
+        NE = E.conductor()
+        N_def = data[4]
+        N = ideal_from_string(K, N_def)
+        if N!=NE:
+            print("\nN_def={} gives N={}, not NE={}, replacing".format(N_def,N,NE))
+            data[4] = N_def = ideal_to_string(NE).replace(" ","")
+            if verbose:
+                print(L[:-1])
+                print(" with")
+        if f:
+            if verbose:
+                print("writing to {}: {}".format(f,data))
+            outfile.write(" ".join(data)+"\n")
+        if verbose:
+            print " ".join(data)
+    if f:
+        outfile.close()
