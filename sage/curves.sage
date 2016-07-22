@@ -841,18 +841,19 @@ def run2(pth,fld):
 
 # The next 2 functions are copied from lmfdb/ecnf/WebEllipticCurve.py
 
-def ideal_from_string(K,s):
-    r"""Returns the ideal of K defined by the string s.  For imaginary
-    quadratic fields this is "[N,c,d]" or "N.c.d" with N,c,d as in a
-    label, while for other fields it is of the form "[N,a,alpha]"
-    where N is the norm, a the least positive integer in the ideal and
-    alpha a second generator so that the ideal is (a,alpha).  alpha is
-    a polynomial in the variable w which represents the generator of K
-    (but may actially be an integer).  """
+def ideal_from_string(K,s, IQF_format=False):
+    r"""Returns the ideal of K defined by the string s.  If IQF_format is
+    True, this is "[N,c,d]" with N,c,d as in a label, while otherwise
+    it is of the form "[N,a,alpha]" where N is the norm, a the least
+    positive integer in the ideal and alpha a second generator so that
+    the ideal is (a,alpha).  alpha is a polynomial in the variable w
+    which represents the generator of K (but may actially be an
+    integer).  """
+    #print("ideal_from_string({}) over {}".format(s,K))
     N, a, alpha = s[1:-1].split(",")
     N = ZZ(N)
     a = ZZ(a)
-    if K.signature()==(0,1): # imaginary quadratic
+    if IQF_format:
         d = ZZ(alpha)
         I = K.ideal(N//d, K([a, d]))
     else:
@@ -865,9 +866,9 @@ def ideal_from_string(K,s):
     else:
         return "wrong" ## caller must check
 
-def ideal_to_string(I):
+def ideal_to_string(I,IQF_format=False):
     K = I.number_field()
-    if K.signature() == (0,1):
+    if IQF_format:
         a, c, d = ideal_HNF(I)
         return "[%s,%s,%s]" % (a * d, c, d)
     N = I.norm()
@@ -876,7 +877,7 @@ def ideal_to_string(I):
     alpha = gens[-1]
     assert I == K.ideal(a,alpha)
     alpha = str(alpha).replace(str(K.gen()),'w')
-    return "[%s,%s,%s]" % (N,a,alpha)
+    return ("[%s,%s,%s]" % (N,a,alpha)).replace(" ","")
 
 def fix_conductors(infile, outfile = None, verbose=False):
     """Read curves from infile, check that their conductors as defined in
@@ -902,6 +903,34 @@ def fix_conductors(infile, outfile = None, verbose=False):
             if verbose:
                 print(L[:-1])
                 print(" with")
+        if f:
+            if verbose:
+                print("writing to {}: {}".format(f,data))
+            outfile.write(" ".join(data)+"\n")
+        if verbose:
+            print " ".join(data)
+    if f:
+        outfile.close()
+
+def fix_conductor_ideals(infile, outfile = None, verbose=False):
+    """Read curves from infile, replace the HNF-based format for
+    conductors in field #5 with the general one.
+    """
+    f = outfile
+    if f:
+        outfile = file(f,'w')
+    for L in file(infile).readlines():
+        data = L.split()
+        if len(data)!=13:
+            print "line %s does not have 13 fields, skipping" % L
+            continue
+        field_label = data[0]
+        K = field_from_label(field_label)
+        N_def = data[4]
+        N = ideal_from_string(K, N_def, True) # input in IQF_format
+        if N=="wrong":
+            raise ValureError
+        data[4] = N_def = ideal_to_string(N, False) # output in standard format
         if f:
             if verbose:
                 print("writing to {}: {}".format(f,data))
