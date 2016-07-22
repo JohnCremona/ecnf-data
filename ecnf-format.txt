@@ -6,11 +6,17 @@
 #                                    #
 ######################################
 
+See
+https://github.com/LMFDB/lmfdb-inventory/blob/master/db-elliptic_curves.md
+for what should be an up to date and definitive version of what is
+stored on the database.  Here we also describe the format of the data
+files needed foruploading new data.
+
 In the existing (mongodb) Database elliptic_curves there is a
-Collection called curves, contain elliptic curves over Q only.  We
+Collection called curves, containing elliptic curves over Q only.  We
 have added *one* new collection, called nfcurves, which will hold one
 "document" (mongo-ese for a single database record) for each curve
-over number fields other than Q.
+over a number field other than Q.
 
 Each document has keys which we group for convenience here into two
 parts: field keys and curve keys.  The field keys identify the field K
@@ -20,16 +26,18 @@ quadratic fields.  The curve fields identify the curve and contains
 various invariants and properties of the curve.  In many cases some of
 these will not be known, in which case they are simply omitted; and
 the code which deals with these documents and creates web pages will
-have to be aware of this partial data.
+have to be aware of this partial data.  Some of these are isogeny
+invariant, but at the moment such data (e.g. rank, conductor) is
+stored with each curve.
 
 I have given these keys long names here for clarity.  Harald
 recommends using short names to save space, as in our code we can
 easily define longer pseudonyms (e.g. conductor_norm = "cn").  **THIS
 HAS NOT YET BEEN DONE** and if not done soon it will be too late,
 since changing these names requires (1) changing the upload scripts;
-(2) re-running theupload scripts on all the data; (3) changing all the
-website scripts.  (2) could be done in other ways, but probably not
-worth it.
+(2) re-running the upload scripts on all the data; (3) changing all
+the website scripts.  (2) could be done in other ways, but probably
+not worth it.
 
 FIELD KEYS (Mandatory keys marked with *)
 
@@ -53,32 +61,45 @@ Here,
  label = "%s-%s" % (field_label, short_label)
  short_label = "%s-%s%s" % (conductor_label, iso_label, str(number))
 
-We do not insist on a common format for the conductor_label or
-conductor_ideal.  The conductor_ideal should contain enough
-information to uniquely construct the conductor as an ideal.  The
-conductor_label need not, it could be something like "17.1" for the
-first ideal of norm 17 in some order.  For each type of field we
-include (real quadratic, imaginary quadratic, etc) these label formats
-will need to be specified somewhere and functions provided in the code
-to parse them.  See the file quadratic_ideals.txt for the quadratic
-case.
+We do not insist on a common format for the conductor_label.  The
+conductor_ideal should contain enough information to uniquely
+construct the conductor as an ideal.  The conductor_label need not, it
+could be something like "17.1" for the first ideal of norm 17 in some
+order.  For each type of field we include (real quadratic, imaginary
+quadratic, etc) these label formats will need to be specified
+somewhere and functions provided in the code to parse them.  See the
+file quadratic_ideals.txt for the quadratic case.
 
-All number field elements (NFelt) will be represented in the database
-as a list of length d where d=[K:Q], each component a string which
-represents the rational number num/den.  Originally we stored
-rationals as pairs of integers [num,den] but this failed as soon as we
-had a curve who coefficients were loo large for Mongo to manage (it
-has a limitation of 8-byte integers).  The d rationals in the list are
-the coefficients of the number field element with respect to the power
-basis on the generator of K whose minimal polynomial is stored in the
-number field database.  The a-invariants will be a list of 5 of these
-lists of strings.  Points will be lists of three of these, the
-projective coordinates, and the gens and torsion_gens fields are lists
-of points.
+The uniform format for the conductor_ideal is a string representing
+[N,a,alpha] where N is the norm, a the smallest positive integer in
+the ideal, and alpha is a polynomial in w such that the ideal is
+(a,alpha).  In the data files there are no embedded spaces so this is
+one field.  The same format is used in the database for prime ideals
+and the discriminant ideal.
+
+Number field elements (NFelt) will be represented in the database
+either as a single NFelt-string representing a comma-separated list of
+d=[K:Q] rationals, with no embedded spaces, or as a string
+representing a polynomial in w with rational coefficients where
+K=Q(w).  The d rationals in the list are the coefficients of the
+number field element with respect to the power basis on the generator
+w of K whose minimal polynomial is stored in the number field
+database; it is the unique polredabs polynomial defining the field.
+
+The a-invariants will be a stored as a single string begin the
+concatenation of the 5 individual NFelt-strings separated by ";".  In
+the input files we use 5 separate fields for these instead (i.e. use "
+" instead of ";" as separator.
+
+A point is stored as a point-string representing [[x,y,z]] where each
+of x,y,z is an NF_elt string.  In the curve_data files each generator
+is in a separate datafield separated by " " and preceded by the number
+of generators stored.  In the database, gens and torsion_gens fields
+are lists of points-strings.
 
 CURVE KEYS continued. (Mandatory keys marked with *)
 
-ainvs                  *         5-list of NFelts (Weierstrass coefficients)
+ainvs                  *         5-NFelts joined by ";" (Weierstrass coefficients)
 jinv                   *         NFelt
 cm                     *         int (a negative discriminant, or 0)
 base_change            *         list of labels of curves over Q (or [])
@@ -88,8 +109,8 @@ rank_bounds                      2-list of ints
 analytic_rank                    int
 torsion_order                    int
 torsion_structure                {0,1,2}-list of ints
-gens                             list of 3-lists of NFelts
-torsion_gens                     list of 3-lists of NFelts
+gens                             list of point-strings
+torsion_gens                     list of point-strings
 sha_an                           int
 isogeny_matrix         *         list of list of ints (degrees)
 non-surjective_primes            list of ints
@@ -131,14 +152,7 @@ well as a file isoclass.* (see below for the format of these files).
 isogeny), since we do not yet have a canonical choice of model for
 elliptic curves over number fields other than Q, we cannot compare the
 content of the input with the new allcurves.* output using simple
-text-based tools such as diff.  Worse than that, the sorting of the
-curves in an isogeny class depends on a lexicographical ordering of
-the a-invariants, so if different models are used then the ordering
-will change.  This is not a satisfactory situation, but is the best we
-can do until we come up with a canonical model for each curve, or at
-least a canonical way of specifying its isomorphism class which could
-be used to provide a canonical ordering for curves in the isogeny
-class.
+text-based tools such as diff.
 
 ###################################################
 #                                                 #
@@ -191,36 +205,38 @@ These common fields for every file are the following:
 4. number
 
 since the unique label is then obtained by concatenating these, joined
-as field_label + "-" + conductor_label + "-" + iso_label + "." +
-number.  (I have tried to make this compatible with HMF labels, so I
-hope I have it correct.  A typical HMF complete label is
-2.2.5.1-31.1-a where ‘2.2.5.1’ is the field_label and ‘31.1’ the
-conductor_label and ‘a’ the iso_label.)
+as field_label + "-" + conductor_label + "-" + iso_label + number.
+The isogeny class label is the same without the final number, and the
+"short" label curve curves and classes omits the field label.  Over
+imaginary quadratic and totally real fields respectively, the short
+class labels currently agree with the labels of Bianchi
+(resp. Hilbert) modular forms.  This may not be the case in future
+since we have developed a more canonical way of ordering ideals of the
+same norm (and hence labelling conductors), primes (and hence ordering
+isogeny classes by a_p vectors) and finally isomorphism classes within
+an isogeny class.  This may lead to different curve labels, but where
+relevant we will still keep the current class labels to link to the
+associated modular form.
 
-In the input file NFelts are formatted as strings consisting of d
-coefficients separated by ",", each an integer or rational, with no
-embedded spaces.
+See above for the format of (1) conductor ideals, (2) a-invariants,
+(3) points.
 
 Currently we cater for up to 3 sets of files: curves and isoclass
 (obligatory) and curve_data (optional) with the following fields after
 the above 4.  The file names should be of the form "curves.xyz",
 "isoclass.xyz" and "curve_data.xyz" with the same suffix (here "xyz")
-to identify the dataset in some way.  So far we have xyz=sample for
-the sample curves files, xyz=qsqrt5 for Alyson’s data and cubic-23 for
-Paul and Dan’s, but if they provide additional curves with (say)
-different conductor ranges then we would need to change these suffices
-to be more specific.  The intention is that these raw data files
-should be kept under revision control, by their creators and/or John,
-who has created the git repository
-https://github.com/JohnCremona/ecnf-data for this.
+to identify the dataset in some way; mostly these are field labels.
+These raw data files are kept under revision control, possibly by
+their creators and certainly by John Cremona, who has created this git
+repository https://github.com/JohnCremona/ecnf-data for this.
 
 -- Additional data fields in curves.xyz --
 
 5: conductor_ideal
 6: conductor_norm
-7...11: ainvs (in 5 fields separated by space)
-12: cm (0 or a negative discriminant)
-13: Q_curve (use 0 and 1 for False and True)
+7...11: ainvs (5 NFelt fields separated by space)
+12: cm (0 or a negative discriminant or ?)
+13: Q_curve (0 and 1 for False and True, or ?)
 
 Sample line: 2.2.5.1 31.1 a 1 [31,18,1] 31  1,0 -1,-1 0,1 0,0 0,0 0 0
 
@@ -233,12 +249,11 @@ Sample line: 2.2.5.1 31.1 a 1 [31,18,1] 31  1,0 -1,-1 0,1 0,0 0,0 0 0
 9...8+ngens: gens (number of fields equals ngens or absent if ngens=0) point-string
 9+ngens:  sha_an          int or ?
 
-For points the syntax will be [x:y:z] with x, y, z all NFelts as
-strings and no embedded spaces.
+For point-string the syntax see above: no embedded spaces.
 
 Sample line:
 
-2.2.5.1 31.1 a 1 ? ? 0 0 ?
+2.2.5.1 1831.2 c 1 2 [2,2] 2 2 [[1,0],[-1,0],[1,0]] [[0,0],[-1,0],[1,0]] ?
 
 -- Additional data fields in isoclass.xyz --
 
@@ -270,37 +285,19 @@ Sample line:
 -- Other fields --
 
 Some of the database fields (e.g. short_label, jinv) are trivially
-obtained from these, and the torsion structure and gens will also be
-computed during the upload.  I divided up the two raw data files so
-that if you only know the basics about curves (its equation, and cm &
-Q_curve flags) then you only need provide the curves file while if
-you know more about their Mordell-Weil group then you can provide
-curve_data files too.  The upload scripts will check for consistency
-that the conductor is correct. (This has already revealed some
-glitches in the files, so was definitely a good idea!).  The
+obtained from these, and the torsion structure and torsion gens will
+also be computed during the upload.  I divided up the two raw data
+files so that if you only know the basics about curves (its equation,
+and cm & Q_curve flags) then you only need provide the curves file
+while if you know more about their Mordell-Weil group then you can
+provide curve_data files too.  The upload scripts will check for
+consistency that the conductor is correct. (This has already revealed
+some glitches in the files, so was definitely a good idea!).  The
 base_change field in the database will be computed on upload (for
 curves for which Q_curve is True) by checking that the j-invariant is
-in QQ and using Sage's E.descends_to(QQ) function.
+in QQ and using Sage's E.descends_to(QQ) function; in the database
+we'll store a list (possibly empty) of labels of elliptic curves over
+Q of which this curve is the base change.
 
-If all contributors agree to keep to this then we will be able to use
-the uniform upload scripts, which have been written (by John), based
-on the elliptic curve upload scripts.  See lmfdb/ecnf/import_ecnf_data.py.
-
--- TODO (this is being changed) --
-
-A mockup of a typical mongoDB entry:
-
-{
- "_id" : <chosen by mongodb and rather random>,
- "field" : [ <label>, <degree>, [ <sig1>, <sig2> ], <abs_disc> ],
- "label" : <curve label>,
- "
-
-the class structure (mapping the database entries to python classes)
-
-ECNF:
-* NField (it’s own class)
-   * label
-   * ...
-* label
-* ...
+We can use uniform upload scripts, which have been written: see
+lmfdb/ecnf/import_ecnf_data.py.
