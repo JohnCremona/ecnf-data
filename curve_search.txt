@@ -7,7 +7,7 @@ Procedure for adding curve to match existing Hilbert Modular Forms
 
 1-3. In LMFDB_ROOT, run Sage:
 
-      %runfile lmfdb/ecnf/hmf_check_find.py
+      %runfile scripts/ecnf/hmf_check_find.py
       find_curves(field_label, min_norm=0, max_norm=None,
                         outfilename=None, verbose=False)
 
@@ -35,7 +35,7 @@ appropriate place (e.g.~/ecnf-data/cubics/) and commit and push.
 
 5. Back to ~/lmfdb and run sage:
 
-   %runfile lmfdb/ecnf/import_ecnf_data.py
+   %runfile scripts/ecnf/import_ecnf_data.py
    fld = '3.3.148.1'
    pth = '/home/jec/ecnf-data/quartics'
    upload_to_db(pth, fld)
@@ -154,7 +154,6 @@ Log of quartic field curves searches:
 
 1 field with label ending in 2, was missed, now running:
 
-
 4.4.4525.1 found all 333, isogs 722+, uploaded, checked
 4.4.5744.1 found all 326, isogs 684+, uploaded, checked
 4.4.6809.1 found all 302, isogs 816+, uploaded, checked
@@ -180,10 +179,11 @@ Log of quartic field curves searches:
 4.4.3600.1 found  all 758, isogs 1845+, uploaded, checked
 4.4.19821.1 found all  58, isogs 108+, uploaded, checked
 4.4.2525.1 found  all 811, isogs 1561+, uploaded, checked BUT Curve 71.1-a1 does NOT agree with newform
+4.4.18432.1 found all 165, isogs 384+, uploaded, checked
+
 
 INCOMPLETE (38), few missing (112 missing curves in all)
 
-4.4.18432.1 found 163 of 165, isogs 384+, uploaded, 2 missing 82.1-a, 82.4-b
 
 
 Ds = [7488,9225,10025,18432,19429,2225,2624,2777,17428,19664,19796]
