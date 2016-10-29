@@ -148,82 +148,84 @@ Log of quartic field curves searches:
 
 123 fields in all (with >0 rational newforms)
 
-70 fields complete & data files all checked
+108 fields complete & data files all checked
+ 15 fields incomplete (see below), data files up-to-date
 
-52 incomplete, data files up-to-date:
-
-1 field with label ending in 2, was missed, now running:
-
-4.4.4525.1 found all 333, isogs 722+, uploaded, checked
-4.4.5744.1 found all 326, isogs 684+, uploaded, checked
-4.4.6809.1 found all 302, isogs 816+, uploaded, checked
-4.4.7053.1 found all 251, isogs 471+, uploaded, checked
-4.4.7232.1 found all 710, isogs 2325+, uploaded, checked
-4.4.8112.1 found all 294, isogs 794+, uploaded, checked
-4.4.8468.1 found all 272, isogs 881+, uploaded, checked
-4.4.8789.1 found all 117, isogs 195+, uploaded, checked
-4.4.8957.1 found all 256, isogs 595+, uploaded, checked
-4.4.9301.1 found all 195, isogs 389+, uploaded, checked
-4.4.9792.1 found all 125, isogs 284+, uploaded, checked
-4.4.12725.1 found all  80, isogs 110+, uploaded, checked
-4.4.12357.1 found all 160, isogs 368+, uploaded, checked
-4.4.13025.1 found all 150, isogs 418+, uploaded, checked
-4.4.13676.1 found all 186, isogs 554+, uploaded, checked
-4.4.13968.1 found all 253, isogs 910+, uploaded, checked
-4.4.14272.1 found all 102, isogs 225+, uploaded,  checked
-4.4.15317.1 found all 242, isogs 961+, uploaded,  checked
-4.4.15952.1 found all 166, isogs 416+, uploaded,  checked
-4.4.17989.1 found all  85, isogs 139+, uploaded,  checked
-4.4.19025.1 found all  87, isogs 236+, uploaded,  checked
-4.4.14400.1 found all 155, isogs 351+, uploaded,  checked
-4.4.3600.1 found  all 758, isogs 1845+, uploaded, checked
-4.4.19821.1 found all  58, isogs 108+, uploaded, checked
-4.4.2525.1 found  all 811, isogs 1561+, uploaded, checked BUT Curve 71.1-a1 does NOT agree with newform
-4.4.18432.1 found all 165, isogs 384+, uploaded, checked
-
-
-INCOMPLETE (38), few missing (112 missing curves in all)
-
-
-
-Ds = [7488,9225,10025,18432,19429,2225,2624,2777,17428,19664,19796]
-flds = ['4.4.%s.1' % d for d in Ds]
-
-4.4.7488.1 found 410 of 418, isogs 1188, uploaded, 8 missing 234.1-c,
-           234.1-j, 234.2-c, 234.2-j, 242.3-c, 242.3-d, 242.4-c, 242.4-d
-4.4.9225.1 found  184 of 185, isogs 569+, uploaded, 1 missing 144.1-l (findable)
-4.4.10025.1 found 164 of 168, isogs 440, uploaded, 4 missing 100.1-c, 100.1-d, 100.6-c, 100.6-d
-4.4.19429.1 found  81 of  82, isogs 155, uploaded, 1 missing 48.1-a
-4.4.2225.1 found 1278 of 1279, isogs 4104, uploaded, 1 missing 619.3-e
-4.4.2624.1 found 1067 of 1069, isogs 2241, uploaded, 2 missing 476.3-g, 476.4-g
-4.4.2777.1 found 1162 of 1164, isogs 3321, uploaded, 2 missing 648.1-b, 706.1-b
-4.4.17428.1 found  193 of 194, isogs 712, uploaded, 1 missing 54.2-a
-4.4.19664.1 found 325 of 330, isogs 935, uploaded, 5 missing 50.1-f, 56.4-b, 56.4-i, 1002.-n, 100.2-u
-4.4.19796.1 found 145 of 147, isogs 396, uploaded, 2 missing 68.2-k, 68.2-m
-4.4.16448.2 found 195 of 196, isogs 522+, uploaded, missing 62.3-d
-4.4.2048.1 found 2306 of 2310, isogs 6176, uploaded, checked, 4 missing 1598.1-b, 1598.16-b, 1598.10-b, 1598.7-b
-
-INCOMPLETE, FEW FOUND (15)
+INCOMPLETE (15)
 
 Ds = [1600,2304,4225,7056,7168,7225,9248,11025,11324,13824,12544,12400,14336,17424,19600]
 flds = ['4.4.%s.1' % d for d in Ds]
-running on #3
 
-4.4.1600.1 found    24 of 579, isogs 156, uploaded (problems) 555 missing...
-4.4.2304.1 found     5 of 1473, isogs 62, uploaded (problems) 1468 missing...
-4.4.4225.1 found    18 of 642, isogs 122, uploaded (problems) 624 missing...
-4.4.7056.1 found    39 of 380, isogs 192, uploaded (problems)
-4.4.7168.1 found    78 of 402, isogs 388, uploaded (problems)
-4.4.7225.1 found     6 of 337, isogs  22, uploaded (problems)
-4.4.9248.1 found    34 of 472, isogs 216, uploaded (problems)
-4.4.11025.1 found   17 of 208, isogs 130, uploaded (problems)
-4.4.11324.1 found   74 of 222, isogs 203, uploaded (problems)
-4.4.13824.1 found   51 of 203, isogs 218, uploaded (problems)
-4.4.12544.1 found  124 of 240, isogs 560, uploaded (problems)
-4.4.12400.1 found    1 of 180, isogs   4, uploaded (problems)
-4.4.14336.1 found    4 of 142, isogs  32, uploaded (problems)
-4.4.17424.1 found   29 of 291, isogs 118, uploaded (problems)
-4.4.19600.1 found    7 of  35, isogs  26, uploaded (problems)
+V4 fields
+sage: [D for D in Ds if fields.find_one({'label':'4.4.%s.1' % D})['galois']['t']==2]
+[1600, 2304, 4225, 7056, 7225, 11025, 12544, 17424, 19600]
+
+D4 fields
+sage: [D for D in Ds if fields.find_one({'label':'4.4.%s.1' % D})['galois']['t']==3]
+[7168, 9248, 13824, 12400, 14336]
+
+S4 fields
+sage: [D for D in Ds if fields.find_one({'label':'4.4.%s.1' % D})['galois']['t']==5]
+[11324]
+
+
+4.4.1600.1 found   134 of 579, isogs, uploaded,  445 missing
+20 curves agree with matching newforms, 114 do not
+   bad primes: norm 7^2, 13^2, 23^2
+   searching with deg 1 primes only, ok...
+
+4.4.2304.1 found   21 of 1473, isogs, uploaded, 1452 missing
+5 curves agree with matching newforms, 16 do not
+   bad primes: norm 19^2, 29^2
+   searching with deg 1 primes only, ok...
+
+4.4.4225.1 found    39 of 642, isogs, uploaded, 603 missing
+18 curves agree with matching newforms, 21 do not
+   bad primes: norm 17^2, 23^2
+
+4.4.7056.1 found   144 of 380, isogs, uploaded, 236 missing
+39 curves agree with matching newforms, 105 do not
+   bad primes: norm 29^2, 31^2
+   searching with deg 1 primes only, ok...
+
+4.4.7168.1 found    90 of 402, isogs, uploaded, 312 missing,
+78 curves agree with matching newforms, 12 do not
+   bad primes: norm 29^2
+
+4.4.7225.1 found     5 of 337, isogs, uploaded, 332 missing
+All curves agree with matching newforms
+
+4.4.9248.1 found    73 of 472, isogs, uploaded, 399 missing
+34 curves agree with matching newforms, 39 do not
+   bad primes: norm 23^2
+
+4.4.11025.1 found   20 of 208, isogs, uploaded, 188 missing
+17 curves agree with matching newforms, 3 do not
+   bad primes: norm 17^2, 37^2, 43^2
+
+4.4.11324.1 found   98 of 222, isogs, uploaded, 124 missing
+All curves agree with matching newforms
+
+4.4.13824.1 found   94 of 203, isogs, uploaded, 109 missing
+51 curves agree with matching newforms, 43 do not
+   bad primes: norm 19^2
+
+4.4.12400.1 found  116 of 180, isogs, uploaded, 64 missing
+6 curves agree with matching newforms, 110 do not
+   bad primes: norm 23^2
+
+4.4.12544.1 found  124 of 240, isogs, uploaded, 116 missing
+All curves agree with matching newforms
+
+4.4.14336.1 found    4 of 142, isogs, uploaded, 138 missing
+All curves agree with matching newforms
+
+4.4.17424.1 found   29 of 291, isogs, uploaded, 262 missing
+All curves agree with matching newforms
+
+4.4.19600.1 found    7 of  35, isogs, uploaded, 28 missing
+All curves agree with matching newforms
+
 
 =====================================================================================================
 Log of quintic field curves searches:
