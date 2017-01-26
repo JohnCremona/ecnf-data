@@ -33,6 +33,7 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     if K in used_curves:
         return
 
+    print("Adding {} (label={}) to fields collection...".format(K,field_label))
     Plists[K] = list(primes_iter(K,maxnorm=prime_norm_bound))
     absD = K.discriminant().abs()
     s = K.signature()[0] # number of real places
@@ -48,9 +49,14 @@ def add_field(K, field_label=None, prime_norm_bound=200):
 
     if field_label==None:
         field_label = '%s.%s.%s.1' % (str(d),str(s),str(absD))
+        print("...created new label {}".format(field_label))
     labels[K] = field_label
     Dlists[K] = absD
-    Glists[K] = K.galois_group(names='b')
+    if d<5:
+        Glists[K] = K.galois_group(names='b')
+    #print("...finding and caching Galois closure...")
+    #K.SF = K.defining_polynomial().splitting_field('b')
+    #print("...finding CM j-invariants...")
     for dd, f, j in cm_j_invariants_and_orders(K):
 	cm_j_dict[j] = dd * (f ^ 2)
     used_curves[K] = {}
@@ -59,6 +65,7 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     if d==2 and s==0 and absD in [3,4,7,8,11]:
             from nfscripts import read_newform_data, nf_filename
             nf_data[K] = read_newform_data(nf_filename(absD))
+    #print("...finished adding field.")
 
 def ap(E, p):
         r"""
@@ -766,12 +773,15 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 print("isog_data: %s" % isogdata_line)
 
                         # Q-curve? (isogeny class invariant)
-                        q_curve = int(is_Q_curve(E))
+                        q_curve = '?' #int(is_Q_curve(E))
                         if verbose>1:
-                            if q_curve:
-                                print("...Q-curve")
+                            if q_curve=='?':
+                                print("Q-curve status not determined")
                             else:
-                                print("...not a Q-curve")
+                                if q_curve:
+                                    print("...Q-curve")
+                                else:
+                                    print("...not a Q-curve")
 
 			tmp = [] # list of output lines (with
                                  # placeholder for isog code, filled
@@ -785,7 +795,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 				j = E2.j_invariant()
 				disc = cm_j_dict.get(j, 0)
 
-                                curve_line = "%s %s %s %i %s %i %s %i %i" % (field_label, cond_label, isog, n + 1, cond_def, norm, ainv_string, disc, q_curve)
+                                curve_line = "%s %s %s %i %s %i %s %i %s" % (field_label, cond_label, isog, n + 1, cond_def, norm, ainv_string, disc, q_curve)
                                 if verbose>1:
                                         print("curve_line: %s" % curve_line)
 				tmp.append(curve_line)
