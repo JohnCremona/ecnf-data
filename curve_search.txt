@@ -239,6 +239,8 @@ Log of quintic field curves searches:
 29/33 complete
  4/33 almost complete (1-3 missing each, 6 missing in all)
 
+*** complete ***
+
 5.5.24217.1  found all 393. isogs  713. uploaded, checked
 5.5.36497.1  found all 428. isogs 1020. uploaded, checked
 5.5.38569.1  found all 538. isogs 1034. uploaded, checked
@@ -265,23 +267,20 @@ Log of quintic field curves searches:
 5.5.176684.1 found all 112. isogs  382. uploaded, checked
 5.5.179024.1 found all 139. isogs  415. uploaded, checked
 5.5.180769.1 found all  44. isogs   78. uploaded. 2 OK, 42 don't check OK!
+             -- ap for 2 primes above 23, norm 23^2, are interchanged.
 5.5.181057.1 found all 129. isogs  265. uploaded, checked
 5.5.186037.1 found all 104. isogs  276. uploaded, checked
 5.5.195829.1 found all 103. isogs  253. uploaded, checked
 
-*5.5.126032.1 found 176 of 177. Missing 1: 82.1-b. isogs 615 ga
-*5.5.138136.1 found 202 of 203. Missing 1: 58.1-ab.  isogs 647 ga
-*5.5.149169.1 found 119 of 122. Missing 3: 3.1-a, 96.1-c, 96.1-d. isogs 219 ga
-*5.5.170701.1 found  81 of  82. Missing 1: 32.1-a.                isogs 240 ga
+*** incomplete ***
+
+5.5.126032.1 found 176 of 177. Missing 1: 82.1-b.                isogs 615 ga
+5.5.138136.1 found 202 of 203. Missing 1: 58.1-ab.               isogs 647 ga
+5.5.149169.1 found 119 of 122. Missing 3: 3.1-a, 96.1-c, 96.1-d. isogs 219 ga
+5.5.170701.1 found  81 of  82. Missing 1: 32.1-a.                isogs 240 ga
 
     Runtime error in 'IsSquare': Insufficient precision to calculate a correct answer
 
-3rd runs (into curves3.*)
-
-5.5.138136.1 58.1-a failed.
-5.5.149169.1 3.1-a failed, 96.1-d failed, 96.1-c failed.
-5.5.126032.1 82.1-b...failed
-5.5.170701.1 32.1-a...
 
 =====================================================================================================
 Log of sextic field curves searches:
@@ -291,14 +290,36 @@ DEGREE 6:
 
 adding conjugates: done
 
-6.6.300125.1 353 searching... 106 so far
-6.6.703493.1 186 searching...  11 so far
-6.6.905177.1 232 searching...  26 so far
-6.6.371293.1 422 first search 137 found, isogs 318, uploaded [NB to be resorted and labelled]
-             285 searching...   7 so far
-6.6.434581.1 112
-6.6.453789.1 56
-6.6.485125.1 195
+*** complete ***
+
+6.6.300125.1 all 353 found. 537 isogs. uploaded. checked.
+
+*** running ***
+
+6.6.371293.1 422 missing... 137 found, isogs 318, uploaded [NB to be resorted and labelled]
+             285 missing...   7 found, isogs, uploaded.
+             278 missing...   1 found, isogs, uploaded.
+             277 missing...   0 found so far...
+
+6.6.434581.1 214 missing... 108 found, isogs, uploaded.
+             106 missing...   1 found so far...
+
+6.6.453789.1 268 missing... 141 found, isogs, uploaded.
+             127 missing...  12 found so far...
+
+6.6.485125.1 195 missing...  41 found, isogs, uploaded.
+             154 missing...  23 found so far...
+
+6.6.703493.1 186 missing...  19 found, isogs, uploaded.
+             167 missing...  67 found, isogs, uploaded.
+             100 missing...   0 found so far...
+
+6.6.905177.1 232 missing...  73 found. isogs. uploaded.
+             159 missing...  15 found so far...
+             data mismatch for primes of norm 2^3, these now ignored
+
+*** not started ***
+
 6.6.592661.1 203
 6.6.722000.1 78
 6.6.810448.1 36
