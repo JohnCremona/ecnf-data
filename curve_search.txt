@@ -292,7 +292,8 @@ adding conjugates: done
 
 *** complete ***
 
-6.6.300125.1 all 353 found. 537 isogs. uploaded. checked.
+6.6.300125.1 all 353 found. 537 isogs, uploaded, checked.
+6.6.453789.1 all 268 found, 654 isogs, uploaded, checked
 
 *** running ***
 
@@ -302,30 +303,29 @@ adding conjugates: done
              277 missing...   0 found so far...
 
 6.6.434581.1 214 missing... 108 found, isogs, uploaded.
-             106 missing...   1 found so far...
+             106 missing...   2 found so far...
 
-6.6.453789.1 268 missing... 141 found, isogs, uploaded.
-             127 missing...  12 found so far...
 
 6.6.485125.1 195 missing...  41 found, isogs, uploaded.
-             154 missing...  23 found so far...
+             154 missing...  82 found so far...
 
 6.6.703493.1 186 missing...  19 found, isogs, uploaded.
              167 missing...  67 found, isogs, uploaded.
              100 missing...   0 found so far...
 
 6.6.905177.1 232 missing...  73 found. isogs. uploaded.
-             159 missing...  15 found so far...
+             159 missing...  26 found so far...
              data mismatch for primes of norm 2^3, these now ignored
+
+6.6.592661.1 203 missing... 20 found so far...
+6.6.722000.1 190 missing...  7 found so far...
+6.6.810448.1 140 missing...  7 found so far...
+6.6.820125.1 202 missing...102 found so far...
+6.6.966125.1 252 missing... 42 found so far...
+6.6.980125.1 196 missing...  0 found so far...
 
 *** not started ***
 
-6.6.592661.1 203
-6.6.722000.1 78
-6.6.810448.1 36
-6.6.820125.1 43
-6.6.966125.1 252
-6.6.980125.1 196
 6.6.1075648.1 46
 6.6.1081856.1 149
 6.6.1134389.1 78
