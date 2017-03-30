@@ -959,3 +959,45 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
             print " ".join(data)
     if f:
         outfile.close()
+
+def isModular(E):
+    # Create a new magma instance for each curve:
+    mag = Magma()
+    # read in Samir Siksek's code:
+    mag.eval('load "modularitycheck.m";\n')
+    # Define the number field in Magma and the list of primes
+    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    K = E.base_field()
+    name = K.gen()
+    pol = K.defining_polynomial()
+    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    mag.eval("K<%s> := NumberField(%s);\n" % (name, pol))
+    mag.eval("E := EllipticCurve(%s);\n" % list(E.ainvs()))
+    mag.eval("res := isModular(E);\n")
+    res = mag('res;').sage()
+    mag.quit()
+    return res
+
+def check_modularity(pth,fld, verbose=False):
+    f = "{}/curves.{}".format(pth,fld)
+    #print("reading curves from {}".format(f))
+    ntrue = 0
+    nfalse = 0
+    nall = 0
+    for data in read_curves(f):
+        field_label, N_label, N_def, iso_label, c_num, E = data
+        if c_num != '1':
+            continue
+        c_label = N_label+"-"+iso_label+c_num
+        full_label = field_label+"-"+c_label
+        nall += 1
+        if isModular(E):
+            ntrue +=1
+            if verbose: print("{} is modular".format(full_label))
+        else:
+            nfalse +=1
+            if verbose: print("{}: could not check modularity".format(full_label))
+    if ntrue==nall:
+        print("All {} curves over {} were proved to be modular!".format(ntrue,field_label))
+    else:
+        print("Only {} out of {} curves over {} were proved to be modular!".format(ntrue,nall, field_label))
