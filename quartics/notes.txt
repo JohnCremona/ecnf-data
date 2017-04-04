@@ -1,0 +1,53 @@
+Problems computing isogenies for 4.4.1957.1 from curves1:
+
+processing E = [0, -a^2 + a, 0, -6*a^3 + 15*a^2 - a - 10, -32*a^3 + 53*a^2 + 33*a - 13] with conductor
+ [256,4,4], label 256.1-a1...
+ -- new isogeny class
+computing the isogeny class
+Adding 3 isogenous curves
+isog_data: 4.4.1957.1 256.1 a 1 [[1,2,4,4],[2,1,2,2],[4,2,1,4],[4,2,4,1]]
+(then freezes)
+
+This is from in put line 153 of curves1.4.4.1957.1 which is now in
+curves1.test...
+
+-- perhaps it is in is_Q_curve?
+sage: K = field_from_label('4.4.1957.1')
+sage: a = K.gen()
+sage: E = EllipticCurve([0, -a^2 + a, 0, -6*a^3 + 15*a^2 - a - 10,
+      -32*a^3 + 53*a^2 + 33*a - 13] )
+
+
+def t(E,p):
+    NN = E.conductor().norm()
+    if p.divides(NN):
+       return None
+    K = E.base_field()
+    Plist = K.primes_above(p)
+    nPlist = [P.residue_class_degree() for P in Plist]
+    aPlist = [E.reduction(P).trace_of_frobenius() for P in Plist]
+    return [p] + [(n,a) for n,a in zip(nPlist,aPlist)]
+
+4.4.200.1 bug:
+
+sage: K = field_from_label('4.4.2000.1')
+sage: a = K.gen()
+sage: E = EllipticCurve([a^2 + a + 1, a^3 + a^2 + a + 1, a^2 + a,
+17*a^3 + 34*a^2 - 16*a - 37, 54*a^3 + 105*a^2 - 66*a - 135])
+sage: E.isogenies_prime_degree(5)
+# j=1728 so is calling isogenies_5_1728(E)
+sage: from sage.schemes.elliptic_curves.isogeny_small_degree import isogenies_5_1728
+sage: isogenies_5_1728(E)
+
+sage: K.<a> = NumberField(x^4 - 5*x^2 + 5)
+sage: E = EllipticCurve([a^2 + a + 1, a^3 + a^2 + a + 1, a^2 + a,
+17*a^3 + 34*a^2 - 16*a - 37, 54*a^3 + 105*a^2 - 66*a - 135])
+sage: E.j_invariant()
+1728
+sage: K(5).is_square()
+True
+sage: E.isogenies_prime_degree(5)
+ValueError: The polynomial does not define a finite subgroup of the elliptic curve.
+sage: from sage.schemes.elliptic_curves.isogeny_small_degree import isogenies_5_1728
+sage: isogenies_5_1728(E)
+ValueError: The polynomial does not define a finite subgroup of the elliptic curve.

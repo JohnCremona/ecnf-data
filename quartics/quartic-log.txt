@@ -1,0 +1,81 @@
+=====================================================================================================
+Log of quartic field curves searches:
+=====================================================================================================
+
+123 fields in all (with >0 rational newforms)
+
+108 fields complete & data files all checked
+ 15 fields incomplete (see below), data files up-to-date
+
+INCOMPLETE (15)
+
+Ds = [1600,2304,4225,7056,7168,7225,9248,11025,11324,13824,12544,12400,14336,17424,19600]
+flds = ['4.4.%s.1' % d for d in Ds]
+
+V4 fields
+sage: [D for D in Ds if fields.find_one({'label':'4.4.%s.1' % D})['galois']['t']==2]
+[1600, 2304, 4225, 7056, 7225, 11025, 12544, 17424, 19600]
+
+D4 fields
+sage: [D for D in Ds if fields.find_one({'label':'4.4.%s.1' % D})['galois']['t']==3]
+[7168, 9248, 13824, 12400, 14336]
+
+S4 fields
+sage: [D for D in Ds if fields.find_one({'label':'4.4.%s.1' % D})['galois']['t']==5]
+[11324]
+
+
+4.4.1600.1 found   134 of 579, isogs, uploaded,  445 missing
+20 curves agree with matching newforms, 114 do not
+   bad primes: norm 7^2, 13^2, 23^2
+
+4.4.2304.1 found   21 of 1473, isogs, uploaded, 1452 missing
+5 curves agree with matching newforms, 16 do not
+   bad primes: norm 19^2, 29^2
+
+4.4.4225.1 found    39 of 642, isogs, uploaded, 603 missing
+18 curves agree with matching newforms, 21 do not
+   bad primes: norm 17^2, 23^2
+
+4.4.7056.1 found   144 of 380, isogs, uploaded, 236 missing
+39 curves agree with matching newforms, 105 do not
+   bad primes: norm 29^2, 31^2
+
+4.4.7168.1 found    90 of 402, isogs, uploaded, 312 missing,
+78 curves agree with matching newforms, 12 do not
+   bad primes: norm 29^2
+
+4.4.7225.1 found     5 of 337, isogs, uploaded, 332 missing
+All curves agree with matching newforms
+
+4.4.9248.1 found    73 of 472, isogs, uploaded, 399 missing
+34 curves agree with matching newforms, 39 do not
+   bad primes: norm 23^2
+
+4.4.11025.1 found   20 of 208, isogs, uploaded, 188 missing
+17 curves agree with matching newforms, 3 do not
+   bad primes: norm 17^2, 37^2, 43^2
+
+4.4.11324.1 found   98 of 222, isogs, uploaded, 124 missing
+All curves agree with matching newforms
+
+4.4.13824.1 found   94 of 203, isogs, uploaded, 109 missing
+51 curves agree with matching newforms, 43 do not
+   bad primes: norm 19^2
+
+4.4.12400.1 found  116 of 180, isogs, uploaded, 64 missing
+6 curves agree with matching newforms, 110 do not
+   bad primes: norm 23^2
+
+4.4.12544.1 found  124 of 240, isogs, uploaded, 116 missing
+All curves agree with matching newforms
+
+4.4.14336.1 found    4 of 142, isogs, uploaded, 138 missing
+All curves agree with matching newforms
+
+4.4.17424.1 found   29 of 291, isogs, uploaded, 262 missing
+All curves agree with matching newforms
+
+4.4.19600.1 found    7 of  35, isogs, uploaded, 28 missing
+All curves agree with matching newforms
+
