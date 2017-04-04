@@ -299,22 +299,22 @@ adding conjugates: done
 6.6.1229312.1 all 268 found, 524 isogs, uploaded, checked.
 6.6.1241125.1 all 241 found, 482 isogs, uploaded, checked.
 
-*** incomplete, partial upload (11) ***
+*** incomplete, partial upload (23) ***
 
 6.6.371293.1 147 of 422 found, 332 isogs, uploaded [NB to be resorted and labelled]
 6.6.434581.1 110 of 214 found, 242 isogs, uploaded.
 6.6.485125.1 150 of 195 found, 322 isogs, uploaded.
 6.6.592661.1  62 of 203 found, 110 isogs, uploaded.
-*6.6.703493.1  109 of 186 found, 165 isogs, uploaded.
+6.6.703493.1  145 of 186 found, 217 isogs, uploaded.
 6.6.820125.1 184 of 202 found, 352 isogs, uploaded.
 6.6.905177.1 104 of 232 found, 452 isogs, uploaded.
              data mismatch for primes of norm 2^3, these now ignored
-6.6.966125.1  53 of 252 found,  96 isogs, uploaded.
-6.6.980125.1  65 of 196 found, 124 isogs, uploaded.
-6.6.1202933.1 62 of 173 found, 116 isogs, uploaded.
-6.6.1292517.1  9 of  81 found,  14 isogs, uploaded.
-*6.6.1312625.1  40 of 174 found, 156 isogs, uploaded.
-*6.6.1397493.1 30 of 131 found so far, 78 isogs, uploaded.
+6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
+6.6.980125.1   65 of 196 found, 124 isogs, uploaded.
+6.6.1202933.1  62 of 173 found, 116 isogs, uploaded.
+6.6.1292517.1   9 of  81 found,  14 isogs, uploaded.
+6.6.1312625.1  68 of 174 found, 260 isogs, uploaded.
+6.6.1397493.1  30 of 131 found,  78 isogs, uploaded.
 6.6.1995125.1  15 of  53 found,  18 isogs, uploaded.
 6.6.1387029.1  53 of 140 found, 116 isogs, uploaded
 6.6.1416125.1  75 of 108 found, 133 isogs, uploaded
@@ -326,30 +326,13 @@ adding conjugates: done
 6.6.1922000.1  51 of 105 found, 143 isogs, uploaded
 6.6.1997632.1  32 of  44 found,  84 isogs, uploaded
 
-*** incomplete, not running (10) ***
+*** incomplete, not running () ***
 
-6.6.371293.1  275 missing.
-6.6.434581.1  104 missing.
-6.6.485125.1   45 missing.
-6.6.592661.1  141 missing.
-6.6.820125.1   18 missing.  Causes Magma problems.
-6.6.905177.1  128 missing.
-6.6.966125.1  199 missing.
-6.6.980125.1  131 missing.
-6.6.1202933.1 111 missing.
-6.6.1292517.1  72 missing. Caused Magma to use >80gb memory:  6.6.1292517.1  53.1-c
-
-             1224 missing
-
-*** running on lehner (7) ***
+*** running on lehner (5) ***
 
 6.6.1081856.1 149 missing...  97 found so far...
 6.6.1259712.1 448 missing... 198 found so far...
 6.6.1279733.1 118 missing...  71 found so far...
-6.6.1312625.1 134 missing...  28 found so far...
-6.6.1397493.1 101 missing...   0 found so far...
-6.6.1995125.1  38 missing...   0 found so far...
-6.6.703493.1   77 missing...  36 found so far...
 6.6.722000.1  190 missing... 128 found so far...
 6.6.810448.1  140 missing... 129 found so far...
 
