@@ -290,16 +290,18 @@ DEGREE 6: 34 fields
 
 adding conjugates: done
 
-*** complete (6) ***
+*** complete (8) ***
 
 6.6.300125.1  all 353 found. 537 isogs, uploaded, checked.
 6.6.453789.1  all 268 found, 654 isogs, uploaded, checked.
+6.6.810448.1  all 140 found, 450 isogs, uploaded, checked
 6.6.1075648.1 all 222 found, 416 isogs, uploaded, checked.
 6.6.1134389.1 all  78 found. 148 isogs, uploaded, checked, but ap differ for N(P)=5^3 in 66/78 cases
 6.6.1229312.1 all 268 found, 524 isogs, uploaded, checked.
 6.6.1241125.1 all 241 found, 482 isogs, uploaded, checked.
+6.6.1279733.1 all 118 found, 230 isogs, uploaded, checked.
 
-*** incomplete, partial upload (27) ***
+*** incomplete, partial upload (26) ***
 
 6.6.371293.1  147 of 422 found, 332 isogs, uploaded [NB to be resorted and labelled]
 6.6.434581.1  110 of 214 found, 242 isogs, uploaded.
@@ -308,34 +310,55 @@ adding conjugates: done
 6.6.703493.1  145 of 186 found, 217 isogs, uploaded.
 6.6.820125.1  184 of 202 found, 352 isogs, uploaded.
 6.6.905177.1  104 of 232 found, 452 isogs, uploaded. mismatch primes norm 2^3, now ignored
-6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
-6.6.980125.1   65 of 196 found, 124 isogs, uploaded.
-6.6.1202933.1  62 of 173 found, 116 isogs, uploaded.
-6.6.1259712.1 198 of 448 found, 514 isogs, uploaded.
-6.6.1279733.1  71 of 118 found, 146 isogs, uploaded.
-6.6.1292517.1   9 of  81 found,  14 isogs, uploaded.
-6.6.1312625.1  68 of 174 found, 260 isogs, uploaded.
-6.6.1397493.1  30 of 131 found,  78 isogs, uploaded.
-6.6.1995125.1  15 of  53 found,  18 isogs, uploaded.
-6.6.1387029.1  53 of 140 found, 116 isogs, uploaded
-6.6.1416125.1  75 of 108 found, 133 isogs, uploaded
-6.6.1528713.1  55 of  87 found, 194 isogs, uploaded
-6.6.1541581.1  83 of 103 found, 159 isogs, uploaded
-6.6.1683101.1  52 of 122 found,  78 isogs, uploaded
-6.6.1767625.1  97 of 134 found, 267 isogs, uploaded
-6.6.1868969.1  33 of 120 found,  86 isogs, uploaded
-6.6.1922000.1  51 of 105 found, 143 isogs, uploaded
-6.6.1997632.1  32 of  44 found,  84 isogs, uploaded
-6.6.1081856.1 114 of 149 found, 238 isogs, uploaded.
-6.6.722000.1  132 of 190 found, 377 isogs, uploaded.
-6.6.810448.1  132 of 140 found, 430 isogs, uploaded.
+*6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
+*6.6.980125.1   65 of 196 found, 124 isogs, uploaded.
+*6.6.1202933.1  62 of 173 found, 116 isogs, uploaded.
+*6.6.1259712.1 198 of 448 found, 514 isogs, uploaded.
+*6.6.1292517.1   9 of  81 found,  14 isogs, uploaded.
+*6.6.1312625.1  68 of 174 found, 260 isogs, uploaded.
+*6.6.1397493.1  30 of 131 found,  78 isogs, uploaded.
+*6.6.1995125.1  15 of  53 found,  18 isogs, uploaded.
+*6.6.1387029.1  53 of 140 found, 116 isogs, uploaded
+*6.6.1416125.1  75 of 108 found, 133 isogs, uploaded
+*6.6.1528713.1  55 of  87 found, 194 isogs, uploaded
+*6.6.1541581.1  83 of 103 found, 159 isogs, uploaded
+*6.6.1683101.1  52 of 122 found,  78 isogs, uploaded
+*6.6.1767625.1  97 of 134 found, 267 isogs, uploaded
+*6.6.1868969.1  33 of 120 found,  86 isogs, uploaded
+*6.6.1922000.1  51 of 105 found, 143 isogs, uploaded
+*6.6.1997632.1  32 of  44 found,  84 isogs, uploaded
+*6.6.1081856.1 114 of 149 found, 238 isogs, uploaded.
+*6.6.722000.1  132 of 190 found, 377 isogs, uploaded.
+
 
 *** incomplete, not running () ***
 
-*** running on lehner (0) ***
+*** running on lehner (9) ***
 
-*** running on fermat (0) ***
+6.6.1081856.1  35 missing, 29 found so far
+6.6.1259712.1 250 missing,  4 found so far
+6.6.1292517.1  72 missing,  0 found so far
+6.6.1312625.1 106 missing, 20 found so far
+6.6.1528713.1  32 missing, 31 found so far !! norm 2^3 bad
+6.6.1541581.1  20 missing,  0 found so far
+6.6.1683101.1  70 missing, 25 found so far
+6.6.1997632.1  12 missing,  0 found so far
+6.6.722000.1   58 missing, 41 found so far
 
+                         197 found so far
+
+*** running on fermat (10) ***
+
+6.6.1202933.1 111 missing,   0 found so far
+6.6.1387029.1  87 missing,   0 found so far
+6.6.1397493.1 101 missing,   0 found so far
+6.6.1416125.1  33 missing,   0 found so far
+6.6.1767625.1  37 missing,   0 found so far
+6.6.1868969.1  87 missing,   0 found so far
+6.6.1922000.1  54 missing,   0 found so far
+6.6.1995125.1  38 missing,   0 found so far
+6.6.966125.1  199 missing,   0 found so far
+6.6.980125.1  131 missing,   0 found so far
 
 =========================================================================
 
