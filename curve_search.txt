@@ -290,7 +290,7 @@ DEGREE 6: 34 fields
 
 adding conjugates: done
 
-*** complete (11) ***
+*** complete (12) ***
 
 6.6.300125.1  all 353 found. 537 isogs, uploaded, checked.
 6.6.453789.1  all 268 found, 654 isogs, uploaded, checked.
@@ -302,9 +302,10 @@ adding conjugates: done
 6.6.1241125.1 all 241 found, 482 isogs, uploaded, checked.
 6.6.1279733.1 all 118 found, 230 isogs, uploaded, checked.
 6.6.1528713.1 all  87 found, 300 isogs, uploaded, checked. ap differ for N(P)=2^3 in 50/87 cases
+6.6.1541581.1 all 103 found, 205 isogs, uploaded, checked.
 6.6.1683101.1 all 122 found, 162 isogs, uploaded, checked.
 
-*** incomplete, partial upload (23) ***
+*** incomplete, partial upload (22) ***
 
 6.6.371293.1  147 of 422 found, 332 isogs, uploaded [NB to be resorted and labelled]
 6.6.434581.1  110 of 214 found, 242 isogs, uploaded.
@@ -323,7 +324,6 @@ adding conjugates: done
 6.6.1995125.1  15 of  53 found,  18 isogs, uploaded.
 6.6.1387029.1  53 of 140 found, 116 isogs, uploaded
 6.6.1416125.1  75 of 108 found, 133 isogs, uploaded
-6.6.1541581.1  83 of 103 found, 159 isogs, uploaded
 6.6.1767625.1  97 of 134 found, 267 isogs, uploaded
 6.6.1868969.1  33 of 120 found,  86 isogs, uploaded
 6.6.1922000.1  51 of 105 found, 143 isogs, uploaded
@@ -333,41 +333,42 @@ adding conjugates: done
 
 *** incomplete, not running () ***
 
-*** running on atkin (4) ***
+*** running on lehner (8) ***
 
-6.6.371293.1 275 missing, 10 found so far
-6.6.434581.1 104 missing,  0 found so far
-6.6.485125.1  45 missing,  0 found so far
-6.6.592661.1 141 missing,  0 found so far
-
-*** running on lehner (10) ***
-
-6.6.1683101.1  70 missing, 70 found. isogs...
-
-6.6.1259712.1 250 missing,  7 found so far
+6.6.1259712.1 250 missing,123 found so far
 6.6.1292517.1  72 missing,  0 found so far
-6.6.1312625.1 106 missing, 21 found so far
-6.6.1541581.1  20 missing,  0 found so far
+6.6.1312625.1 106 missing, 25 found so far
 6.6.1997632.1  12 missing,  4 found so far
-6.6.703493.1   41 missing,  1 found so far
-6.6.722000.1   58 missing, 43 found so far
-6.6.820125.1   18 missing,  0 found so far
-6.6.905177.1  128 missing,  4 found so far !! norm 2^3 ignored
+6.6.703493.1   41 missing, 31 found so far
+6.6.722000.1   58 missing, 47 found so far
+6.6.820125.1   18 missing,  0 found so far, killed
+6.6.905177.1  128 missing,  6 found so far !! norm 2^3 ignored
 
-                          150 found so far
+                          222 found so far
 
 *** running on fermat (10) ***
 
-6.6.1202933.1 111 missing,   6 found so far
-6.6.1387029.1  87 missing,   0 found so far
-6.6.1397493.1 101 missing,   0 found so far
-6.6.1416125.1  33 missing,   0 found so far
-6.6.1767625.1  37 missing,   0 found so far
-6.6.1868969.1  87 missing,   0 found so far
+6.6.1202933.1 111 missing,  25 found so far
+6.6.1387029.1  87 missing,  37 found so far
+6.6.1397493.1 101 missing,   3 found so far
+6.6.1416125.1  33 missing,   5 found so far
+6.6.1767625.1  37 missing,  10 found so far
+6.6.1868969.1  87 missing,   1 found so far
 6.6.1922000.1  54 missing,   0 found so far
 6.6.1995125.1  38 missing,   0 found so far
 6.6.966125.1  199 missing,   0 found so far
-6.6.980125.1  131 missing,   0 found so far
+6.6.980125.1  131 missing,   2 found so far
+
+                            78 found so far
+
+*** running on atkin (4) ***
+
+6.6.371293.1 275 missing, 11 found so far
+6.6.434581.1 104 missing,  0 found so far
+6.6.485125.1  45 missing,  0 found so far
+6.6.592661.1 141 missing, 33 found so far
+
+                          44 found so far
 
 =========================================================================
 
