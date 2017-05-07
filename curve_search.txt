@@ -290,11 +290,12 @@ DEGREE 6: 34 fields
 
 adding conjugates: done
 
-*** complete (17) ***
+*** complete (18) ***
 
 6.6.300125.1  all 353 found. 537 isogs, uploaded, checked.
 6.6.453789.1  all 268 found, 654 isogs, uploaded, checked.
 6.6.485125.1  all 195 found, 415 isogs, uploaded, checked.
+6.6.703493.1  all 186 found, 268 isogs, uploaded, checked.
 6.6.722000.1  all 190 found, 498 isogs, uploaded, checked.
 6.6.810448.1  all 140 found, 450 isogs, uploaded, checked.
 6.6.1075648.1 all 222 found, 416 isogs, uploaded, checked.
@@ -311,12 +312,11 @@ adding conjugates: done
 6.6.1997632.1 all  44 found, 106 isogs, uploaded, checked.
 
 
-*** incomplete, partial upload (17) ***
+*** incomplete, partial upload (16) ***
 
 6.6.371293.1  147 of 422 found, 332 isogs, uploaded. [NB to be resorted and labelled]
 6.6.434581.1  110 of 214 found, 242 isogs, uploaded.
 6.6.592661.1   62 of 203 found, 110 isogs, uploaded.
-6.6.703493.1  145 of 186 found, 217 isogs, uploaded.
 6.6.820125.1  185 of 202 found, 354 isogs, uploaded.
 6.6.905177.1  104 of 232 found, 452 isogs, uploaded. mismatch primes norm 2^3, now ignored
 6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
@@ -333,37 +333,36 @@ adding conjugates: done
 
 *** incomplete, not running () ***
 
-*** running on lehner (6) ***
+*** running on lehner (5) ***
 
-6.6.1259712.1 250 missing, 190 found so far
+6.6.1259712.1 250 missing, 192 found so far, 58 to go
 6.6.1292517.1  72 missing,   0 found so far
-6.6.1312625.1 106 missing,  82 found so far
-6.6.703493.1   41 missing,  36 found so far,  5 to go
-6.6.820125.1   17 missing,   0 found so far, stopped
-6.6.905177.1  128 missing,  27 found so far
+6.6.1312625.1 106 missing,  92 found so far, 14 to go
+6.6.820125.1   17 missing,   0 found so far, 17 to go
+6.6.905177.1  128 missing,  38 found so far, 90 to go
 
-                           335 found so far
+                           346 found so far
 
 *** running on fermat (8) ***
 
 6.6.1202933.1 111 missing, 101 found so far, 10 to go
-6.6.1397493.1 101 missing,  12 found so far
+6.6.1397493.1 101 missing,  14 found so far
 6.6.1416125.1  33 missing,   5 found so far
-6.6.1868969.1  87 missing,  19 found so far
+6.6.1868969.1  87 missing,  29 found so far
 6.6.1922000.1  54 missing,   0 found so far
-6.6.1995125.1  38 missing,   0 found so far
-6.6.966125.1  199 missing,   0 found so far
-6.6.980125.1  131 missing,  39 found so far
+6.6.1995125.1  38 missing,  26 found so far, 12 to go
+6.6.966125.1  199 missing,  15 found so far
+6.6.980125.1  131 missing,  46 found so far
 
-                           176 found so far
+                           209 found so far
 
 *** running on atkin (3) ***
 
-6.6.371293.1 275 missing, 11 found so far
-6.6.434581.1 104 missing,  0 found so far
-6.6.592661.1 141 missing, 97 found so far
+6.6.371293.1 275 missing,  11 found so far
+6.6.434581.1 104 missing,  37 found so far
+6.6.592661.1 141 missing, 104 found so far
 
-                         108 found so far
+                          152 found so far
 
 =========================================================================
 
