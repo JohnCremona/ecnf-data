@@ -311,58 +311,60 @@ adding conjugates: done
 6.6.1767625.1 all 134 found, 348 isogs, uploaded, checked.
 6.6.1997632.1 all  44 found, 106 isogs, uploaded, checked.
 
+*** almost complete (1) ***
 
-*** incomplete, partial upload (16) ***
+6.6.1416125.1  106 of 108 found, 176 isogs, uploaded, checking...
+               2 missing 151.1-c, 151.5-c
 
-6.6.371293.1  147 of 422 found, 332 isogs, uploaded. [NB to be resorted and labelled]
+*** incomplete, partial upload (15) ***
+
+6.6.371293.1  158 of 422 found, 363 isogs, uploaded.
 6.6.434581.1  110 of 214 found, 242 isogs, uploaded.
 6.6.592661.1   62 of 203 found, 110 isogs, uploaded.
 6.6.820125.1  185 of 202 found, 354 isogs, uploaded.
 6.6.905177.1  104 of 232 found, 452 isogs, uploaded. mismatch primes norm 2^3, now ignored
 6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
 6.6.980125.1   65 of 196 found, 124 isogs, uploaded.
-6.6.1202933.1  62 of 173 found, 116 isogs, uploaded.
+6.6.1202933.1 163 of 173 found, 269 isogs, uploaded.
 6.6.1259712.1 198 of 448 found, 514 isogs, uploaded.
 6.6.1292517.1   9 of  81 found,  14 isogs, uploaded.
 6.6.1312625.1  68 of 174 found, 260 isogs, uploaded.
-6.6.1397493.1  30 of 131 found,  78 isogs, uploaded.
-6.6.1995125.1  15 of  53 found,  18 isogs, uploaded.
-6.6.1416125.1  75 of 108 found, 133 isogs, uploaded.
+6.6.1397493.1  44 of 131 found, 122 isogs, uploaded.
+6.6.1995125.1  43 of  53 found,  50 isogs, uploaded.
 6.6.1868969.1  33 of 120 found,  86 isogs, uploaded.
 6.6.1922000.1  51 of 105 found, 143 isogs, uploaded.
 
 *** incomplete, not running () ***
 
-*** running on lehner (5) ***
+*** running on lehner (6) ***
 
-6.6.1259712.1 250 missing, 192 found so far, 58 to go
-6.6.1292517.1  72 missing,   0 found so far
-6.6.1312625.1 106 missing,  92 found so far, 14 to go
-6.6.820125.1   17 missing,   0 found so far, 17 to go
+6.6.1259712.1 250 missing, 193 found so far, 57 to go
+6.6.1292517.1  72 missing,   2 found so far, 70 to go
+6.6.1312625.1 106 missing,  96 found so far, 10 to go
+6.6.1995125.1  10 missing,   0 found so far, 10 to go
+6.6.820125.1   17 missing,   1 found so far, 16 to go
 6.6.905177.1  128 missing,  38 found so far, 90 to go
 
-                           346 found so far
+                           327 found so far
 
-*** running on fermat (8) ***
+*** running on fermat (5) ***
 
-6.6.1202933.1 111 missing, 101 found so far, 10 to go
-6.6.1397493.1 101 missing,  14 found so far
-6.6.1416125.1  33 missing,   5 found so far
-6.6.1868969.1  87 missing,  29 found so far
-6.6.1922000.1  54 missing,   0 found so far
-6.6.1995125.1  38 missing,  26 found so far, 12 to go
-6.6.966125.1  199 missing,  15 found so far
+6.6.1202933.1  10 missing,   4 found so far, 6 to go
+6.6.1397493.1  87 missing,   0 found so far
+6.6.1868969.1  87 missing,  43 found so far, 44 to go
+6.6.966125.1  199 missing,  23 found so far
 6.6.980125.1  131 missing,  46 found so far
 
-                           209 found so far
+                           116 found so far
 
-*** running on atkin (3) ***
+*** running on atkin (4) ***
 
-6.6.371293.1 275 missing,  11 found so far
-6.6.434581.1 104 missing,  37 found so far
-6.6.592661.1 141 missing, 104 found so far
+6.6.1922000.1 54 missing,   0 found so far
+6.6.371293.1 264 missing,   0 found so far
+6.6.434581.1 104 missing,  43 found so far, 61 to go
+6.6.592661.1 141 missing, 119 found so far, 22 to go
 
-                          152 found so far
+                          162 found so far
 
 =========================================================================
 
