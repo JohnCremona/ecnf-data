@@ -311,21 +311,22 @@ adding conjugates: done
 6.6.1767625.1 all 134 found, 348 isogs, uploaded, checked.
 6.6.1997632.1 all  44 found, 106 isogs, uploaded, checked.
 
-*** almost complete (1) ***
+*** almost complete (2) ***
 
-6.6.1416125.1  106 of 108 found, 176 isogs, uploaded, checking...
-               2 missing 151.1-c, 151.5-c
+6.6.1416125.1 106 of 108 found, 176 isogs, uploaded. 2 missing 151.1-c, 151.5-c
+6.6.1202933.1 172 of 173 found, 288 isogs, uploaded. 1 missing 320.1-d
 
-*** incomplete, partial upload (15) ***
+*** incomplete, partial upload (14) ***
 
 6.6.371293.1  158 of 422 found, 363 isogs, uploaded.
 6.6.434581.1  110 of 214 found, 242 isogs, uploaded.
-6.6.592661.1   62 of 203 found, 110 isogs, uploaded.
+6.6.592661.1  181 of 203 found, 303 isogs, uploaded.
 6.6.820125.1  186 of 202 found, 356 isogs, uploaded.
 6.6.905177.1  143 of 232 found, 576 isogs, uploaded. mismatch primes norm 2^3, now ignored
 6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
 6.6.980125.1   65 of 196 found, 124 isogs, uploaded.
-6.6.1202933.1 163 of 173 found, 269 isogs, uploaded.
+
+
 6.6.1259712.1 391 of 448 found, 940 isogs, uploaded.
 6.6.1292517.1   9 of  81 found,  14 isogs, uploaded.
 6.6.1312625.1 164 of 174 found, 582 isogs, uploaded.
@@ -340,30 +341,23 @@ adding conjugates: done
 
 6.6.1259712.1  57 missing,   0 found so far
 6.6.1995125.1  4 missing: 41.1-a, 109.1-a, found 121.6-a, 121.6-d
-6.6.1312625.1  10 missing,  3 found so far
-
-
-6.6.1292517.1  72 missing,  14 found so far, 58 to go...
+6.6.1312625.1  10 missing,   3 found so far
+6.6.1292517.1  72 missing,  34 found so far, 38 to go...
                missing 53.1-c, 53.2-c
-
-
 
 6.6.820125.1   16 missing,   0 found so far
 6.6.905177.1   89 missing,   0 found so far
 
-                           344 found so far
+                            38 found so far
 
-*** running on fermat (5) ***
+*** running on fermat (4) ***
 
-6.6.1202933.1  10 missing,   4 found so far, 6 to go
-               missing 320.1-d
-
-6.6.1397493.1  87 missing,   0 found so far
+6.6.1397493.1  87 missing,   1 found so far
 6.6.1868969.1  87 missing,  43 found so far, 44 to go
 6.6.966125.1  199 missing,  23 found so far
 6.6.980125.1  131 missing,  46 found so far
 
-                           116 found so far
+                           113 found so far
 
 *** running on atkin (4) ***
 
@@ -372,9 +366,9 @@ adding conjugates: done
              missing 337.3-c
 
 6.6.434581.1 104 missing,  50 found so far, 54 to go
-6.6.592661.1 141 missing, 119 found so far, 22 to go
+6.6.592661.1  22 missing,   0 found so far
 
-                          169 found so far
+                           50 found so far
 
 =========================================================================
 
