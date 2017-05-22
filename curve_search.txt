@@ -290,7 +290,7 @@ DEGREE 6: 34 fields
 
 adding conjugates: done
 
-*** complete (19) ***
+*** complete (20) ***
 
 6.6.300125.1  all 353 found. 537 isogs, uploaded, checked.
 6.6.453789.1  all 268 found, 654 isogs, uploaded, checked.
@@ -303,6 +303,7 @@ adding conjugates: done
 6.6.1134389.1 all  78 found. 148 isogs, uploaded, checked. ap differ for N(P)=5^3 in 66/78 cases
 6.6.1229312.1 all 268 found, 524 isogs, uploaded, checked.
 6.6.1241125.1 all 241 found, 482 isogs, uploaded, checked.
+6.6.1259712.1 all 448 found, 1078 isogs, uploaded, checked.
 6.6.1279733.1 all 118 found, 230 isogs, uploaded, checked.
 6.6.1387029.1 all 140 found, 280 isogs, uploaded, checked.
 6.6.1528713.1 all  87 found, 300 isogs, uploaded, checked. ap differ for N(P)=2^3 in 50/87 cases
@@ -314,7 +315,7 @@ adding conjugates: done
 
 *** almost complete (6) ***
 
-6.6.434581.1  209 of 214 found, 439 isogs, uploading... 5 missing 211.1-a, 211.2-a, 251.1-a, 349.1-a, 349.2-a
+6.6.434581.1  209 of 214 found, 439 isogs, uploaded. 5 missing 211.1-a, 211.2-a, 251.1-a, 349.1-a, 349.2-a
 6.6.1416125.1 106 of 108 found, 176 isogs, uploaded. 2 missing 151.1-c, 151.5-c
 6.6.1202933.1 172 of 173 found, 288 isogs, uploaded. 1 missing 320.1-d
 6.6.1312625.1 172 of 174 found, 612 isogs, uploaded. 2 missing 199.3-d, 199.3-g
@@ -322,7 +323,7 @@ adding conjugates: done
 6.6.1292517.1  78 of  81 found, 123 isogs, uploaded. 3 missing 53.1-c, 53.2-c, 199.1-a
 
 
-*** incomplete, partial upload (9) ***
+*** incomplete, partial upload (8) ***
 
 6.6.371293.1  158 of 422 found, 363 isogs, uploaded.
 6.6.592661.1  181 of 203 found, 303 isogs, uploaded.
@@ -330,31 +331,29 @@ adding conjugates: done
 6.6.905177.1  143 of 232 found, 576 isogs, uploaded. mismatch primes norm 2^3, now ignored
 6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
 6.6.980125.1  111 of 196 found, 209 isogs, uploaded.
-6.6.1259712.1 391 of 448 found, 940 isogs, uploaded.
-6.6.1397493.1  46 of 131 found, 130 isogs, uploaded.
+6.6.1397493.1 126 of 131 found, 284 isogs, uploaded.
 6.6.1922000.1  51 of 105 found, 143 isogs, uploaded.
 
 *** incomplete, not running () ***
 
-*** running on lehner (7) ***
+*** running on lehner (6) ***
 
-6.6.1259712.1  57 missing,   9 found so far, 48 to go
-6.6.1397493.1  85 missing,  42 found so far, skipping 71.2-c.
-6.6.1922000.1  54 missing,   5 found so far, skipping 121.1-b
-6.6.592661.1   22 missing,   3 found so far, skipping 469.1-d, 469.1-c
-6.6.820125.1   16 missing,   0 found so far, skipping 379.2-a, 379.5-a (cause magma to blow up)
-6.6.905177.1   89 missing,  34 found so far, 55 to go
+6.6.1397493.1   5 missing,   0 found so far, 4 to go, skipping 71.2-c...
+6.6.1922000.1  54 missing,  14 found so far, skipping 121.1-b
+6.6.592661.1   22 missing,   3 found so far, skipping 469.1-d, (missing 469.1-c)
+6.6.820125.1   16 missing,   1 found so far, skipping 379.2-a, 379.5-a (cause magma to blow up)
+6.6.905177.1   89 missing,  63 found so far, 30 to go
 6.6.980125.1   85 missing,   0 found so far, skipping 209.2-b
 
-              408 missing   93 found so far
+              328 missing  138 found so far
 
 *** running on fermat (1) ***
 
-6.6.966125.1  199 missing,  51 found so far
+6.6.966125.1  199 missing,  79 found so far (missing 101.1-b, 101.1-c, 169.1-a, 169.1-b)
 
 *** running on atkin (1) ***
 
-6.6.371293.1  264 missing, 115 found so far (missing 337.3-c)
+6.6.371293.1  264 missing, 233 found so far (missing 337.3-c, 337.4-c, 337.6-c, 571.1-b)
 
 =========================================================================
 
