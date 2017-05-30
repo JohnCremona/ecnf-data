@@ -314,7 +314,7 @@ adding conjugates: done
 6.6.1868969.1 all 120 found, 268 isogs, uploaded, checked.
 6.6.1997632.1 all  44 found, 106 isogs, uploaded, checked.
 
-*** almost complete (10 fields, 31 missing curves) ***
+*** almost complete (11 fields, 39 missing curves) ***
 
 6.6.371293.1  413 of 422 found, 901 isogs, uploaded. 9 missing 337.3-c, 337.4-c, 337.6-c,
                                     571.1-b, 961.1-b, 961.1-f, 961.2-b, 961.3-b, 961.2-f
@@ -322,6 +322,8 @@ adding conjugates: done
                                     349.1-a, 349.2-a
 6.6.592661.1  201 of 203 found, 335 isogs, uploaded. 2 missing 469.1-d, 469.1-c
 6.6.820125.1  199 of 202 found, 356 isogs, uploaded. 3 missing 379.2-a, 379.3-a, 379.5-a
+6.6.980125.1  188 of 196 found, 328 isogs, uploaded. 8 missing: 209.2-b, 209.2-c, 269.3-b,
+                                    269.3-c, 311.1-b, 311.1-c, 319.1-d, 379.1-a
 6.6.1416125.1 106 of 108 found, 176 isogs, uploaded. 2 missing 151.1-c, 151.5-c
 6.6.1202933.1 172 of 173 found, 288 isogs, uploaded. 1 missing 320.1-d
 6.6.1312625.1 172 of 174 found, 612 isogs, uploaded. 2 missing 199.3-d, 199.3-g
@@ -330,26 +332,23 @@ adding conjugates: done
 6.6.1292517.1  78 of  81 found, 123 isogs, uploaded. 3 missing 53.1-c, 53.2-c, 199.1-a
 
 
-*** incomplete, partial upload (3) ***
+*** incomplete, partial upload (2) ***
 
-6.6.966125.1   53 of 252 found,  96 isogs, uploaded.
-6.6.980125.1  111 of 196 found, 209 isogs, uploaded.
-6.6.1922000.1  51 of 105 found, 143 isogs, uploaded.
+6.6.966125.1  207 of 252 found, 408 isogs, uploaded.
+6.6.1922000.1  66 of 105 found, 195 isogs, uploaded.
 
 *** incomplete, not running () ***
 
-*** running on lehner (2) ***
+*** running on lehner (3) ***
 
-6.6.1922000.1  54 missing,  15 found so far, skipping 121.1-b
-6.6.980125.1   85 missing,  71 found so far, 7 to go
-               7 missing 209.2-b, 209.2-c, 269.3-b, 269.3-c, 311.1-b, 311.1-c, 319.1-d
+6.6.1922000.1  39 missing,   6 found so far, 31 to go, skipping 121.1-b, 121.3-b
+6.6.966125.1   45 missing,   1 found so far, 34 to go.
+                            10 missing: 101.1-b, 101.1-c, 169.1-a, 169.1-b, 275.1-o,
+                                        275.1-l, 295.1-b, 295.1-e, 341.2-b, 341.2-i
 
-              247 missing  153 found so far
+               84 missing,  7 found so far (skipping 12)
 
-*** running on fermat (1) ***
-
-6.6.966125.1  199 missing, 113 found so far, 81 to go
-             (missing 5: 101.1-b, 101.1-c, 169.1-a, 169.1-b, 275.1-o)
+*** running on fermat (0) ***
 
 *** running on atkin (0) ***
 
