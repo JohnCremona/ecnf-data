@@ -63,9 +63,9 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     nf_data[K] = None
     cm_counts[K] = {}
     if d==2 and s==0 and absD in [3,4,7,8,11]:
-            from nfscripts import read_newform_data, nf_filename
-            nf_data[K] = read_newform_data(nf_filename(absD))
-    #print("...finished adding field.")
+            from nfscripts import read_newform_data, nf_filename_from_D
+            nf_data[K] = read_newform_data(nf_filename_from_D(absD))
+    print("...finished adding field.")
 
 def ap(E, p):
         r"""

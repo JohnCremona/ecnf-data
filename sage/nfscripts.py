@@ -102,7 +102,10 @@ def ideal_from_label(K,lab):
     `\left<a,c+d\alpha\right>` with `a=N/d` and `\alpha` the standard
     integral generator of `K`.
     """
-    a,c,d = [ZZ(x) for x in lab[1:-1].split(",")]
+    if '[' in lab:
+        lab = lab[1:-1].replace(",",".")
+    a,c,d = [ZZ(x) for x in lab.split(".")]
+
     a /= d
     P = K.ideal([a,c+d*K.gen()])
     return P
@@ -178,7 +181,7 @@ def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
 
 def nf_filename_from_D(absD):
     d=absD if absD%4 else absD//4
-    return "/home/jec/bianchi-data/nflist/nflist.%s.1-10000" % d
+    return "/home/jec/bianchi-data/nflist/nflist.%s.1-20000" % d
 
 def read_newform_data(nf_filename, verbose=False):
     r"""
@@ -203,10 +206,10 @@ def read_newform_data(nf_filename, verbose=False):
     nf_file = file(nf_filename)
     newforms = {}
     for L in nf_file.readlines():
-        if verbose:
-            print("raw input: %s" % L)
+        # if verbose:
+        #     print("raw input: %s" % L)
         label, gen, sfe, loverp, ALs, aplist = L.split()
-        level, letter = label.split(".")
+        level, letter = label.split("-")
         if not level in newforms:
             newforms[level] = {}
         nfs = newforms[level]
@@ -217,6 +220,8 @@ def read_newform_data(nf_filename, verbose=False):
         nf['ap'] = [int(e) for e in aplist[1:-1].split(",")]
         if verbose:
             print("newform data: %s" % L)
+
+    nf_file.close()
     return newforms
 
 def read_missing_levels(infile):
@@ -225,14 +230,16 @@ def read_missing_levels(infile):
     """
     levels = []
     for L in infile.readlines():
-        level = L.split(".")[0]
+        level = L.split("-")[0]
         if not level in levels:
             levels += [level]
             yield level
 
 bianchi_data_dir = "/home/jec/bianchi-data"
 
-def EllipticCurveSearch(K, Plist, N, aplist):
+# copy of function in lmfdb/scripts/ecnf/hmf_check_find.py
+#
+def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
     r""" Call Magma's own EllipticCurveSearch() function to find and
     elliptic curve E defined over K with conductor N and ap as in the
     list.
@@ -250,8 +257,12 @@ def EllipticCurveSearch(K, Plist, N, aplist):
     conductor N and traces of Frobenius given by the a(P).
     """
     # Create a new magma instance for each search:
-    mag = Magma()
+    local_magma = int(mag is None)
+    if local_magma:
+        mag = Magma()
     # Define the number field in Magma and the list of primes
+    mag.eval("SetGRH();\n")
+    mag.eval('SetVerbose("ECSearch",3);\n')
     mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
     name = K.gen()
     pol = K.defining_polynomial()
@@ -267,7 +278,7 @@ def EllipticCurveSearch(K, Plist, N, aplist):
         mag.eval("Append(~Plist,%s);\n" % Pmagma)
 
     mag.eval('SetColumns(0);\n')
-    mag.eval('effort := 400;\n')
+    mag.eval('effort := %s;\n' % effort)
 
     Ngens = N.gens_reduced()
     Nmagma = "(%s)*OK" % Ngens[0]
@@ -277,20 +288,29 @@ def EllipticCurveSearch(K, Plist, N, aplist):
     mag.eval('aplist := %s;' % aplist)
     mag.eval('goodP := [P: P in Plist | Valuation(N,P) eq 0];\n')
     mag.eval('goodP := [goodP[i]: i in [1..#(aplist)]];\n')
-    mag.eval('curves := EllipticCurveSearch(N,effort : Primes:=goodP, Traces:=aplist);\n')
-    mag.eval('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
-    mag.eval('ncurves := #curves;')
-    ncurves = mag('ncurves;').sage()
+    try:
+        mag.eval('curves := EllipticCurveSearch(N,effort : Primes:=goodP, Traces:=aplist);\n')
+        mag.eval('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
+        mag.eval('ncurves := #curves;')
+        ncurves = mag('ncurves;').sage()
+    except RuntimeError, arg:
+        print("RuntimError in Magma: {}".format(arg))
+        if local_magma:
+            mag.quit()
+        return []
     if ncurves==0:
+        if local_magma:
+            mag.quit()
         return []
     Elist = [0 for i in range(ncurves)]
     for i in range(ncurves):
         mag.eval('E := curves[%s];\n' % (i+1))
         Elist[i] = EllipticCurve(mag('aInvariants(E);\n').sage())
-    mag.quit()
+    if local_magma:
+        mag.quit()
     return Elist
 
-def magma_search(field, missing_label_file=None, field_info_filename=None, nf_filename=None, outfilename=None, verbose=False):
+def magma_search(field, missing_label_file=None, field_info_filename=None, nf_filename=None, min_norm=None, max_norm=None, outfilename=None, effort=1000, verbose=False):
     r"""
     Uses Magma via EllipticCurveSearch() to search for missing curves.
 
@@ -308,9 +328,11 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
 
     - ``nf_filename`` (string) -- filename of file containing
       newforms.  Defaults to
-      "/home/jec/bianchi-data/nflist.%s.1-10000" % field
+      "/home/jec/bianchi-data/nflist.%s.1-20000" % field
 
     - ``outfilename`` (string, default ``None``) -- name of output file
+
+    - ``effort`` (int, default 1000) -- parameter to Magma's search function
 
     - ``verbose`` (boolean, default ``False``) -- verbosity flag.
 
@@ -329,36 +351,54 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
             sys.stdout.write(L)
     if field_info_filename==None:
         field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+        if verbose:
+            print("Using {} for field info".format(field_info_filename))
     if nf_filename==None:
-        nf_filename = "%s/nflist/nflist.%s.1-10000" % (bianchi_data_dir,str(field))
+        nf_filename = "%s/nflist/nflist.%s.1-20000" % (bianchi_data_dir,str(field))
+        if verbose:
+            print("Using {} for newform input".format(nf_filename))
 
     K, Plist = get_field_info(field_info_filename, 200, verbose)
     field_lab = field_label(K)
     if outfilename:
         outfile=file(outfilename, mode="a")
+        if verbose:
+            print("Using {} for output".format(outfile))
     newforms = read_newform_data(nf_filename)
     if verbose:
         print("...read newform data finished")
     if missing_label_file==None:
         missing_label_file = nf_filename
+        if verbose:
+            print("Using {} for missing labels".format(missing_label_file))
 
+    bad_labels = ["16900.0.130-b","16900.0.130-c"]
+    mag=Magma()
     for level in read_missing_levels(file(missing_label_file)):
         N = ideal_from_label(K, level)
         NN = N.norm()
+        if min_norm and NN<min_norm:
+            continue
+        if max_norm and NN>max_norm:
+            continue
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
         if verbose:
             print("Missing level %s = %s" % (level,N))
         nfs = newforms[level]
         for id in nfs.keys():
             nf = nfs[id]
-            label = "%s.%s" % (level,id)
-            if verbose:
-                print("\nWorking on form %s" % label)
+            label = "%s-%s" % (level,id)
+            if label in bad_labels:
+                print("\nIgnoring form %s" % label)
+                continue
+            else:
+                if verbose:
+                    print("\nWorking on form %s" % label)
             # Create the array of traces for good primes:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
             # Do the search:
             try:
-                curves = EllipticCurveSearch(K, Plist, N, aplist)
+                curves = EllipticCurveSearch(K, Plist, N, aplist, effort, mag)
             except RuntimeError:
                 # Magma throws a run-time error if it finds no curves
                 # with the correct traces
@@ -372,7 +412,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
             if E!=None:
                 ec = {}
                 ec['field_label'] = field_lab
-                ec['conductor_label'] = ".".join(level[1:-1].split(","))
+                ec['conductor_label'] = level
                 ec['iso_label'] = id
                 ec['number'] = int(1)
                 ec['conductor_ideal'] = level
