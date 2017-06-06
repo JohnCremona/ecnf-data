@@ -1,17 +1,17 @@
-quadratics = [f['label'] for f in fields.find({'degree':int(2)})]
-print("%s quadratic fields" % len(quadratics))
-pre = "/home/jec/ecnf-data/RQF"
+fields = {}
+field_types = {2: 'RQF', -2:'IQF', 3: 'cubics', 4: 'quartics', 5: 'quintics', 6: 'sextics'}
+dirs = {}
 
-# cubics     = [f['label'] for f in fields.find({'degree':int(3)})]
-# print("%s cubic fields" % len(cubics))
-# pre = "/home/jec/ecnf-data/cubics"
+def set_fields(degree=2):
+    global fields, dirs
+    if degree in fields:
+        return
+    fields[degree] = nfcurves.find({'degree':int(degree)}).distinct('field_label')
+    dirs[degree] = "/home/jec/ecnf-data/{}".format(field_types[degree])
 
-# quartics   = [f['label'] for f in fields.find({'degree':int(4)})]
-# print("%s quartic fields" % len(quartics))
-# pre = "/home/jec/ecnf-data/quartics"
 
-def check_data1(fld, pre):
-    """Check that the number of rational newforms equals the number if
+def check_data1(fld, pre, verbose=True):
+    """Check that the number of rational newforms equals the number of
     elliptic curve isogeny classes in the database, and that the
     number of curves and classes in the database agree with the
     numbers of lines in the upload data files, for a given field
@@ -21,7 +21,11 @@ def check_data1(fld, pre):
     data files are.
 
     """
+    if verbose:
+        print("Checking data for field {}".format(fld))
     nforms = forms.find({'field_label':fld, 'dimension':int(1)}).count()
+    if verbose:
+        print("{} rational newforms".format(nforms))
     if nforms==0:
         return
     ncu = nfcurves.find({'field_label':fld}).count()
