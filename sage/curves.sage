@@ -870,7 +870,7 @@ def ideal_from_string(K,s, IQF_format=False):
     which represents the generator of K (but may actially be an
     integer).  """
     #print("ideal_from_string({}) over {}".format(s,K))
-    N, a, alpha = s[1:-1].split(",")
+    N, a, alpha = s.split(".")
     N = ZZ(N)
     a = ZZ(a)
     if IQF_format:
@@ -949,7 +949,7 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
         N_def = data[4]
         N = ideal_from_string(K, N_def, True) # input in IQF_format
         if N=="wrong":
-            raise ValureError
+            raise ValueError
         data[4] = N_def = ideal_to_string(N, False) # output in standard format
         if f:
             if verbose:
