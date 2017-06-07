@@ -138,6 +138,19 @@ def ideal_label(I):
     a, c, d = ideal_HNF(I)
     return "%s.%s.%s" % (a * d, c, d)
 
+def ideal_to_string(I,IQF_format=False):
+    K = I.number_field()
+    if IQF_format:
+        a, c, d = ideal_HNF(I)
+        return "[%s,%s,%s]" % (a * d, c, d)
+    N = I.norm()
+    a = I.smallest_integer()
+    gens = I.gens_reduced()
+    alpha = gens[-1]
+    assert I == K.ideal(a,alpha)
+    alpha = str(alpha).replace(str(K.gen()),'w')
+    return ("[%s,%s,%s]" % (N,a,alpha)).replace(" ","")
+
 def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
     r"""
     Returns a number field and ordered list of primes.
@@ -372,7 +385,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
         if verbose:
             print("Using {} for missing labels".format(missing_label_file))
 
-    bad_labels = ["16900.0.130-b","16900.0.130-c"]
+    bad_labels = []#["16900.0.130-b","16900.0.130-c"]
     mag=Magma()
     for level in read_missing_levels(file(missing_label_file)):
         N = ideal_from_label(K, level)
@@ -415,7 +428,8 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
                 ec['conductor_label'] = level
                 ec['iso_label'] = id
                 ec['number'] = int(1)
-                ec['conductor_ideal'] = level
+                conductor_ideal = E.conductor()
+                ec['conductor_ideal'] = ideal_to_string(conductor_ideal,False)
                 ec['conductor_norm'] = NN
                 ai = E.ainvs()
                 ec['ainvs'] = [[str(c) for c in list(a)] for a in ai]
