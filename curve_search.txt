@@ -1,4 +1,6 @@
-Procedure for adding curve to match existing Hilbert Modular Forms
+Procedure for adding curve to match existing Hilbert/Bianchi Modular Forms
+
+== HILBERT MODULAR FORMS ==
 
 0. Find & store conjugate newforms. In LMFDB_ROOT, run Sage:
 
@@ -17,6 +19,32 @@ Procedure for adding curve to match existing Hilbert Modular Forms
 
   to make a curves file (e.g. curves.2.2.5.1.part) containing (at
   most) one curve per newform.
+
+== BIANCHI MODULAR FORMS ==
+
+Currently there are no BMFs in the database so we use text files
+output by bianchi-progs as input.
+
+0. Create a file nflist.* (e.g. nflist.1.1-10000) in the bianchi-data
+repository using the nflist prgram after finding the newforms using
+tmanin (in bianchi-progs).
+
+1. In ecnf-data/sage:
+
+sage: %runfile nfscripts.sage
+sage: magma_search(1, nf_filename="/path/to/nflist.1.1-10000",
+                      outfilename="/path/to/ecnf-data/IQF/curves1.2.0.4.1")
+
+which will find a curve for each (or most) newforms in the given file
+(note: field=1 means Q(sqrt(-1)), i.e. 2.0.4.1;
+       field=2 means Q(sqrt(-2)), i.e. 2.0.8.1;
+       field=3 means Q(sqrt(-3)), i.e. 2.0.3.1;
+       field=7 means Q(sqrt(-7)), i.e. 2.0.7.1;
+       field=11 means Q(sqrt(-11)), i.e. 2.0.11.1 )
+
+
+
+== MAKE COMPLETE CURVE DATA FILES INCLUDING ISOGENOUS CURVES ==
 
 4. cd to /home/jec/ecnf-data/sage, run Sage:
 
@@ -65,7 +93,75 @@ for ec in nfcurves.find({'field_label': f}):
 
 -----------
 
-Log  of quadratic field curves searches:
+Log  of imaginary quadratic field curves searches:
+==================================================
+
+(2014-2016: all to conductor norm 10000)
+
+2.0.4.1: 1-10000 has 3160 newforms, 3160+31CM=3191 curves. 0 fakes.
+2.0.8.1: 1-10000 has 6239 newforms, 6235+36CM=6271 curves. 4 fakes.
+2.0.3.1: 1-10000 has 2210 newforms, 2208+35CM=2243 curves. 2 fakes.
+2.0.7.1: 1-10000 has 5923 newforms, 5921+36CM=5957 curves. 2 fakes.
+2.0.4.1: 1-10000 has 5203 newforms, 5203+34CM=5237 curves. 0 fakes.
+
+2017: norms from 10001:
+
+2.0.4.1: all 3861 found 10001-20000 *** CM curves needed ***
+         curves1.2.0.4.1: 3859 good conductor format
+         isogs done (7664), uploaded.
+         Now have 14751 curves in 13391 classes
+
+         20001-40000: 7667 of 7979 curves found
+         40001-50000: all 4140 curves found
+
+
+2.0.8.1: 7120 of 7120 found 10001-20000 *** CM curves needed ***
+         rerunning after correcting newforms...done
+         isogs done (13658), uploaded
+         Now have 27319 curves in 7052 classes
+
+         20001-30000: 7764 of 7780 curves found
+
+
+2.0.3.1: all 2593 found 10001-20000 *** CM curves needed ***
+         curves1.2.0.3.1: 2593 good conductor format
+         isogs done (5244), uploaded.
+         Now have 10303 curves in 4836 classes
+
+         20k-40k: done, 5528 curves out of 5530. isogs...
+                        2 missing:
+                        magma errors: 30625.450.25-a, 30625.750.25-a
+
+         40k-60k: done, 5777 curves out of 5787
+                        10 missing:
+                        magma errors: 50625.0.225-c 50625.0.225-d
+
+         60k-80k: done, 5681 curves out of 5607
+                        ?26 missing
+                        magma errors: 61009.60355.1-a 61009.60355.1-b
+                        61009.653.1-a 61009.653.1-b 65536.0.256-b
+                        65536.0.256-e 67081.6057.1-a 67081.6057.1-b
+                        67081.61023.1-a 67081.61023.1-b
+
+         80k-100k: all 6008 curves found
+
+
+2.0.7.1: all 7054 found 10001-20000 *** CM curves needed ***
+         curves1.2.0.7.1:  7054 good conductor format
+         isogs done (14109), uploaded.
+         Now have 28088 curves in 13011 classes
+
+         20001-30000: all 7296 curves found
+
+2.0.11.1: all 6214 in curves1.2.0.11.1 (bad conductor format)
+          all 6214 in curves1.2.0.11.1.10k-20k (good conductor format)
+          isogs done (11775), uploaded.
+          Now have 22481 curves in 11451 classes
+
+          20001-30000: to 24255, found 2736 of 6415...
+
+
+Log  of real quadratic field curves searches:
 ========================================
 
 2015/10/21: check data for all quadratic fields -- some problems, all solved.
