@@ -64,7 +64,10 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     cm_counts[K] = {}
     if d==2 and s==0 and absD in [3,4,7,8,11]:
             from nfscripts import read_newform_data, nf_filename_from_D
-            nf_data[K] = read_newform_data(nf_filename_from_D(absD))
+            #nf_filename = nf_filename_from_D(absD)
+            nf_filename = "/home/jec/bianchi-data/nflist/nflist.1.40001-50000"
+            print("reading newform data from {}".format(nf_filename))
+            nf_data[K] = read_newform_data(nf_filename)
     print("...finished adding field.")
 
 def ap(E, p):
