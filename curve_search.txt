@@ -185,8 +185,13 @@ Log of quartic field curves searches:
 
 109 fields complete & data files all checked OK
  13 fields complete & data files all checked, some bad primes
-  1 field 4.4.19600.1 serious problems:
+  1 field 4.4.19600.1 still with gaps:
                       35 rational newforms but 7 isogeny classes
+
+36.1b/c/d/e
+36.2b/c/d/e
+29 -all 8
+
 
 == 13 FIELDS WITH BAD PRIMES ==
 
@@ -242,10 +247,13 @@ Log of quartic field curves searches:
 83 curves agree with matching newforms, 208 do not
     bad primes: norm 5^2, 7^2, 19^2
 
-== 1 FIELD WITH MISSING CURVES == 
+== 1 FIELD WITH MISSING CURVES ==
 
-4.4.19600.1 found    7 of  35, isogs, uploaded, 28 missing
-All curves agree with matching newforms
+4.4.19600.1 found  19 of  35, 66 isogs, uploaded, 16 missing
+
+36.1b/c/d/e
+36.2b/c/d/e
+29.4a/b, 29.1a/b, 29.3a.b, 29.2a.b
 
 
 =====================================================================================================
