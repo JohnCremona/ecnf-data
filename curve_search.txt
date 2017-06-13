@@ -172,8 +172,13 @@ Log of quartic field curves searches:
 
 109 fields complete & data files all checked OK
  13 fields complete & data files all checked, some bad primes
-  1 field 4.4.19600.1 serious problems:
+  1 field 4.4.19600.1 still with gaps:
                       35 rational newforms but 7 isogeny classes
+
+36.1b/c/d/e
+36.2b/c/d/e
+29 -all 8
+
 
 == 13 FIELDS WITH BAD PRIMES ==
 
@@ -229,14 +234,19 @@ Log of quartic field curves searches:
 83 curves agree with matching newforms, 208 do not
     bad primes: norm 5^2, 7^2, 19^2
 
-== 1 FIELD WITH MISSING CURVES == 
+== 1 FIELD WITH MISSING CURVES ==
+
+4.4.19600.1 found  19 of  35, 66 isogs, uploaded, 16 missing
 
 4.4.19600.1 found    7 of  35, isogs, uploaded, 28 missing
 All curves agree with matching newforms
 *** swapped over primes #9, #11 (counting from 0) in fields collection
 *** (with norm 29)
 After that, found 4 missing curves of conductor norm 25 OK!
--- running all others for this field now...
+Still missing:
+36.1b/c/d/e
+36.2b/c/d/e
+29.4a/b, 29.1a/b, 29.3a.b, 29.2a.b
 
 =====================================================================================================
 Log of quintic field curves searches:
@@ -352,7 +362,7 @@ Field 6.6.1922000.1 has 105 rational newforms but 66 isogeny classes
 
 Field 6.6.1312625.1 has 174 rational newforms but 172 isogeny classes
 
-*** almost complete (12 fields, 41 missing curves) ***
+*** almost complete (13 fields, 55 missing curves) ***
 
 6.6.371293.1  413 of 422 found, 901 isogs, uploaded. 9 missing 337.3-c, 337.4-c, 337.6-c,
                                     571.1-b, 961.1-b, 961.1-f, 961.2-b, 961.3-b, 961.2-f
@@ -360,6 +370,7 @@ Field 6.6.1312625.1 has 174 rational newforms but 172 isogeny classes
                                     349.1-a, 349.2-a
 6.6.592661.1  201 of 203 found, 335 isogs, uploaded. 2 missing 469.1-d, 469.1-c
 6.6.820125.1  199 of 202 found, 356 isogs, uploaded. 3 missing 379.2-a, 379.3-a, 379.5-a
+6.6.966125.1  238 of 252 found, 454 isogs, uploaded. 14 missing: 101.1-b, 101.1-c, 169.1-a, 169.1-b, 275.1-o, 275.1-l, 295.1-b, 295.1-e, 341.2-b, 341.2-i, 355.3-a, 355.3-h, 379.1-a, 379.1-b
 6.6.980125.1  188 of 196 found, 328 isogs, uploaded. 8 missing: 209.2-b, 209.2-c, 269.3-b,
                                     269.3-c, 311.1-b, 311.1-c, 319.1-d, 379.1-a
 6.6.1416125.1 106 of 108 found, 176 isogs, uploaded. 2 missing 151.1-c, 151.5-c
@@ -370,23 +381,6 @@ Field 6.6.1312625.1 has 174 rational newforms but 172 isogeny classes
 6.6.1995125.1  50 of  53 found,  59 isogs, uploaded. 3 missing 41.1-a, 109.1-a, 121.6-d
 6.6.1292517.1  78 of  81 found, 123 isogs, uploaded. 3 missing 53.1-c, 53.2-c, 199.1-a
 
-
-*** incomplete, partial upload (1) ***
-
-6.6.966125.1  217 of 252 found, 424 isogs, uploaded.
-
-*** incomplete, not running () ***
-
-*** running on lehner (1) ***
-
-6.6.966125.1   35 missing,  6 found so far, 18 to go.
-                                 11 missing: 101.1-b, 101.1-c, 169.1-a, 169.1-b, 275.1-o,
-                                             275.1-l, 295.1-b, 295.1-e, 341.2-b, 341.2-i,
-                                             355.3-a
-
-
-*** running on fermat (0) ***
-*** running on atkin (0) ***
 
 =========================================================================
 
