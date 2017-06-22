@@ -160,9 +160,16 @@ def curves_K3(max_norm, min_norm=1, f=1, verb=False):
                     if verb: print d, Ed.ainvs(), Nn
                     yield Ed
 
+def dump(Elist, outfilename=None):
+    if outfilename == None:
+        return
+    outfile = file(outfilename, mode='w')
+    for E in Elist:
+        outfile.write(make_curves_line(make_ec_dict(E))+'\n')
+    outfile.close()
 
 
-def cm_curves(field,max_norm, min_norm=1, verbose=False):
+def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
     """ field is 1, 2, 3, 7, 11
     """
     if field==1:
@@ -174,6 +181,7 @@ def cm_curves(field,max_norm, min_norm=1, verbose=False):
         assert all_non_iso(E1)
         if verbose:
             print(" found {}+{}={} curves".format(len(E1f1),len(E1f2),len(E1)))
+        dump(E1, outfilename)
         return E1
 
     if field==2:
@@ -183,6 +191,7 @@ def cm_curves(field,max_norm, min_norm=1, verbose=False):
         assert all_non_iso(E2)
         if verbose:
             print(" found {} curves".format(len(E2)))
+        dump(E2, outfilename)
         return E2
 
     if field==3:
@@ -195,6 +204,7 @@ def cm_curves(field,max_norm, min_norm=1, verbose=False):
         assert all_non_iso(E3)
         if verbose:
             print(" found {}+{}+{}={} curves".format(len(E3f1),len(E3f2),len(E3f3),len(E3)))
+        dump(E3, outfilename)
         return E3
 
     if field==7:
@@ -208,6 +218,7 @@ def cm_curves(field,max_norm, min_norm=1, verbose=False):
         assert all_non_iso(E7)
         if verbose:
             print(" found {}+{}={} curves".format(len(E7f1),len(E7f2),len(E7)))
+        dump(E7, outfilename)
         return E7
 
     if field==11:
@@ -218,4 +229,6 @@ def cm_curves(field,max_norm, min_norm=1, verbose=False):
     assert all_non_iso(E11)
     if verbose:
         print(" found {} curves".format(len(E11)))
+    dump(E11, outfilename)
     return E11
+

@@ -123,7 +123,7 @@ def ideal_HNF(I):
     a,d>0; c>=0; N = a*d = Norm(I); d|a and d|c; 0 <=c < a.
     """
     N = I.norm()
-    a, c, b, d = I.pari_hnf().python().list()
+    (a, c), (b, d) = [[ZZ(x) for x in row] for row in I.pari_hnf().python()]
     assert a > 0 and d > 0 and N == a * d and d.divides(a) and d.divides(b) and 0 <= c < a
     return [a, c, d]
 
@@ -451,7 +451,21 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
                 if outfilename:
                     outfile.flush()
 
-
+def make_ec_dict(E):
+    K = E.base_field()
+    N = E.conductor()
+    ai = E.ainvs()
+    ec = {}
+    ec['field_label'] = field_label(K)
+    ec['conductor_label'] = old_ideal_label(N)
+    ec['iso_label'] = 'a'  # placeholder only
+    ec['number'] = int(1) # placeholder only
+    ec['conductor_ideal'] = ideal_to_string(N,False)
+    ec['conductor_norm'] = N.norm()
+    ec['ainvs'] = [[str(c) for c in list(a)] for a in ai]
+    ec['cm'] = '?'
+    ec['base_change'] = []
+    return ec
 
 
 ######################################################################
