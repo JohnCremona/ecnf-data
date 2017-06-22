@@ -56,7 +56,7 @@ def field_from_label(lab):
         if sig[0]==0: d=-d
         t = d%4
         assert t in [0,1]
-        pol = x^2 - t*x + (t-d)/4
+        pol = x**2 - t*x + (t-d)/4
     elif lab=='3.1.23.1':
         pol = x**3 - x**2 +1
     else:
@@ -202,7 +202,9 @@ def read_newform_data(nf_filename, verbose=False):
 
     INPUT:
 
-    - ``nf_filename`` (string) -- name of file containing Bianchi newform data.
+    - ``nf_filename`` (string) -- name of file containing Bianchi
+      newform data.  Either starts with "nflist" or "newforms"; the
+      latter has additional fields which we ignore here.
 
     - ``verbose`` (boolean, default False) -- verbosity flag.
 
@@ -217,12 +219,18 @@ def read_newform_data(nf_filename, verbose=False):
 
     """
     nf_file = file(nf_filename)
+    old_fmt =  "nflist" in nf_filename
+    print("file has {} format".format('old' if old_fmt else 'new'))
     newforms = {}
     for L in nf_file.readlines():
-        # if verbose:
-        #     print("raw input: %s" % L)
-        label, gen, sfe, loverp, ALs, aplist = L.split()
-        level, letter = label.split("-")
+        #if verbose:
+        #    print("raw input: %s" % L)
+        if old_fmt:
+            label, gen, sfe, loverp, ALs, aplist = L.split()
+            level, letter = label.split("-")
+        else:
+            field_label, level, letter, gen, wt, bc, cm, sfe, loverp, ALs, poly, aplist = L.split()
+
         if not level in newforms:
             newforms[level] = {}
         nfs = newforms[level]
@@ -243,7 +251,10 @@ def read_missing_levels(infile):
     """
     levels = []
     for L in infile.readlines():
-        level = L.split("-")[0]
+        if "nflist" in infile:
+            level = L.split("-")[0]
+        else:
+            level = L.split()[1]
         if not level in levels:
             levels += [level]
             yield level
@@ -789,4 +800,52 @@ def make_isoclass_line(ec):
                      str(ec['number']),
                      mat]
     return " ".join(output_fields)
+
+#####################################################################
+#
+# utility for making a look-up table for converting labels over IQFs
+#
+#####################################################################
+
+from psort import ideal_label
+
+the_labels = {}
+field_labels = ['2.0.{}.1'.format(d) for d in [4,8,3,7,11]]
+the_fields = dict([(lab,field_from_label(lab)) for lab in field_labels])
+print(the_fields)
+
+def convert_ideal_label(K, lab):
+    """An ideal label of the form N.c.d is converted to N.i.  Here N.c.d
+    defines the ideal I with Z-basis [a, c+d*w] where w is the standard
+    generator of K, N=N(I) and a=N/d.  The standard label is N.i where I is the i'th ideal of norm N in the standard ordering.
+
+    NB Only intended for use in coverting IQF labels!  To get the standard label from any ideal I just use ideal_label(I).
+    """
+    global the_labels
+    if K in the_labels:
+        if lab in the_labels[K]:
+            return the_labels[K][lab]
+    else:
+        the_labels[K] = {}
+
+    comps = lab.split(".")
+    # test for labels which do not need any conversion
+    if len(comps)==2:
+        return lab
+    assert len(comps)==3
+    N, c, d = [int(x) for x in comps]
+    a = N//d
+    I = K.ideal(a, c+d*K.gen())
+    newlab = ideal_label(I)
+    #print("Ideal label converted from {} to {} over {}".format(lab,newlab,K))
+    the_labels[K][lab] = newlab
+    return newlab
+
+def label_conversion_table(infile, outfile):
+    out = file(outfile, mode='w')
+    for L in file(bianchi_data_dir + "/ideals/" + infile).readlines():
+        field, ideal = L.split()
+        label = convert_ideal_label(the_fields[field],ideal)
+        out.write(' '.join([field, ideal, label])+'\n')
+    out.close()
 
