@@ -5,6 +5,7 @@
 # scripts.
 #
 import sys
+from sage.all import polygen, ZZ, QQ, NumberField, PolynomialRing, Magma, EllipticCurve
 
 field_names=dict([(-4,'i'),(-8,'t'),(-3,'w')])
 def get_field_name(disc):
@@ -129,7 +130,7 @@ def ideal_HNF(I):
 # Label of an ideal I in a quadratic field: string formed from the
 # Norm and HNF of the ideal
 
-def ideal_label(I):
+def old_ideal_label(I):
     r"""
     Returns the HNF-based label of an ideal I in a quadratic field
     with integral basis [1,w].  This is the string 'N.c.d' where
@@ -757,6 +758,8 @@ def make_curve_data_line(ec):
     return " ".join(output_fields)
 
 
+nfcurves = None # keep pyflakes happy: the function below might need
+                # it to be set to the nfcurves collection.
 def make_isoclass_line(ec):
     r""" for ec a curve object from the database, create a line of text to
     match the corresponding raw input line from an isoclass file.

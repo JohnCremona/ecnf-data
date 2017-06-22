@@ -1,8 +1,9 @@
 # coding=utf-8
 
-from sage.all import cm_j_invariants, cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, O
+from sage.all import cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, IntegerRing, Primes, O, Magma
 from sage.databases.cremona import cremona_letter_code
 from psort import (nf_key, primes_of_degree_iter, primes_iter)
+from nfscripts import ideal_HNF
 
 # Originally adapted from Warren Moore's scripts.  The main function
 # process_curves(curves) takes a list of elliptic curves and outputs
@@ -63,9 +64,11 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     nf_data[K] = None
     cm_counts[K] = {}
     if d==2 and s==0 and absD in [3,4,7,8,11]:
-            from nfscripts import read_newform_data, nf_filename_from_D
+            from nfscripts import read_newform_data
+            #from nfscripts import nf_filename_from_D
             #nf_filename = nf_filename_from_D(absD)
-            nf_filename = "/home/jec/bianchi-data/nflist/nflist.1.40001-50000"
+            #nf_filename = "/home/jec/bianchi-data/nflist/nflist.11.20001-30000"
+            nf_filename = "/home/jec/bianchi-data/newforms/newforms.11.9900.5lm"
             print("reading newform data from {}".format(nf_filename))
             nf_data[K] = read_newform_data(nf_filename)
     print("...finished adding field.")
@@ -506,12 +509,6 @@ def isog_class_cmp2(k, I, J):
 	E2 = curve_from_strings(k,J[0].split()[6:11])
         return curve_cmp_via_L(E1,E2)
 
-def isogeny_class_key(E):
-    """ Key function for sorting curves over the same field with the same conductor, using the sequence of a_P.
-    """
-    K = E.base_field()
-    Plist = Plists[k]
-    
 
 fields = {} # keys are field labels, values are NumberFields
 import yaml
