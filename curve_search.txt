@@ -106,20 +106,94 @@ Log  of imaginary quadratic field curves searches:
 
 2017: norms from 10001:
 
-2.0.4.1: 10001-20000: all 3861 found  *** CM curves needed ***
-         20001-40000: 7967 of 7979 curves found, isogs 14827, uploaded.
+2.0.4.1: 10001-20000: all 3861 found
+         20001-40000: 7967 of 7989 curves found, isogs 14827, uploaded.
          40001-50000: all 4140 curves found, isogs 7353, uploaded
 
-         Now have 36931 curves in 19159 classes
+         50k-60k search: all 4008 found. isogs...
+         60k-70k search: all 4341 found. 7824 isogs. upload...
 
-2.0.8.1: 10001-20000:7120 of 7120 found  *** CM curves needed ***
+         Now have 37018 curves in 19232 classes
+         CM curves to 50k: 127 in 104 classes
+         12 missing to 50k, all in 30k-40k:
+
+2.0.4.1-30600.3-a
+2.0.4.1-30600.3-b
+2.0.4.1-30600.3-c
+2.0.4.1-30600.3-d
+2.0.4.1-30600.3-e
+2.0.4.1-30600.4-a
+2.0.4.1-30600.4-b
+2.0.4.1-30600.4-c
+2.0.4.1-30600.4-d
+2.0.4.1-30600.4-e
+2.0.4.1-34225.3-a
+2.0.4.1-34225.3-b
+2.0.4.1-34225.7-a
+2.0.4.1-34225.7-b
+2.0.4.1-38250.3-k
+2.0.4.1-38250.3-l
+2.0.4.1-38250.4-m
+2.0.4.1-38250.4-n
+2.0.4.1-38250.5-m
+2.0.4.1-38250.5-n
+2.0.4.1-38250.6-k
+2.0.4.1-38250.6-l
+
+
+2.0.8.1: 10001-20000:7120 of 7120 found
          20001-30000: 7764 of 7780 curves found, isogs 14651, uploaded.
+         ***** we deleted the curves 20k-30k!!! and also now need 30k-40k
          Now have 41970 curves in 21155 classes
+         Missing to 20k:
+         2.0.8.1-5625.1-b
+         2.0.8.1-5625.3-b
+         2.0.8.1-6561.5-a
+         2.0.8.1-6561.5-d
+         CM curves to 10k: 36
 
-2.0.3.1: all 2593 found 10001-20000 *** CM curves needed ***
+         20k-30k search: done
+         30k-40k search: done
+
+2.0.3.1: all 2593 found 10001-20000
          curves1.2.0.3.1: 2593 good conductor format
          isogs done (5244), uploaded.
-         Now have 51542 curves in 27746 classes
+
+         to 100k we now have 51665 curves in 27838 classes
+         CM curves to 100k: 171 in 127 classes
+
+         29 missing to 100k:
+
+2.0.3.1-5625.1-a
+2.0.3.1-6561.1-b
+2.0.3.1-30279.1-a
+2.0.3.1-38307.1-a
+2.0.3.1-38307.1-b
+2.0.3.1-30279.2-a
+2.0.3.1-30625.1-a
+2.0.3.1-30625.3-a
+2.0.3.1-38307.1-c
+2.0.3.1-40323.2-a
+2.0.3.1-40323.2-b
+2.0.3.1-40539.2-b
+2.0.3.1-40539.2-a
+2.0.3.1-40323.1-b
+2.0.3.1-40323.1-a
+2.0.3.1-40539.1-a
+2.0.3.1-40539.1-b
+2.0.3.1-50625.1-c
+2.0.3.1-50625.1-d
+2.0.3.1-65536.1-e
+2.0.3.1-65536.1-b
+2.0.3.1-67081.7-a
+2.0.3.1-61009.9-a
+2.0.3.1-61009.9-b
+2.0.3.1-67081.3-a
+2.0.3.1-61009.1-a
+2.0.3.1-61009.1-b
+2.0.3.1-67081.7-b
+2.0.3.1-67081.3-b
+
 
          20k-40k: done, 5528 curves out of 5530,  isogs 10521, uploaded.
                         2 missing:
@@ -139,17 +213,27 @@ Log  of imaginary quadratic field curves searches:
          80k-100k: all 6008 curves found, isogs 10187, uploaded.
 
 
-2.0.7.1: 10001-20000: all 7054 found  *** CM curves needed ***
-         20001-30000: all 7296 curves found, isogs 14144, uploaded.
-         Now have 42232 curves in 20307 classes
+2.0.7.1: 10001-20000: all 7054 found
+         20001-30000: all 7296 found
+         Now have 42270 curves in 20326 classes
+         CM curves to 30k: 110 curves in 55 classes
 
-2.0.11.1: 10001-20000: all 6214 found  *** CM curves needed ***
-          20001-30000: to 27900, found 5185 of 6415...
-          Now have 22481 curves in 11451 classes
+         Missing to 20k:
+
+2.0.7.1-10000.1-b
+2.0.7.1-10000.5-b
 
 
+2.0.11.1: 10001-20000: all 6214 found
+          20001-30000: all 6415 found
+          Now have 33973 curves in 17892 classes
+          CM curves to 10k: 58 curves in 58 classes
+
+         Missing to 30k: none
+
+=============================================
 Log  of real quadratic field curves searches:
-========================================
+=============================================
 
 2015/10/21: check data for all quadratic fields -- some problems, all solved.
 2016/02/10: new check, that #classes==#rational newforms, and that the
@@ -158,6 +242,7 @@ data files have the correct number of lines: OK
 data files up to date.
 
 
+====================================
 Log  of cubic field curves searches:
 ====================================
 
@@ -247,6 +332,23 @@ Still missing:
 36.1b/c/d/e
 36.2b/c/d/e
 29.4a/b, 29.1a/b, 29.3a.b, 29.2a.b
+
+Using forms_dan (after fixing by Dan Yasaki), after adding Galois conjugates:
+
+4.4.1600.1: all check OK
+4.4.2304.1: missing ALs
+4.4.4225.1: all check OK
+4.4.7056.1: all check OK
+4.4.7168.1: all check OK
+4.4.7225.1: all check OK with 2 missing, searching...
+4.4.9248.1: all check OK
+4.4.11025.1: all check OK
+4.4.12400.1: all check OK
+4.4.12544.1: missing ALs
+4.4.13824.1: all check OK
+4.4.14336.1: all check OK
+4.4.17424.1: missing ALs
+4.4.19600.1: done, all 35 found, 94 isogs, upload, check...
 
 =====================================================================================================
 Log of quintic field curves searches:
