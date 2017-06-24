@@ -110,10 +110,10 @@ Log  of imaginary quadratic field curves searches:
          20001-40000: 7967 of 7989 curves found, isogs 14827, uploaded.
          40001-50000: all 4140 curves found, isogs 7353, uploaded
 
-         50k-60k search: all 4008 found. isogs...
-         60k-70k search: all 4341 found. 7824 isogs. upload...
+         50k-60k search: all 4008 found. isogs. uploading...
+         60k-70k search: all 4341 found. 7824 isogs. uploaded.
 
-         Now have 37018 curves in 19232 classes
+         Now have 51988 curves in 27581 classes
          CM curves to 50k: 127 in 104 classes
          12 missing to 50k, all in 30k-40k:
 
@@ -152,8 +152,8 @@ Log  of imaginary quadratic field curves searches:
          2.0.8.1-6561.5-d
          CM curves to 10k: 36
 
-         20k-30k search: done
-         30k-40k search: done
+         20k-30k search: done. isogs. upload...
+         30k-40k search: done. isogs. upload...
 
 2.0.3.1: all 2593 found 10001-20000
          curves1.2.0.3.1: 2593 good conductor format
@@ -348,31 +348,27 @@ Using forms_dan (after fixing by Dan Yasaki), after adding Galois conjugates:
 4.4.13824.1: all check OK
 4.4.14336.1: all check OK
 4.4.17424.1: missing ALs
-4.4.19600.1: done, all 35 found, 94 isogs, upload, check...
+4.4.19600.1: done, all 35 found, 94 isogs, upload, checked.
 
 =====================================================================================================
 Log of quintic field curves searches:
 =====================================================================================================
 
 34 fields, 6392 isogeny classes
-30/34 complete with isogs, 1/34 uploaded
 
-
-5.5.14641.1 found all 385, isogs 792, uploaded, checked
-
-6001/6007 curves found
-29/33 complete
- 4/33 almost complete (1-3 missing each, 6 missing in all)
+6003/6007 curves found
+30/33 fields complete
+ 3/33 almost complete (1-2 missing each, 4 missing in all)
 
 4/6/17 check_data shows:
 
 Field 5.5.126032.1 has 177 rational newforms but 176 isogeny classes
-Field 5.5.138136.1 has 203 rational newforms but 202 isogeny classes
-Field 5.5.149169.1 has 122 rational newforms but 119 isogeny classes
+Field 5.5.149169.1 has 122 rational newforms but 120 isogeny classes
 Field 5.5.170701.1 has 82 rational newforms but 81 isogeny classes
 
 *** complete ***
 
+5.5.14641.1 found all 385, isogs 792, uploaded, checked
 5.5.24217.1  found all 393. isogs  713. uploaded, checked
 5.5.36497.1  found all 428. isogs 1020. uploaded, checked
 5.5.38569.1  found all 538. isogs 1034. uploaded, checked
@@ -387,6 +383,7 @@ Field 5.5.170701.1 has 82 rational newforms but 81 isogeny classes
 5.5.122821.1 found all 142. isogs  404. uploaded, checked
 5.5.124817.1 found all 131. isogs  209. uploaded, checked
 5.5.135076.1 found all 222. isogs  736. uploaded, checked
+5.5.138136.1 found all 203. isogs  648. uploaded, checked
 5.5.138917.1 found all 165. isogs  520. uploaded, checked
 5.5.144209.1 found all  80. isogs  194. uploaded, checked
 5.5.147109.1 found all 146. isogs  358. uploaded, checked
@@ -407,9 +404,9 @@ Field 5.5.170701.1 has 82 rational newforms but 81 isogeny classes
 *** incomplete ***
 
 5.5.126032.1 found 176 of 177. Missing 1: 82.1-b.                isogs 615 ga
-5.5.138136.1 found 202 of 203. Missing 1: 58.1-ab.               isogs 647 ga
-5.5.149169.1 found 119 of 122. Missing 3: 3.1-a, 96.1-c, 96.1-d. isogs 219 ga
+5.5.149169.1 found 120 of 122. Missing 2: 96.1-c, 96.1-d.
 5.5.170701.1 found  81 of  82. Missing 1: 32.1-a.                isogs 240 ga
+
 
     Runtime error in 'IsSquare': Insufficient precision to calculate a correct answer
 
@@ -430,10 +427,10 @@ adding conjugates: done
 6.6.703493.1  all 186 found, 268 isogs, uploaded, checked.
 6.6.722000.1  all 190 found, 498 isogs, uploaded, checked.
 6.6.810448.1  all 140 found, 450 isogs, uploaded, checked.
-6.6.905177.1  all 232 found, 888 isogs, uploaded. mismatch primes norm 2^3, now ignored
+!6.6.905177.1  all 232 found, 888 isogs, uploaded. mismatch primes norm 2^3, now ignored
 6.6.1075648.1 all 222 found, 416 isogs, uploaded, checked.
 6.6.1081856.1 all 149 found, 302 isogs, uploaded, checked.
-6.6.1134389.1 all  78 found. 148 isogs, uploaded, checked. ap differ for N(P)=5^3 in 66/78 cases
+!6.6.1134389.1 all  78 found. 148 isogs, uploaded, checked. ap differ for N(P)=5^3 in 66/78 cases
 6.6.1229312.1 all 268 found, 524 isogs, uploaded, checked.
 6.6.1241125.1 all 241 found, 482 isogs, uploaded, checked.
 6.6.1259712.1 all 448 found, 1078 isogs, uploaded, checked.
@@ -459,9 +456,7 @@ Field 6.6.1202933.1 has 173 rational newforms but 172 isogeny classes
 Field 6.6.1995125.1 has 53 rational newforms but 50 isogeny classes
 Field 6.6.1397493.1 has 131 rational newforms but 130 isogeny classes
 Field 6.6.1416125.1 has 108 rational newforms but 106 isogeny classes
-
 Field 6.6.1922000.1 has 105 rational newforms but 66 isogeny classes
-
 Field 6.6.1312625.1 has 174 rational newforms but 172 isogeny classes
 
 *** almost complete (13 fields, 55 missing curves) ***
