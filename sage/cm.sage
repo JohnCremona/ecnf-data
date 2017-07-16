@@ -80,15 +80,27 @@ def curves_K1(max_norm, min_norm=1, f=1, verb=False):
     m = [0,4,2][f]
     E = EllipticCurve(j=j).change_ring(K1)
     S = K1(6).support()
+    supps = {}
+    twists = {}
     for d1 in K1_iterator(max_norm.isqrt(),S):
-        if is_powerfree(d1,m):
-            for d0 in K1.selmer_group_iterator(S,m):
-                d = d0*d1
+        if is_powerfree(d1,2):
+            print("d1={}".format(d1))
+            d1supp = d1.support()
+            t = tuple(d1supp)
+            if t in supps:
+                continue
+            supps[t] = 1
+            for d in K1.selmer_group_iterator(S+d1supp,m):
+                if d in twists:
+                    continue
+                twists[d] = 1
+                #print("d={}".format(d))
                 if m==2:
                     Ed = E.quadratic_twist(d)
                 else:
                     Ed = E.quartic_twist(d)
                 Nn = Ed.conductor().norm()
+                #print("cond.norm={}".format(Nn))
                 if min_norm <= Nn <= max_norm:
                     Ed = Ed.global_minimal_model()
                     if verb: print d, Ed.ainvs(), Nn
@@ -146,10 +158,21 @@ def curves_K3(max_norm, min_norm=1, f=1, verb=False):
     m = [0,6,2,2][f]
     E = EllipticCurve(j=j).change_ring(K3)
     S = K3(6).support()
+    supps = {}
+    twists = {}
     for d1 in K3_iterator(max_norm.isqrt(),S):
-        if is_powerfree(d1,m):
-            for d0 in K3.selmer_group_iterator(S,m):
-                d = d0*d1
+        if is_powerfree(d1,2):
+            print("d1={}".format(d1))
+            d1supp = d1.support()
+            t = tuple(d1supp)
+            if t in supps:
+                continue
+            supps[t] = 1
+            for d in K3.selmer_group_iterator(S+d1supp,m):
+                if d in twists:
+                    continue
+                twists[d] = 1
+                #print("d={}".format(d))
                 if m==2:
                     Ed = E.quadratic_twist(d)
                 else:
@@ -187,7 +210,7 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
     if field==2:
         if verbose:
             print("Qsqrt-2, norms {}-{}".format(min_norm,max_norm))
-        E2 = E2f1 = list(curves_K2(max_norm, min_norm))
+        E2 = E2f1 = list(curves_K2(max_norm, min_norm,verbose))
         assert all_non_iso(E2)
         if verbose:
             print(" found {} curves".format(len(E2)))
@@ -197,9 +220,9 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
     if field==3:
         if verbose:
             print("Qsqrt-3, norms {}-{}".format(min_norm,max_norm))
-        E3f1 = list(curves_K3(max_norm, min_norm,1))
-        E3f2 = list(curves_K3(max_norm, min_norm,2))
-        E3f3 = list(curves_K3(max_norm, min_norm,3))
+        E3f1 = list(curves_K3(max_norm, min_norm,1,verbose))
+        E3f2 = list(curves_K3(max_norm, min_norm,2,verbose))
+        E3f3 = list(curves_K3(max_norm, min_norm,3,verbose))
         E3 = E3f1+E3f2+E3f3
         assert all_non_iso(E3)
         if verbose:
@@ -210,9 +233,9 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
     if field==7:
         if verbose:
             print("Qsqrt-7, norms {}-{}".format(min_norm,max_norm))
-        E7f1 = list(curves_K7(max_norm, min_norm,1))
+        E7f1 = list(curves_K7(max_norm, min_norm,1,verbose))
         assert all_non_iso(E7f1)
-        E7f2 = list(curves_K7(max_norm, min_norm,2))
+        E7f2 = list(curves_K7(max_norm, min_norm,2,verbose))
         assert all_non_iso(E7f2)
         E7 = E7f1+E7f2
         assert all_non_iso(E7)
@@ -225,7 +248,7 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
         if verbose:
             print("Qsqrt-11, norms {}-{}".format(min_norm,max_norm))
 
-    E11 = E11f1 = list(curves_K11(max_norm, min_norm))
+    E11 = E11f1 = list(curves_K11(max_norm, min_norm,verbose))
     assert all_non_iso(E11)
     if verbose:
         print(" found {} curves".format(len(E11)))
