@@ -16,6 +16,7 @@ Plists = {} # sorted list of primes of k
 Dlists = {} # |disc(k)|
 Glists = {} # Gal(k/Q)
 labels = {} # label of k
+pols   = {} # defining polynomial of k as comma-sep. string
 nf_data = {} # newform data for k (if available)
 used_curves = {} # dict with key by norm(conductor), value a list of
                  # curves so far processed witth that norm-conductor
@@ -39,6 +40,7 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     absD = K.discriminant().abs()
     s = K.signature()[0] # number of real places
     d = K.degree()
+    pols[K] = ",".join([str(c) for c in list(K.defining_polynomial())])
 
 # Warning: number fields whose label's 4'th component is not 1 will
 # not be handled correctly here; this is only an issue when there is
@@ -68,7 +70,7 @@ def add_field(K, field_label=None, prime_norm_bound=200):
             #from nfscripts import nf_filename_from_D
             #nf_filename = nf_filename_from_D(absD)
             #nf_filename = "/home/jec/bianchi-data/nflist/nflist.11.20001-30000"
-            nf_filename = "/home/jec/bianchi-data/newforms/newforms.11.9900.5lm"
+            nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.120001-130000"
             print("reading newform data from {}".format(nf_filename))
             nf_data[K] = read_newform_data(nf_filename)
     print("...finished adding field.")
@@ -1001,3 +1003,31 @@ def check_modularity(pth,fld, verbose=False):
         print("All {} curves over {} were proved to be modular!".format(ntrue,field_label))
     else:
         print("Only {} out of {} curves over {} were proved to be modular!".format(ntrue,nall, field_label))
+
+def convert_curve_file(infilename, outfilename, ncurves=0):
+        r"""
+        Iterator to loop through lines of a curves.* file each
+        containing 13 data fields as defined the in the ecnf-format.txt file,
+        writing output file in format needed by Sutherlands galdata program.
+        """
+        count=0
+        outfile = file(outfilename, mode='w')
+        for L in file(infilename).readlines():
+            #sys.stdout.write(L)
+            data = L.split()
+            if len(data)!=13:
+                print "line %s does not have 13 fields, skipping" % L
+                continue
+            count +=1
+            if ncurves and count>ncurves:
+                outfile.close()
+                return
+
+            K = field_from_label(data[0])
+            add_field(K)
+            pol = pols[K]
+            label = "-".join(data[:3]) + data[3]
+            coeffs = ":".join(data[6:11])
+            outfile.write(":".join([label,coeffs,pol])+"\n")
+        outfile.close()
+        return
