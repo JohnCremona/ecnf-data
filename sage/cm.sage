@@ -1,3 +1,5 @@
+from nfscripts import make_curves_line
+
 K1.<i> = QuadraticField(-1)
 K2.<t> = QuadraticField(-2)
 K3.<z> = NumberField(x^2-x+1)

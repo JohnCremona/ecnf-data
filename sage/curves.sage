@@ -1027,7 +1027,7 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
             add_field(K)
             pol = pols[K]
             label = "-".join(data[:3]) + data[3]
-            coeffs = ":".join(data[6:11])
+            coeffs = ";".join(data[6:11])
             outfile.write(":".join([label,coeffs,pol])+"\n")
         outfile.close()
         return
