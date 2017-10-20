@@ -30,18 +30,32 @@ def check_data1(fld, pre, verbose=True):
         return
     ncu = nfcurves.find({'field_label':fld}).count()
     ncl = nfcurves.find({'field_label':fld, 'number':int(1)}).count()
-    if nforms!=ncl:
-        print("Field %s has %s rational newforms but %s isogeny classes" % (fld,nforms,ncl))
+    ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$regex':'CM'}})
+    ncl_CM = nfcurves.find({'field_label':fld, 'number':int(1), 'label': {'$regex':'CM'}}).count()
+    ncu_nonCM = ncu-ncu_CM
+    ncl_nonCM = ncl-ncl_CM
+    if nforms!=ncl_nonCM:
+        print("Field {} has {} rational newforms but {} non-CM isogeny classes".format(fld,nforms,ncl_nonCM))
+        if nforms>ncl_nonCM:
+            print("{} missing isogeny classes:".format(nforms-ncl_nonCM))
+            for f in forms.find({'field_label':fld, 'dimension':int(1)}):
+                if not nfcurves.find_one({'class_label':f['label']}):
+                    print("Form {} has no matching curve".format(f['label']))
+    else:
+        print("Field {} has {} rational newforms and non-CM isogeny classes".format(fld,nforms))
 
-    iso_file = "%s/isoclass.%s" % (pre,fld)
-    cur_file = "%s/curves.%s" % (pre,fld)
+    iso_file = "{}/isoclass.{}".format(pre,fld)
+    cur_file = "{}/curves.{}".format(pre,fld)
     try:
         n_iso = len(file(iso_file).readlines())
     except:
-        print("No file %s exists" % iso_file)
+        print("No file {} exists".format(iso_file))
         n_iso = 0
+
     if n_iso!= ncl:
-        print("Field %s: file has %s classes, database has %s" % (fld,n_iso,ncl))
+        print("Field {}: file has {} classes, database has {}".format(fld,n_iso,ncl))
+    else:
+        print("Field {}: file and database both have {} classes".format(fld,ncl))
 
     try:
         n_cur = len(file(cur_file).readlines())
@@ -50,7 +64,9 @@ def check_data1(fld, pre, verbose=True):
         n_cur = 0
 
     if n_cur!= ncu:
-        print("Field %s: file has %s curves, database has %s" % (fld,n_cur,ncu))
+        print("Field {}: file has {} curves, database has {}".format(fld,n_cur,ncu))
+    else:
+        print("Field {}: file and database both have {} curves".format(fld,ncu))
 
 def check_data2(fld):
     """Wrapper round the find_curve_labels() function from
