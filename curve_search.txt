@@ -22,16 +22,17 @@ Procedure for adding curve to match existing Hilbert/Bianchi Modular Forms
 
 == BIANCHI MODULAR FORMS ==
 
-Currently there are no BMFs in the database so we use text files
-output by bianchi-progs as input.
+Currently we use text files output by bianchi-progs as input.
 
 0. Create a file nflist.* (e.g. nflist.1.1-10000) in the bianchi-data
-repository using the nflist prgram after finding the newforms using
-tmanin (in bianchi-progs).
+repository using the nflist_loop program after finding the newforms using
+tmanin (in bianchi-progs).  e.g.
+echo 7 -1 40001 50000 | ./nflist_loop > /home/jec/bianchi-data/newforms/newforms.7.40001-50000
+
 
 1. In ecnf-data/sage:
 
-sage: %runfile nfscripts.sage
+sage: %runfile nfscripts.py
 sage: magma_search(1, nf_filename="/path/to/nflist.1.1-10000",
                       outfilename="/path/to/ecnf-data/IQF/curves1.2.0.4.1")
 
@@ -208,6 +209,7 @@ Log  of imaginary quadratic field curves searches:
          2.0.7.1-40000.7-b has no curve (bc=-1, cm=-35)
          2.0.7.1-40000.1-b has no curve (bc=-1, cm=-35)
 
+         40001-50000: all 7561 found, isogs, uploaded
 
 2.0.11.1: 10001-20000: all 6214 found
           20001-30000: all 6415 found

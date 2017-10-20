@@ -1,0 +1,28 @@
+Going forward, if you want me to compute images for just a set of new curves, the easiest thing to do is send me a file with colon delimited records of the form label:ainvs:nfcoeffs, for example:
+
+2.0.3.1-10000.1-a1:0,0;-1,0;0,0;-908,0;-15688,0:1,-1,1
+
+or
+
+6.6.1997632.1-97.4-a2:3,-3,-4,1,1,0;-2,-7,1,6,0,-1;6,-2,-5,1,1,0;-90,18,46,-7,-5,1;-74,240,34,-148,-3,22:-13,0,19,0,-8,0,1
+
+The sage script I used to generate the input file I used for this run is:
+
+import lmfdb
+conn = lmfdb.base.getDBConnection()
+ec = conn.elliptic_curves
+nf = conn.numberfields
+nflabel = ""
+nfcoeffs = ""
+fp = open ("lmfdb_ecnf.txt","w")
+for r in ec.nfcurves.find():
+    if r['field_label'] != nflabel:
+        nflabel = r['field_label']
+        nfcoeffs = nf.fields.find_one({'label':nflabel},{'_id':int(0),'coeffs':int(1)})['coeffs']
+    fp.write("%s:%s:%s\n"%(r['label'],r['ainvs'],nfcoeffs))
+fp.close()
+
+
+In terms of code you can run, I actually do have a magma implementation that should be plenty fast enough to handle small files, and I will eventually put this into github, but this is not something I have time to do right now (or am likely to soon, I have a lot on my plate at the moment).  You could cobble something together yourself using the magma code http://math.mit.edu/~drew/galrep/ that I published with my paper, but in the short term it is probably easier to just send me a file in the format above and let me run the scripts I have set up to do this.
+
+In fact, since I can recompute the Galois images for all of the curves in nfcurves in just a few hours, if that is easier than computing a delta you can just ask me to recompute everything.
