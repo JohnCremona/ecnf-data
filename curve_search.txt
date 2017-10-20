@@ -143,10 +143,10 @@ Log  of imaginary quadratic field curves searches:
          to 100k we now have 51665 curves in 27838 classes
          CM curves to 100k: 171 in 127 classes
 
-         To 120k, # curves = 33636 but # forms = 33655
-         23 curves missing
+         To 150k, # curves = 42318 but # forms = 42343
+         25 curves missing
 
-         14 NOT QM type:
+         16 NOT QM type:
 
          newform 2.0.3.1-67081.3-a has no curve (bc=0, cm=0)
          newform 2.0.3.1-67081.3-b has no curve (bc=0, cm=0)
@@ -162,6 +162,8 @@ Log  of imaginary quadratic field curves searches:
          newform 2.0.3.1-123201.1-c has no curve (bc=0, cm=0)
          newform 2.0.3.1-123201.3-b has no curve (bc=0, cm=0)
          newform 2.0.3.1-123201.3-c has no curve (bc=0, cm=0)
+         newform 2.0.3.1-146716.4-b has no curve (bc=0, cm=0)
+         newform 2.0.3.1-146716.4-a has no curve (bc=0, cm=0)
 
          9 QM type, including 5 CM:
 
@@ -196,7 +198,7 @@ Log  of imaginary quadratic field curves searches:
          ****No curve found to match newform 40000.925.25-b
          ****No curve found to match newform 40000.650.25-b
 
-         To 40k: 28263 newforms, 28322=66+28256 curves.  7 missing.
+         To 50k: 35824 newforms, 35817 curves.  7 missing.
 
          2.0.7.1-10000.1-b: bc=-5, cm=-35
          2.0.7.1-10000.5-b: bc=-5, cm=-35
@@ -212,7 +214,7 @@ Log  of imaginary quadratic field curves searches:
           30001-40000: all 6280 found, 11486 isogs, uploaded
           40001-50000:  6427 to be found...
 
-         To 40k: 24114 newforms, all with curves.
+         To 40k: 30541 newforms, 30541 curves, none missing
 
 =============================================
 Log  of real quadratic field curves searches:
