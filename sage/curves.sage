@@ -70,7 +70,8 @@ def add_field(K, field_label=None, prime_norm_bound=200):
             #from nfscripts import nf_filename_from_D
             #nf_filename = nf_filename_from_D(absD)
             #nf_filename = "/home/jec/bianchi-data/nflist/nflist.11.20001-30000"
-            nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.120001-130000"
+            #nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.120001-130000"
+            nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.missing_curves"
             print("reading newform data from {}".format(nf_filename))
             nf_data[K] = read_newform_data(nf_filename)
     print("...finished adding field.")

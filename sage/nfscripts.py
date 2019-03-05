@@ -589,8 +589,9 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         nf_filename = "%s/nflist.%s.1-10000" % (bianchi_data_dir,str(field))
 
     K, Plist = get_field_info(field_info_filename, 200, verbose)
+    field_lab = field_label(K)
     if outfilename:
-        output_magma_field(K,Plist,outfilename)
+        output_magma_field(field_lab,K,Plist,outfilename)
         if verbose:
             print("...output definition of field and primes finished")
     if outfilename:
