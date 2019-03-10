@@ -2,8 +2,9 @@
 
 from sage.all import cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, IntegerRing, Primes, O, Magma
 from sage.databases.cremona import cremona_letter_code
-from psort import (nf_key, primes_of_degree_iter, primes_iter)
+from psort import (nf_key, primes_of_degree_iter, primes_iter, ideal_label)
 from nfscripts import ideal_HNF
+from fields import nf_lookup
 
 # Originally adapted from Warren Moore's scripts.  The main function
 # process_curves(curves) takes a list of elliptic curves and outputs
@@ -15,6 +16,8 @@ from nfscripts import ideal_HNF
 Plists = {} # sorted list of primes of k
 Dlists = {} # |disc(k)|
 Glists = {} # Gal(k/Q)
+autolists = {} # automorphisms of k
+galois_flags = {} # is k Galois?
 labels = {} # label of k
 pols   = {} # defining polynomial of k as comma-sep. string
 nf_data = {} # newform data for k (if available)
@@ -55,6 +58,8 @@ def add_field(K, field_label=None, prime_norm_bound=200):
         print("...created new label {}".format(field_label))
     labels[K] = field_label
     Dlists[K] = absD
+    autolists[K] = K.automorphisms()
+    galois_flags[K] = len(autolists[K])==K.degree()
     if d<5:
         Glists[K] = K.galois_group(names='b')
     #print("...finding and caching Galois closure...")
@@ -75,6 +80,51 @@ def add_field(K, field_label=None, prime_norm_bound=200):
             print("reading newform data from {}".format(nf_filename))
             nf_data[K] = read_newform_data(nf_filename)
     print("...finished adding field.")
+
+# utiity functions for converting ideal labels to LMFDB standard
+
+the_ideal_labels = {}
+
+def convert_ideal_label(K, lab, IQF_only=True):
+    """An ideal label of the form N.c.d is converted to N.i.  Here N.c.d
+    defines the ideal I with Z-basis [a, c+d*w] where w is the standard
+    generator of K, N=N(I) and a=N/d.  The standard label is N.i where I is the i'th ideal of norm N in the standard ordering.
+
+    NB Only intended for use in coverting IQF labels!  To get the standard label from any ideal I just use ideal_label(I).
+
+    """
+    global the_ideal_labels
+    if K in the_ideal_labels:
+        if lab in the_ideal_labels[K]:
+            return the_ideal_labels[K][lab]
+        else:
+            pass
+    else:
+        the_ideal_labels[K] = {}
+
+    comps = lab.split(".")
+    # test for labels which do not need any conversion
+    if len(comps)==2:
+        return lab
+    assert len(comps)==3
+    N, c, d = [int(x) for x in comps]
+    a = N//d
+    I = K.ideal(a, c+d*K.gen())
+    newlab = ideal_label(I)
+    #print("Ideal label converted from {} to {} over {}".format(lab,newlab,K))
+    the_ideal_labels[K][lab] = newlab
+    return newlab
+
+
+def convert_conductor_label(field_label, label):
+    """If the field is imaginary quadratic, calls convert_ideal_label, otherwise just return label unchanged.
+    """
+    if field_label.split(".")[:2] != ['2','0']:
+        return label
+    K = nf_lookup(field_label)
+    new_label = convert_ideal_label(K,label)
+    #print("Converting conductor label from {} to {}".format(label, new_label))
+    return new_label
 
 def ap(E, p):
         r"""
@@ -157,7 +207,7 @@ def conj_curve(E,sigma):
         """
         return EllipticCurve([sigma(a) for a in E.ainvs()])
 
-def is_Q_curve(E, field_label=None):
+def is_Q_curve(E, field_label=None, verbose=False):
         r"""
         Return True if this elliptic curve is isogenous to all its
         Galois conjugates.
@@ -183,23 +233,45 @@ def is_Q_curve(E, field_label=None):
         with Elkies' definition -- we require that no quadratic twist
         of a curve L-isogenous to E is a Galois conjugate of E.
         """
+        if verbose:
+            print("Checking whether {} is a Q-curve".format(E))
+
+        # all curves with rational j-invariant are Q-curves:
+        jE = E.j_invariant()
+        if jE in QQ:
+            if verbose:
+                print("Yes: j(E) is in QQ")
+            return True
+
         K = E.base_field()
-        if K is QQ: return True
+        jpoly = jE.minpoly()
+        if jpoly.degree()<K.degree():
+            print("switching to smaller base field: j's minpoly is {}".format(jpoly))
+            K1, _ = K.subfield(jE, 'j')
+            #print("K1 = {}".format(K1))
+            K2, iso, inv = K1.optimized_representation()
+            #print("K2 = {}".format(K2))
+            jE = inv(K1.gen())
+            print("New j is {} with minpoly {}".format(jE, jE.minpoly()))
+            assert jE.minpoly()==jpoly
+            E = EllipticCurve(j=jE)
+            K = K2
+            field_label=None
+            print("New test curve is {}".format(E))
+
+        # CM curves are Q-curves:
+        if E.has_cm():
+            if verbose:
+                print("Yes: E is CM")
+            return True
+
         add_field(K, field_label=field_label)
 
-        # first quick test: are the a-invariants Galois invariant?
-        if all([is_Galois_invariant(a,field_label) for a in E.ainvs()]):
-                return True
-
-        # second quick test: is the conductor invariant?
-        if not is_Galois_invariant(E.conductor(),field_label):
-                return False
-
-        # third test should catch all non-Q-curves: find primes of
+        # Simple test should catch many non-Q-curves: find primes of
         # good reduction and of the same norm and test if the
-        # cardinalities of the reductions are equal.
+        # traces of Frobenius are equal *up to sign*
 
-        pmax = 200
+        pmax = 1000
         NN = E.conductor().norm()
         for p in primes(pmax):
             if p.divides(NN):
@@ -208,17 +280,107 @@ def is_Q_curve(E, field_label=None):
                      if P.residue_class_degree() == 1]
             if len(Plist)<2:
                 continue
-            aP = E.reduction(Plist[0]).trace_of_frobenius()
+            aP0 = E.reduction(Plist[0]).trace_of_frobenius()
             for P in Plist[1:]:
-                if E.reduction(P).trace_of_frobenius() != aP:
+                aP = E.reduction(P).trace_of_frobenius()
+                if aP.abs() != aP0.abs():
+                    if verbose:
+                        print("No: incompatible traces of Frobenius at primes above {}: {} and {}".format(p,aP0,aP))
                     return False
 
-        # Retrieve precomputed Galois group and isogeny class and test
-        G = Glists[K]
-        EL = conj_curve(E,G[0]) # base-change to Galois closure
-        C = EL.isogeny_class() # cached
-        # Here, 'in' does test up to isomorphism!
-        return all([conj_curve(E,sigma) in C for sigma in G.gens()])
+        if verbose:
+            print("...all aP test pass for p<{}".format(pmax))
+
+        C = E.isogeny_class()
+        jC = [E2.j_invariant() for E2 in C]
+        if any(j in QQ for j in jC):
+            if verbose:
+                print("j-invariants in class: {}".format(jC))
+                print("Yes: an isogenous curve has j in QQ")
+            return True
+
+        # Galois case:
+        if galois_flags[K]:
+            autos = autolists[K]
+            t = all(sigma(jE) in jC for sigma in autos)
+            if verbose:
+                print("j-invariants in class: {}".format(jC))
+                if t:
+                    print("Yes: class contains all conjugate j-invariants")
+                else:
+                    print("No: class does not contain all conjugate j-invariants")
+            return t
+
+        if verbose:
+            print("K not Galois, E might be a Q-curve but not yet proved")
+
+        if K.degree() in [3,4]:
+            L = K.galois_closure('b')
+            emb = K.embeddings(L)[0]
+            EL = E.change_ring(emb)
+            if verbose:
+                print("Base changing to the Galois closure {}".format(L))
+            # Don't do this as it will cause an infinite loop
+            # return is_Q_curve(EL, verbose=verbose)
+            autos = L.automorphisms()
+            jE = emb(jE)
+            nC = len(C)
+            from sage.schemes.elliptic_curves.gal_reps_number_field import reducible_primes_naive
+            red_pr = reducible_primes_naive(EL, 31, 100)
+            # Compute partial isogeny class only using p-iogenies
+            # for the primes p in red_pr.  This is much faster since
+            # the slow part of computing isgeny classes is finding
+            # the reducible primes.
+            if verbose:
+                print("Computing isogeny class using only the primes in {}".format(red_pr))
+            CL = EL.isogeny_class(red_pr)
+            if len(CL)==nC:
+                if verbose:
+                    print(" -- no more curves in the class")
+            else:
+                nC=len(CL)
+                if verbose:
+                    print(" -- class now contains {} curves".format(nC))
+                jCL = [E2.j_invariant() for E2 in CL]
+                t = all(sigma(jE) in jCL for sigma in autos)
+                if verbose:
+                    print("j-invariants in class: {}".format(jCL))
+                    if t:
+                        print("Yes: class contains all conjugate j-invariants")
+                    else:
+                        print("No: class does not contain all conjugate j-invariants")
+                if t:
+                    return t
+
+            if verbose:
+                print("%%%%%%%%%%")
+                print("No conclusion after computing the isogeny class over the Galois closure using these primes")
+                print("%%%%%%%%%%")
+                print("Computing full isogeny class...")
+            CL = EL.isogeny_class()
+            if len(CL)==nC:
+                if verbose:
+                    print("No more isogenies, so not a Q-curve")
+                return False
+            print("Full isogeny class has {} curves".format(len(CL)))
+            jCL = [E2.j_invariant() for E2 in CL]
+            t = all(sigma(jE) in jC for sigma in autos)
+            if verbose:
+                print("j-invariants in class: {}".format(jC))
+                if t:
+                    print("Yes: class (using first {} primes) contains all conjugate j-invariants".format(n+1))
+                else:
+                    print("No: class (using first {} primes) does not contain all conjugate j-invariants".format(n+1))
+            return t
+
+        return '?'
+
+        # # Retrieve precomputed Galois group and isogeny class and test
+        # G = Glists[K]
+        # EL = conj_curve(E,G[0]) # base-change to Galois closure
+        # C = EL.isogeny_class() # cached
+        # # Here, 'in' does test up to isomorphism!
+        # return all([conj_curve(E,sigma) in C for sigma in G.gens()])
 
 def field_data(s):
     r"""
@@ -545,6 +707,180 @@ def field_from_label(lab):
         print "Created field from label %s: %s" % (lab,K)
         return K
 
+def read_curve_file(infile):
+    r"""
+    Read a curves file, each line containing 13 data fields as defined
+    the in the ecnf-format.txt file. Output is a list of dicts, one
+    per curve, in the same order as input.
+    """
+    curves = []
+    index = 0
+    for L in file(infile).readlines():
+        if L[0]=='#': # allow for comment lines
+            continue
+        data = L.split()
+        if len(data)!=13:
+            print("line {} does not have 13 fields, skipping".format(L))
+            continue
+        index += 1
+        curve = {'index': index,
+                 'field_label': data[0],
+                 'N_label': data[1],
+                 'iso_label': data[2],
+                 'c_num': data[3],
+                 'N_def': data[4],
+                 'N_norm': data[5],
+                 'ainvs': data[6:11],
+                 'cm_flag': data[11],
+                 'q_curve_flag': data[12]
+                 }
+        curves.append(curve)
+    curves.sort(key = lambda c: c['index'])
+    return curves
+
+def read_curvedata_file(infile):
+    r"""
+    Read a curvedata file, each line containing 9+ data fields as defined
+    the in the ecnf-format.txt file. Output is a list of dicts, one
+    per curve, in the same order as input.
+    """
+    curves = []
+    index = 0
+    for L in file(infile).readlines():
+        if L[0]=='#': # allow for comment lines
+            continue
+        data = L.split()
+        ngens = int(data[7])
+        if len(data) != 9+ngens:
+            print("line {} does not have 9+{} fields, skipping".format(L, ngens))
+            continue
+        index += 1
+        curve = {'index': index,
+                 'field_label': data[0],
+                 'N_label': data[1],
+                 'iso_label': data[2],
+                 'c_num': data[3],
+                 'rank': data[4],
+                 'rank_bounds': data[5],
+                 'an_rank': data[6],
+                 'ngens': data[7],
+                 'gens': data[8:8+ngens],
+                 'sha_an': data[8+ngens]
+                 }
+        curves.append(curve)
+    curves.sort(key = lambda c: c['index'])
+    return curves
+
+def read_isoclass_file(infile):
+    r"""
+    Read an isoclass file, each line containing 5 data fields as defined
+    the in the ecnf-format.txt file. Output is a list of dicts, one
+    per curve, in the same order as input.
+    """
+    curves = []
+    index = 0
+    for L in file(infile).readlines():
+        if L[0]=='#': # allow for comment lines
+            continue
+        data = L.split()
+        if len(data) != 5:
+            print("line {} does not have 5 fields, skipping".format(L))
+            continue
+        index += 1
+        curve = {'index': index,
+                 'field_label': data[0],
+                 'N_label': data[1],
+                 'iso_label': data[2],
+                 'c_num': data[3],
+                 'isomat': data[4]
+                 }
+        curves.append(curve)
+    curves.sort(key = lambda c: c['index'])
+    return curves
+
+def write_curve_file(curves, outfile):
+    r"""
+    Write a curves file, each line containing 13 data fields as defined
+    the in the ecnf-format.txt file. Input is a list of dicts.
+    """
+    out = file(outfile, 'w')
+    for c in curves:
+        line = " ".join([c['field_label'],
+                         c['N_label'],
+                         c['iso_label'],
+                         c['c_num'],
+                         c['N_def'],
+                         c['N_norm']] + c['ainvs'] + [c['cm_flag'],
+                         c['q_curve_flag']])
+        out.write(line+"\n")
+    out.close()
+
+def write_curvedata_file(curves, outfile):
+    r"""
+    Write a curves file, each line containing 9+ngens data fields as defined
+    the in the ecnf-format.txt file. Input is a list of dicts.
+    """
+    out = file(outfile, 'w')
+    for c in curves:
+        line = " ".join([c['field_label'],
+                         c['N_label'],
+                         c['iso_label'],
+                         c['c_num'],
+                         c['rank'],
+                         c['rank_bounds'],
+                         c['an_rank'],
+                         c['ngens']] + c['gens'] + [c['sha_an']])
+        out.write(line+"\n")
+    out.close()
+
+def write_isoclass_file(curves, outfile):
+    r"""
+    Write an isoclass file, each line containing 5 data fields as defined
+    the in the ecnf-format.txt file. Input is a list of dicts.
+    """
+    out = file(outfile, 'w')
+    for c in curves:
+        line = " ".join([c['field_label'],
+                         c['N_label'],
+                         c['iso_label'],
+                         c['c_num'],
+                         c['isomat']])
+        out.write(line+"\n")
+    out.close()
+
+def rewrite_curve_file(infile, outfile, verbose=True):
+    """
+    Convert ideal labels for IQFs fro old-atyle N.c.d to new N.i LMFDB
+    standard.  Could also be used over other fields to standardise
+    labels into the canonical LMFDB ordering of ideals of the same
+    norm.
+
+    Can be used for curves* files,  curve_data* and isoclass* files.
+    """
+    if 'curves' in infile:
+        read_file = read_curve_file
+        write_file = write_curve_file
+    elif 'curve_data' in infile:
+        read_file = read_curvedata_file
+        write_file = write_curvedata_file
+    elif 'isoclass' in infile:
+        read_file = read_isoclass_file
+        write_file = write_isoclass_file
+    else:
+        print("Invalid filename {}: should be a curves or curve_data or isoclass file")
+        return
+    curves = read_file(infile)
+    for c in curves:
+        field_label = c['field_label']
+        cond_label =  c['N_label']
+        new_cond_label = convert_conductor_label(field_label, cond_label)
+        if verbose:
+            print("Conductor label {} converted to {}".format(cond_label, new_cond_label))
+        c['N_label'] = new_cond_label
+
+    write_file(curves, outfile)
+
+
 def read_curves(infile, only_one=False, ncurves=0):
         r"""
         Iterator to loop through lines of a curves.* file each
@@ -567,7 +903,7 @@ def read_curves(infile, only_one=False, ncurves=0):
                 if ncurves and count>ncurves:
                        raise StopIteration
                 field_label = data[0]
-                K = field_from_label(field_label)
+                K = nf_lookup(field_label)
                 N_label = data[1]
                 iso_label = data[2]
                 c_num = data[3]
@@ -915,7 +1251,7 @@ def fix_conductors(infile, outfile = None, verbose=False):
             print "line %s does not have 13 fields, skipping" % L
             continue
         field_label = data[0]
-        K = field_from_label(field_label)
+        K = nf_lookup(field_label)
         E = curve_from_strings(K, data[6:11])
         NE = E.conductor()
         N_def = data[4]
@@ -948,7 +1284,7 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
             print "line %s does not have 13 fields, skipping" % L
             continue
         field_label = data[0]
-        K = field_from_label(field_label)
+        K = nf_lookup(field_label)
         N_def = data[4]
         N = ideal_from_string(K, N_def, True) # input in IQF_format
         if N=="wrong":
@@ -1024,7 +1360,7 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
                 outfile.close()
                 return
 
-            K = field_from_label(data[0])
+            K = nf_lookup(data[0])
             add_field(K)
             pol = pols[K]
             label = "-".join(data[:3]) + data[3]
@@ -1032,3 +1368,57 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
             outfile.write(":".join([label,coeffs,pol])+"\n")
         outfile.close()
         return
+
+def curve_from_data(c):
+    K = nf_lookup(c['field_label'])
+    return curve_from_strings(K,c['ainvs'])
+
+def check_Q_curve_flags(filename, output=False, verbose=True):
+    curves = read_curve_file(filename)
+    ncurves = len(curves)
+    if verbose:
+        print("Read {} curves from {}".format(ncurves, filename))
+    nall = 0
+    nbad = 0
+    nbad01 = 0
+    nbad10 = 0
+    cache = {} # dict of class_label:flag
+    for c in curves:
+        old_flag = c['q_curve_flag']
+        if old_flag=='?' and not output:
+            continue
+        nall += 1
+
+        class_label = "-".join([c['field_label'], c['N_label'], c['iso_label']])
+
+        if class_label in cache:
+            flag = cache[class_label]
+        else:
+            flag = is_Q_curve(curve_from_data(c),c['field_label'],verbose) # True, False, '?'
+            cache[class_label] = flag
+
+        if flag != '?':
+            flag = str(int(flag))
+        if verbose:
+            print("Q-curve flag (computed): {}".format(flag))
+            print("Q-curve flag (file):     {}".format(old_flag))
+        #assert flag!='?'
+        if old_flag!='?' and flag != old_flag:
+            print("curve {}: flag on file is {} but should be {}".format(c,old_flag,flag))
+            nbad += 1
+        if [old_flag, flag] == ['0','1']:
+            nbad01 += 1
+        if [old_flag, flag] == ['1','0']:
+            nbad10 += 1
+
+        c['q_curve_flag'] = flag # a string, either '0' or '1'
+
+    if output:
+        newfilename = filename+".qc_fix"
+        print("Writing revised curves file to {}".format(newfilename))
+        write_curve_file(curves,newfilename)
+
+    print("{} out of {} curves had incorrect Q-curve flag".format(nbad,nall))
+    if nbad:
+        print("In {} cases flag on file was 0, new flag is 1".format(nbad01))
+        print("In {} cases flag on file was 1, new flag is 0".format(nbad10))
