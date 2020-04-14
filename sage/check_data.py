@@ -2,6 +2,10 @@ fields = {}
 field_types = {2: 'RQF', -2:'IQF', 3: 'cubics', 4: 'quartics', 5: 'quintics', 6: 'sextics'}
 dirs = {}
 
+forms = None
+nfcurves = None # keep pyflakes happy: the function below needs
+                # nfcurves and forms to be set to the nfcurves collection.
+
 def set_fields(degree=2):
     global fields, dirs
     if degree in fields:
@@ -30,9 +34,9 @@ def check_data1(fld, pre, verbose=True):
         return
     ncu = nfcurves.find({'field_label':fld}).count()
     ncl = nfcurves.find({'field_label':fld, 'number':int(1)}).count()
-    ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$regex':'CM'}})
+    #ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$regex':'CM'}})
     ncl_CM = nfcurves.find({'field_label':fld, 'number':int(1), 'label': {'$regex':'CM'}}).count()
-    ncu_nonCM = ncu-ncu_CM
+    #ncu_nonCM = ncu-ncu_CM
     ncl_nonCM = ncl-ncl_CM
     if nforms!=ncl_nonCM:
         print("Field {} has {} rational newforms but {} non-CM isogeny classes".format(fld,nforms,ncl_nonCM))
@@ -47,7 +51,7 @@ def check_data1(fld, pre, verbose=True):
     iso_file = "{}/isoclass.{}".format(pre,fld)
     cur_file = "{}/curves.{}".format(pre,fld)
     try:
-        n_iso = len(file(iso_file).readlines())
+        n_iso = len(open(iso_file).readlines())
     except:
         print("No file {} exists".format(iso_file))
         n_iso = 0
@@ -58,7 +62,7 @@ def check_data1(fld, pre, verbose=True):
         print("Field {}: file and database both have {} classes".format(fld,ncl))
 
     try:
-        n_cur = len(file(cur_file).readlines())
+        n_cur = len(open(cur_file).readlines())
     except:
         print("No file %s exists" % cur_file)
         n_cur = 0

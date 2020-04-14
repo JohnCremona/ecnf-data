@@ -1,5 +1,6 @@
 # Billerey's algorithm for reducible primes, adapted from code by C. Schembri
 
+from sage.all import polygen, ZZ, prod, primes, Set
 from polys import star, star_iterate, r
 
 def Frobenius_poly(E,qq):
@@ -9,7 +10,8 @@ def P_l(E, l):
     """Return Billerey's `P_l^*` as defined in (9).
     """
     P = polygen(ZZ)-1
-    for q in E.base_field().primes_above(l):
+    K = E.base_field()
+    for q in K.primes_above(l):
         e = K(l).valuation(q)
         P = star(P,r(Frobenius_poly(E,q),12*e))
     return P
@@ -93,8 +95,8 @@ def R_bound(E, max_q=200, num_q=6, verbose=True):
     DK = K.discriminant()
     ED = E.discriminant().norm()
     B0 = ZZ(6*DK*ED)
-    ll = primes(5,max_l) # iterator
-    while len(ells)<num_l and B!=1:
+    ll = primes(5,max_q) # iterator
+    while len(ells)<num_q and B!=1:
         try:
             l = ll.next()
             while B0.valuation(l):

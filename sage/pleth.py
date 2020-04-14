@@ -1,5 +1,7 @@
 # polynomial utilities using plethysms to compute "symmetric power" polynomials
 
+from sage.all import QQ, prod, numerator, binomial, PolynomialRing, Sequence, SymmetricFunctions
+
 def signed_coefficients(f):
     """Return list of coefficients of f with alternating signs, starting
     with signed leading coefficient and ending with constant term.
