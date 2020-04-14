@@ -1,4 +1,4 @@
-from sage.rings.all import PolynomialRing
+from sage.rings.all import operator
 
 def star(P,Q):
     """P*Q where for P,Q monic polynomials with distinct roots a_i, b_j

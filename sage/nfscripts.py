@@ -5,7 +5,9 @@
 # scripts.
 #
 import sys
+import os
 from sage.all import polygen, ZZ, QQ, NumberField, PolynomialRing, Magma, EllipticCurve
+HOME = os.getenv("HOME")
 
 field_names=dict([(-4,'i'),(-8,'t'),(-3,'w')])
 def get_field_name(disc):
@@ -63,7 +65,7 @@ def field_from_label(lab):
     else:
         raise NotImplementedError("cannot yet handle field %s" % lab)
     K = NumberField(pol, 'a')
-    print "Created field from label %s: %s" % (lab,K)
+    print("Created field from label {}: {}".format(lab,K))
     return K
 
 def field_label(K):
@@ -168,7 +170,7 @@ def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
 
     Tuple of a number field and a list of prime ideals, ordered as in the data file.
     """
-    field_info_file = file(field_info_filename)
+    field_info_file = open(field_info_filename)
     Plist=[]
     for L in field_info_file.readlines():
         if "Q" in L: # first line
@@ -195,7 +197,7 @@ def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
 
 def nf_filename_from_D(absD):
     d=absD if absD%4 else absD//4
-    return "/home/jec/bianchi-data/nflist/nflist.%s.1-20000" % d
+    return HOME + "/bianchi-data/nflist/nflist.{}.1-20000".format(d)
 
 def read_newform_data(nf_filename, verbose=False):
     r"""
@@ -219,7 +221,7 @@ def read_newform_data(nf_filename, verbose=False):
     of L-function coefficients of prime ideals in standard order).
 
     """
-    nf_file = file(nf_filename)
+    nf_file = open(nf_filename)
     old_fmt =  "nflist" in nf_filename
     print("file has {} format".format('old' if old_fmt else 'new'))
     newforms = {}
@@ -260,7 +262,7 @@ def read_missing_levels(infile):
             levels += [level]
             yield level
 
-bianchi_data_dir = "/home/jec/bianchi-data"
+bianchi_data_dir = HOME + "/bianchi-data"
 
 # copy of function in lmfdb/scripts/ecnf/hmf_check_find.py
 #
@@ -318,7 +320,7 @@ def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
         mag.eval('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
         mag.eval('ncurves := #curves;')
         ncurves = mag('ncurves;').sage()
-    except RuntimeError, arg:
+    except RuntimeError as arg:
         print("RuntimError in Magma: {}".format(arg))
         if local_magma:
             mag.quit()
@@ -349,11 +351,11 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
 
     - ``field_info_filename`` (string) -- filename of file containing
       field information.  Defaults to
-      "/home/jec/bianchi-data/fieldinfo/findinfo-%s" % field
+      HOME + "/bianchi-data/fieldinfo/findinfo-%s" % field
 
     - ``nf_filename`` (string) -- filename of file containing
       newforms.  Defaults to
-      "/home/jec/bianchi-data/nflist.%s.1-20000" % field
+      HOME + "/bianchi-data/nflist.%s.1-20000" % field
 
     - ``outfilename`` (string, default ``None``) -- name of output file
 
@@ -386,7 +388,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
     K, Plist = get_field_info(field_info_filename, 200, verbose)
     field_lab = field_label(K)
     if outfilename:
-        outfile=file(outfilename, mode="a")
+        outfile=open(outfilename, mode="a")
         if verbose:
             print("Using {} for output".format(outfile))
     newforms = read_newform_data(nf_filename)
@@ -399,7 +401,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
 
     bad_labels = []#["16900.0.130-b","16900.0.130-c"]
     mag=Magma()
-    for level in read_missing_levels(file(missing_label_file)):
+    for level in read_missing_levels(open(missing_label_file)):
         N = ideal_from_label(K, level)
         NN = N.norm()
         if min_norm and NN<min_norm:
@@ -506,7 +508,7 @@ def output_magma_field(field_label, K, Plist, outfilename=None, verbose=False):
     define the field `K` and the list `Plist` of primes.
     """
     if outfilename:
-        outfile = file(outfilename, mode="w")
+        outfile = open(outfilename, mode="w")
     name = K.gen()
     pol = K.defining_polynomial()
 
@@ -560,11 +562,11 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
 
     - ``field_info_filename`` (string) -- filename of file containing
       field information.  Defaults to
-      "/home/jec/bianchi-data/fieldinfo/findinfo-%s" % field
+      HOME + "/bianchi-data/fieldinfo/findinfo-%s" % field
 
     - ``nf_filename`` (string) -- filename of file containing
       newforms.  Defaults to
-      "/home/jec/bianchi-data/nflist.%s.1-10000" % field
+      HOME + "/bianchi-data/nflist.%s.1-10000" % field
 
     - ``outfilename`` (string, default ``None``) -- name of output file
 
@@ -595,7 +597,7 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         if verbose:
             print("...output definition of field and primes finished")
     if outfilename:
-        outfile=file(outfilename, mode="a")
+        outfile=open(outfilename, mode="a")
     newforms = read_newform_data(nf_filename)
     if verbose:
         print("...read newform data finished")
@@ -604,7 +606,7 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
     if missing_label_file==None:
         missing_label_file = nf_filename
 
-    for level in read_missing_levels(file(missing_label_file)):
+    for level in read_missing_levels(open(missing_label_file)):
         N = ideal_from_label(K, level)
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
         if verbose:
@@ -648,9 +650,9 @@ def parse_magma_output(d, infilename, outfilename=None, verbose=False):
     """
     disc = [0,-4,-8,-3,0,0,0,-7,0,0,0,-11][d]
     name = get_field_name(disc)
-    infile = file(infilename)
+    infile = open(infilename)
     if outfilename:
-        outfile=file(outfilename, mode="w")
+        outfile=open(outfilename, mode="w")
 
     def output(L):
         if outfilename:
@@ -860,8 +862,8 @@ def convert_ideal_label(K, lab):
     return newlab
 
 def label_conversion_table(infile, outfile):
-    out = file(outfile, mode='w')
-    for L in file(bianchi_data_dir + "/ideals/" + infile).readlines():
+    out = open(outfile, mode='w')
+    for L in open(bianchi_data_dir + "/ideals/" + infile).readlines():
         field, ideal = L.split()
         label = convert_ideal_label(the_fields[field],ideal)
         out.write(' '.join([field, ideal, label])+'\n')

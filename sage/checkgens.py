@@ -17,6 +17,8 @@
 # file which do not appear in the curve_data file (e.g. incomplete
 # data in the latter).
 
+from sage.all import QQ, ZZ, polygen, NumberField, EllipticCurve
+
 def field_data(s):
     r"""
     Returns full field data from field label.
@@ -47,15 +49,15 @@ def field_from_label(lab):
         pol = x**2 - t*x + (t-d)/4
         K = NumberField(pol, 'a')
         fields[lab] = K
-        print "Created field from label %s: %s" % (lab,K)
+        print("Created field from label {}: {}".format(lab,K))
         return K
 
 def read_curves(infile):
     curves = {}
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         data = L.split()
         if len(data)!=13:
-            print "line %s does not have 13 fields, skipping" % L
+            print("line {} does not have 13 fields, skipping".format(L))
             continue
         K = field_from_label(data[0])
         ainvs = [parse_NFelt(K,ai) for ai in data[6:11]]
@@ -75,14 +77,14 @@ def check_gens(suffix):
     curves_file = "curves.%s" % suffix
     curvedata_file = "curve_data.%s" % suffix
     curves = read_curves(curves_file)
-    print "Read %s curves" % len(curves)
-    for L in file(curvedata_file).readlines():
+    print("Read {} curves".format(len(curves)))
+    for L in open(curvedata_file).readlines():
         data = L.split()
         ngens = int(data[7])
         if not ngens:
             continue
         if len(data)!=9+ngens:
-            print "line %s does not have 9 fields (excluding gens), skipping" % line
+            print("line {} does not have 9 fields (excluding gens), skipping".format(L))
         field_label = data[0]       # string
         conductor_label = data[1]   # string
         iso_label = data[2]         # string
@@ -92,12 +94,12 @@ def check_gens(suffix):
         try:
             E = curves[label]
         except KeyError:
-            print "%s is not the label of a curve read from the curves file" % label
+            print("{} is not the label of a curve read from the curves file".format(label))
             continue
         K = E.base_field()
         genstringlists = [g[1:-1].split(":") for g in data[8:8+ngens]]
         try:
-            gens = [E([parse_NFelt(K,c) for c in cc]) for cc in genstringlists]
+            assert [E([parse_NFelt(K,c) for c in cc]) for cc in genstringlists]
         except:
-            print "Bad generators %s for curve %s" % (genstringlists,label)
-        #print "Curve %s: all %s gens OK" % (label,ngens)
+            print("Bad generators {} for curve {}".format(genstringlists,label))
+        #print("Curve {}: all {} gens OK".format(label,ngens))
