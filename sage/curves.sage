@@ -1111,8 +1111,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         if verbose>1:
                                 print("isog_data: %s" % isogdata_line)
 
-                        # Q-curve? (isogeny class invariant)
-                        q_curve = '?' #int(is_Q_curve(E))
+                        # Q-curve? (isogeny class invariant)
+                        q_curve = int(is_Q_curve(E))
                         if verbose>1:
                             if q_curve=='?':
                                 print("Q-curve status not determined")
