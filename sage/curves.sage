@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from sage.all import cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, IntegerRing, Primes, O, Magma
+from sage.all import cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, IntegerRing, Primes, O, Magma, sign
 from sage.databases.cremona import cremona_letter_code
 from psort import (nf_key, primes_of_degree_iter, primes_iter, ideal_label)
 from nfscripts import ideal_HNF
@@ -66,7 +66,7 @@ def add_field(K, field_label=None, prime_norm_bound=200):
     #K.SF = K.defining_polynomial().splitting_field('b')
     #print("...finding CM j-invariants...")
     for dd, f, j in cm_j_invariants_and_orders(K):
-	cm_j_dict[j] = dd * (f ^ 2)
+        cm_j_dict[j] = dd * (f ^ 2)
     used_curves[K] = {}
     nf_data[K] = None
     cm_counts[K] = {}
@@ -142,14 +142,14 @@ def ap(E, p):
         reduction, otherwise the appropriate L-series coefficient
         depending on the type of bad reduction.
         """
-	if E.has_good_reduction(p):
-		return E.reduction(p).trace_of_frobenius()
-	elif E.has_split_multiplicative_reduction(p):
-		return 1
-	elif E.has_nonsplit_multiplicative_reduction(p):
-		return -1
-	elif E.has_additive_reduction(p):
-		return 0
+        if E.has_good_reduction(p):
+                return E.reduction(p).trace_of_frobenius()
+        elif E.has_split_multiplicative_reduction(p):
+                return 1
+        elif E.has_nonsplit_multiplicative_reduction(p):
+                return -1
+        elif E.has_additive_reduction(p):
+                return 0
 
 def ap_list(E):
         r"""
@@ -173,14 +173,14 @@ def found(E, norm = None):
         r"""
         Return ``True`` iff this isomorphism class has been encountered already.
         """
-	if norm is None:
-		norm = E.conductor().norm()
+        if norm is None:
+                norm = E.conductor().norm()
         K = E.base_field()
-	if norm in used_curves[K]:
-		for E2 in used_curves[K][norm]:
-			if E.is_isomorphic(E2):
-				return E2
-	return None
+        if norm in used_curves[K]:
+                for E2 in used_curves[K][norm]:
+                        if E.is_isomorphic(E2):
+                                return E2
+        return None
 
 # Functions for testing if E is a Q-curve
 
@@ -368,9 +368,9 @@ def is_Q_curve(E, field_label=None, verbose=False):
             if verbose:
                 print("j-invariants in class: {}".format(jC))
                 if t:
-                    print("Yes: class (using first {} primes) contains all conjugate j-invariants".format(n+1))
+                    print("Yes: class contains all conjugate j-invariants")
                 else:
-                    print("No: class (using first {} primes) does not contain all conjugate j-invariants".format(n+1))
+                    print("No: class does not contain all conjugate j-invariants")
             return t
 
         return '?'
@@ -639,27 +639,13 @@ def curve_cmp_via_L(E1,E2,nmax=100):
         L1 = rational_L_coefficients(E1,nmax)
         L2 = rational_L_coefficients(E2,nmax)
         L = [L1[n] for n in sorted(L1.keys())]
-        c = cmp(L, [L2[n] for n in sorted(L2.keys())])
+        c = [L, [L2[n] for n in sorted(L2.keys())]]
         if c:
                 return c
         # For testing purposes:
         if not E1.is_isogenous(E2):
                 print("Warning: curves %s and %s of conductor %s have matching L-functions\n   %s but are not isogenous!" % (E1.ainvs(),E2.ainvs(), E1.conductor(), L))
                 return c
-
-# Isogeny class comparison: original form, using the L-functions as
-# sums over integral ideals of k.  This matches the sorting of Bianchi
-# newforms.
-
-def isog_class_cmp1(k, I, J):
-	E_I = curve_from_strings(k,I[0].split()[6:11])
-	E_J = curve_from_strings(k,J[0].split()[6:11])
-
-	for p in Plists[k]:
-		c = int(ap(E_I, p) - ap(E_J, p))
-		if c: return cmp(c,0)
-
-	raise NotImplementedError("Bound on primes is too small to determine...")
 
 # Isogeny class comparison: experimental for, based on comparison
 # between the L-functions as rational Dirichlet series (indexed by
@@ -670,14 +656,30 @@ def isog_class_cmp1(k, I, J):
 # L-function and would need a tie-break anyway.
 
 def isog_class_cmp2(k, I, J):
-	E1 = curve_from_strings(k,I[0].split()[6:11])
-	E2 = curve_from_strings(k,J[0].split()[6:11])
+        E1 = curve_from_strings(k,I[0].split()[6:11])
+        E2 = curve_from_strings(k,J[0].split()[6:11])
         return curve_cmp_via_L(E1,E2)
+
+
+# Isogeny class comparison: original form, using the L-functions as
+# sums over integral ideals of k.  This matches the sorting of Bianchi
+# newforms.
+
+def isog_class_cmp1(k, I, J):
+        E_I = curve_from_strings(k,I[0].split()[6:11])
+        E_J = curve_from_strings(k,J[0].split()[6:11])
+
+        for p in Plists[k]:
+                c = int(ap(E_I, p) - ap(E_J, p))
+                if c: return sign(c)
+
+        raise NotImplementedError("Bound on primes is too small to determine...")
+
 
 
 fields = {} # keys are field labels, values are NumberFields
 import yaml
-field_dict = yaml.load(file("HMField_data.yaml")) # all the totally real fields in the LMFDB
+field_dict = yaml.load(open("HMField_data.yaml")) # all the totally real fields in the LMFDB
 
 def field_from_label(lab):
         if lab in fields:
@@ -704,7 +706,7 @@ def field_from_label(lab):
                 raise NotImplementedError("cannot yet handle field %s" % lab)
         K = NumberField(pol, name)
         fields[lab] = K
-        print "Created field from label %s: %s" % (lab,K)
+        print("Created field from label {}: {}".format(lab,K))
         return K
 
 def read_curve_file(infile):
@@ -715,7 +717,7 @@ def read_curve_file(infile):
     """
     curves = []
     index = 0
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         if L[0]=='#': # allow for comment lines
             continue
         data = L.split()
@@ -746,7 +748,7 @@ def read_curvedata_file(infile):
     """
     curves = []
     index = 0
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         if L[0]=='#': # allow for comment lines
             continue
         data = L.split()
@@ -779,7 +781,7 @@ def read_isoclass_file(infile):
     """
     curves = []
     index = 0
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         if L[0]=='#': # allow for comment lines
             continue
         data = L.split()
@@ -803,7 +805,7 @@ def write_curve_file(curves, outfile):
     Write a curves file, each line containing 13 data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
-    out = file(outfile, 'w')
+    out = open(outfile, 'w')
     for c in curves:
         line = " ".join([c['field_label'],
                          c['N_label'],
@@ -820,7 +822,7 @@ def write_curvedata_file(curves, outfile):
     Write a curves file, each line containing 9+ngens data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
-    out = file(outfile, 'w')
+    out = open(outfile, 'w')
     for c in curves:
         line = " ".join([c['field_label'],
                          c['N_label'],
@@ -838,7 +840,7 @@ def write_isoclass_file(curves, outfile):
     Write an isoclass file, each line containing 5 data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
-    out = file(outfile, 'w')
+    out = open(outfile, 'w')
     for c in curves:
         line = " ".join([c['field_label'],
                          c['N_label'],
@@ -891,11 +893,11 @@ def read_curves(infile, only_one=False, ncurves=0):
         *not* 1, hence only yielding one curve per isogeny class.
         """
         count=0
-        for L in file(infile).readlines():
+        for L in open(infile).readlines():
                 #sys.stdout.write(L)
                 data = L.split()
                 if len(data)!=13:
-                        print "line %s does not have 13 fields, skipping" % L
+                        print("line {} does not have 13 fields, skipping".format(L))
                         continue
                 if only_one and data[3]!='1':
                         continue
@@ -981,11 +983,11 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
         the letter labels are of the form "CMa", "CMb", etc and not
         just "a", "b", etc.  """
         if outfile:
-                outfile = file(outfile, mode="a")
+                outfile = open(outfile, mode="a")
         if classfile:
-                classfile = file(classfile, mode="a")
+                classfile = open(classfile, mode="a")
 
-	data = {} # holds line to be output into the main output file,
+        data = {} # holds line to be output into the main output file,
                   # indexed by (1) field (2) conductor norm (3,4) HNF
                   # generators (only sufficient for quadratic fields!)
                   # i.e. data[k][n][c][d] is a list of strings to be
@@ -995,7 +997,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
 
         isogdata = {} # ditto for isogeny classes & isog matrix data file.
 
-	for E in curves:
+        for E in curves:
                 N_label = None
                 field_label = None
                 if isinstance(E,tuple):
@@ -1021,8 +1023,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                 isogdata_k = isogdata[k]
 
                 E = minimal_model(E)
-		N = E.conductor()
-		norm = N.norm()
+                N = E.conductor()
+                norm = N.norm()
                 if N_label:
                     if not norm==ZZ(N_label.split(".")[0]):
                         print("****************************")
@@ -1030,14 +1032,14 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         print("****************************")
 
                 E2 = found(E, norm)
-		if E2:
+                if E2:
                     if verbose>0:
                         print(" -- isogenous to previous curve %s" % list(E2.ainvs()))
                 else:
                         if verbose>1:
                                 print(" -- new isogeny class")
-			# Conductor
-			hnf = N.pari_hnf()
+                        # Conductor
+                        hnf = N.pari_hnf()
                         if N_label:
                             cond_label = N_label
                             cond_def = N_def
@@ -1054,17 +1056,17 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                             else:
                                 isog = ":isog"
 
-			# Setup data
-			if norm not in data_k:
-				data_k[norm] = {}
-				isogdata_k[norm] = {}
-			if hnf[1][0] not in data_k[norm]:
-				data_k[norm][hnf[1][0]] = {}
-				isogdata_k[norm][hnf[1][0]] = {}
-			if hnf[1][1] not in data_k[norm][hnf[1][0]]:
-				data_k[norm][hnf[1][0]][hnf[1][1]] = []
-				isogdata_k[norm][hnf[1][0]][hnf[1][1]] = []
-			else:
+                        # Setup data
+                        if norm not in data_k:
+                                data_k[norm] = {}
+                                isogdata_k[norm] = {}
+                        if hnf[1][0] not in data_k[norm]:
+                                data_k[norm][hnf[1][0]] = {}
+                                isogdata_k[norm][hnf[1][0]] = {}
+                        if hnf[1][1] not in data_k[norm][hnf[1][0]]:
+                                data_k[norm][hnf[1][0]][hnf[1][1]] = []
+                                isogdata_k[norm][hnf[1][0]][hnf[1][1]] = []
+                        else:
                                 # This is only useful if we input a
                                 # curve which is isogenous to one
                                 # already processed but is not
@@ -1073,19 +1075,19 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 # function produced an incomplete list
                                 # from the earlier curve!
                                 ainvs = E.a_invariants()
-				for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
+                                for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
                                         curve_data = found_isog_class[0].split()
-					if E.is_isogenous(curve_from_strings(k, curve_data[6:11]), maxnorm=200):
+                                        if E.is_isogenous(curve_from_strings(k, curve_data[6:11]), maxnorm=200):
                                                 print("Warning: input curve %s isogenous to previous curve %s but not found by isogeny class computation!" % (list(E.ainvs()),curve_data[6:11]))
-						curve_data[3] = len(found_isog_class)+1
-						curve_data[6:11] = [",".join([str(c) for c in ai]) for ai in ainvs]
-						data_k[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
-						break
+                                                curve_data[3] = len(found_isog_class)+1
+                                                curve_data[6:11] = [",".join([str(c) for c in ai]) for ai in ainvs]
+                                                data_k[norm][hnf[1][0]][hnf[1][1]][n].append(" ".join(curve_data))
+                                                break
 
-			# Compute the isogeny class
+                        # Compute the isogeny class
                         if verbose>1:
                                 print("computing the isogeny class")
-			Cl = E.isogeny_class()
+                        Cl = E.isogeny_class()
                         clist0 = [minimal_model(C) for C in Cl.curves]
                         mat0 = Cl.matrix()
                         # sort into new order (will be redundant later)
@@ -1097,17 +1099,17 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 for j in range(len(clist)):
                                         mat[i,j] = mat0[perm[i],perm[j]]
 
-			if norm not in used:
-				used[norm] = []
+                        if norm not in used:
+                                used[norm] = []
                         if verbose and len(clist)>1:
                             print("Adding %s isogenous curves" % (len(clist)-1))
                             #for E2 in clist[1:]:
                             #    print list(E2.ainvs())
-			used[norm] += clist
+                        used[norm] += clist
 
                         matlist = str([list(r) for r in mat]).replace(' ','')
                         isogdata_line = "%s %s %s %i %s" % (field_label, cond_label, isog, 1, matlist)
-			isogdata_k[norm][hnf[1][0]][hnf[1][1]].append([isogdata_line])
+                        isogdata_k[norm][hnf[1][0]][hnf[1][1]].append([isogdata_line])
                         if verbose>1:
                                 print("isog_data: %s" % isogdata_line)
 
@@ -1122,31 +1124,31 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 else:
                                     print("...not a Q-curve")
 
-			tmp = [] # list of output lines (with
+                        tmp = [] # list of output lines (with
                                  # placeholder for isog code, filled
                                  # in after sorting)
 
-			for n, E2 in enumerate(clist):
-				# a-invs
-				ainvs = E2.a_invariants()
+                        for n, E2 in enumerate(clist):
+                                # a-invs
+                                ainvs = E2.a_invariants()
                                 ainv_string = ainvs_to_string(ainvs)
-				# Disc
-				j = E2.j_invariant()
-				disc = cm_j_dict.get(j, 0)
+                                # Disc
+                                j = E2.j_invariant()
+                                disc = cm_j_dict.get(j, 0)
 
                                 curve_line = "%s %s %s %i %s %i %s %i %s" % (field_label, cond_label, isog, n + 1, cond_def, norm, ainv_string, disc, q_curve)
                                 if verbose>1:
                                         print("curve_line: %s" % curve_line)
-				tmp.append(curve_line)
-			data_k[norm][hnf[1][0]][hnf[1][1]].append(tmp)
+                                tmp.append(curve_line)
+                        data_k[norm][hnf[1][0]][hnf[1][1]].append(tmp)
 
-	# Sort and output the data
+        # Sort and output the data
 
         #print(data)
         ks = data.keys()
         if verbose>0:
-                print
-                print "fields: %s" % ks
+                print()
+                print("fields: {}".format(ks))
         ks.sort()
         for k in ks:
             data_k = data[k]
@@ -1156,18 +1158,18 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
             for norm in norms:
                 data_k_n = data_k[norm]
                 isogdata_k_n = isogdata_k[norm]
-		hnf0s = data_k_n.keys()
-		hnf0s.sort()
-		for hnf0 in hnf0s:
+                hnf0s = data_k_n.keys()
+                hnf0s.sort()
+                for hnf0 in hnf0s:
                         data_k_n_h = data_k_n[hnf0]
                         isogdata_k_n_h = isogdata_k_n[hnf0]
-			hnf1s = data_k_n_h.keys()
-			hnf1s.sort()
-			for hnf1 in hnf1s:
+                        hnf1s = data_k_n_h.keys()
+                        hnf1s.sort()
+                        for hnf1 in hnf1s:
                                 dat = data_k_n_h[hnf1]
                                 isogdat = isogdata_k_n_h[hnf1]
-				#dat.sort(cmp = isog_class_cmp)
-				for n, (cdata,isodata) in enumerate(zip(dat,isogdat)):
+                                #dat.sort(cmp = isog_class_cmp)
+                                for n, (cdata,isodata) in enumerate(zip(dat,isogdat)):
                                         isoline = isodata[0]
                                         if isog==":isog":
                                                 isog_letter = cremona_letter_code(n)
@@ -1175,16 +1177,16 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                         if classfile:
                                                 classfile.write(isoline+'\n')
                                         if verbose>0:
-                                                print isoline
-					for E_data in cdata:
+                                                print(isoline)
+                                        for E_data in cdata:
                                                 line = E_data
                                                 if isog==":isog":
                                                         isog_letter = cremona_letter_code(n)
                                                         line = line.replace(":isog", isog_letter)
                                                 if outfile:
                                                         outfile.write(line+'\n')
-						if verbose>0:
-                                                        print line
+                                                if verbose>0:
+                                                        print(line)
 
 def run1(pth,fld):
     infile = "%s/curves1.%s" % (pth,fld)
@@ -1244,11 +1246,11 @@ def fix_conductors(infile, outfile = None, verbose=False):
     """
     f = outfile
     if f:
-        outfile = file(f,'w')
-    for L in file(infile).readlines():
+        outfile = open(f,'w')
+    for L in open(infile).readlines():
         data = L.split()
         if len(data)!=13:
-            print "line %s does not have 13 fields, skipping" % L
+            print("line {} does not have 13 fields, skipping".format(L))
             continue
         field_label = data[0]
         K = nf_lookup(field_label)
@@ -1267,7 +1269,7 @@ def fix_conductors(infile, outfile = None, verbose=False):
                 print("writing to {}: {}".format(f,data))
             outfile.write(" ".join(data)+"\n")
         if verbose:
-            print " ".join(data)
+            print(" ".join(data))
     if f:
         outfile.close()
 
@@ -1277,11 +1279,11 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
     """
     f = outfile
     if f:
-        outfile = file(f,'w')
-    for L in file(infile).readlines():
+        outfile = open(f,'w')
+    for L in open(infile).readlines():
         data = L.split()
         if len(data)!=13:
-            print "line %s does not have 13 fields, skipping" % L
+            print("line {} does not have 13 fields, skipping".format(L))
             continue
         field_label = data[0]
         K = nf_lookup(field_label)
@@ -1295,7 +1297,7 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
                 print("writing to {}: {}".format(f,data))
             outfile.write(" ".join(data)+"\n")
         if verbose:
-            print " ".join(data)
+            print(" ".join(data))
     if f:
         outfile.close()
 
@@ -1348,12 +1350,12 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
         writing output file in format needed by Sutherlands galdata program.
         """
         count=0
-        outfile = file(outfilename, mode='w')
-        for L in file(infilename).readlines():
+        outfile = open(outfilename, mode='w')
+        for L in open(infilename).readlines():
             #sys.stdout.write(L)
             data = L.split()
             if len(data)!=13:
-                print "line %s does not have 13 fields, skipping" % L
+                print("line {} does not have 13 fields, skipping".format(L))
                 continue
             count +=1
             if ncurves and count>ncurves:
