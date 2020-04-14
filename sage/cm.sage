@@ -1,10 +1,12 @@
-from nfscripts import make_curves_line
+from sage.all import QuadraticField, NumberField, srange, EllipticCurve, polygen, QQ, is_squarefree
+from nfscripts import make_curves_line, make_ec_dict
 
-K1.<i> = QuadraticField(-1)
-K2.<t> = QuadraticField(-2)
-K3.<z> = NumberField(x^2-x+1)
-K7.<a> = NumberField(x^2-x+2)
-K11.<b> = NumberField(x^2-x+3)
+x = polygen(QQ)
+K1 = QuadraticField(-1, 'i'); i=K1.gen()
+K2 = QuadraticField(-2, 't'); t=K2.gen()
+K3 = NumberField(x^2-x+1, 'z'); z=K3.gen()
+K7 = NumberField(x^2-x+2, 'a'); a=K7.gen()
+K11 = NumberField(x^2-x+3, 'b'); b=K11.gen()
 
 def K1_iterator(norm_bound, S=[]):
     By = norm_bound.isqrt()
@@ -105,7 +107,7 @@ def curves_K1(max_norm, min_norm=1, f=1, verb=False):
                 #print("cond.norm={}".format(Nn))
                 if min_norm <= Nn <= max_norm:
                     Ed = Ed.global_minimal_model()
-                    if verb: print d, Ed.ainvs(), Nn
+                    if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
 
 def curves_K2(max_norm, min_norm=1, verb=False):
@@ -120,7 +122,7 @@ def curves_K2(max_norm, min_norm=1, verb=False):
                 Nn = Ed.conductor().norm()
                 if min_norm <= Nn <= max_norm:
                     Ed = Ed.global_minimal_model()
-                    if verb: print d, Ed.ainvs(), Nn
+                    if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
 
 def curves_K7(max_norm, min_norm=1, f=1, verb=False):
@@ -135,7 +137,7 @@ def curves_K7(max_norm, min_norm=1, f=1, verb=False):
                 Nn = Ed.conductor().norm()
                 if min_norm <= Nn <= max_norm:
                     Ed = Ed.global_minimal_model()
-                    if verb: print d, Ed.ainvs(), Nn
+                    if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
 
 
@@ -151,7 +153,7 @@ def curves_K11(max_norm, min_norm=1, verb=False):
                 Nn = Ed.conductor().norm()
                 if min_norm <= Nn <= max_norm:
                     Ed = Ed.global_minimal_model()
-                    if verb: print d, Ed.ainvs(), Nn
+                    if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
 
 
@@ -182,13 +184,13 @@ def curves_K3(max_norm, min_norm=1, f=1, verb=False):
                 Nn = Ed.conductor().norm()
                 if min_norm <= Nn <= max_norm:
                     Ed = Ed.global_minimal_model()
-                    if verb: print d, Ed.ainvs(), Nn
+                    if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
 
 def dump(Elist, outfilename=None):
     if outfilename == None:
         return
-    outfile = file(outfilename, mode='w')
+    outfile = open(outfilename, mode='w')
     for E in Elist:
         outfile.write(make_curves_line(make_ec_dict(E))+'\n')
     outfile.close()
@@ -212,7 +214,7 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
     if field==2:
         if verbose:
             print("Qsqrt-2, norms {}-{}".format(min_norm,max_norm))
-        E2 = E2f1 = list(curves_K2(max_norm, min_norm,verbose))
+        E2 = list(curves_K2(max_norm, min_norm,verbose))
         assert all_non_iso(E2)
         if verbose:
             print(" found {} curves".format(len(E2)))
@@ -250,7 +252,7 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
         if verbose:
             print("Qsqrt-11, norms {}-{}".format(min_norm,max_norm))
 
-    E11 = E11f1 = list(curves_K11(max_norm, min_norm,verbose))
+    E11 = list(curves_K11(max_norm, min_norm,verbose))
     assert all_non_iso(E11)
     if verbose:
         print(" found {} curves".format(len(E11)))

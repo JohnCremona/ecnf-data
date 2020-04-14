@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from sage.all import cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, IntegerRing, Primes, O, Magma
+from sage.all import cm_j_invariants_and_orders, ZZ, QQ, RR, EllipticCurve, flatten, legendre_symbol, polygen, prod, primes, PowerSeriesRing, Integer, NumberField, srange, copy, IntegerRing, Primes, O, Magma, sign
 from sage.databases.cremona import cremona_letter_code
 from psort import (nf_key, primes_of_degree_iter, primes_iter, ideal_label)
 from nfscripts import ideal_HNF
@@ -368,9 +368,9 @@ def is_Q_curve(E, field_label=None, verbose=False):
             if verbose:
                 print("j-invariants in class: {}".format(jC))
                 if t:
-                    print("Yes: class (using first {} primes) contains all conjugate j-invariants".format(n+1))
+                    print("Yes: class contains all conjugate j-invariants")
                 else:
-                    print("No: class (using first {} primes) does not contain all conjugate j-invariants".format(n+1))
+                    print("No: class does not contain all conjugate j-invariants")
             return t
 
         return '?'
@@ -639,27 +639,13 @@ def curve_cmp_via_L(E1,E2,nmax=100):
         L1 = rational_L_coefficients(E1,nmax)
         L2 = rational_L_coefficients(E2,nmax)
         L = [L1[n] for n in sorted(L1.keys())]
-        c = cmp(L, [L2[n] for n in sorted(L2.keys())])
+        c = [L, [L2[n] for n in sorted(L2.keys())]]
         if c:
                 return c
         # For testing purposes:
         if not E1.is_isogenous(E2):
                 print("Warning: curves %s and %s of conductor %s have matching L-functions\n   %s but are not isogenous!" % (E1.ainvs(),E2.ainvs(), E1.conductor(), L))
                 return c
-
-# Isogeny class comparison: original form, using the L-functions as
-# sums over integral ideals of k.  This matches the sorting of Bianchi
-# newforms.
-
-def isog_class_cmp1(k, I, J):
-        E_I = curve_from_strings(k,I[0].split()[6:11])
-        E_J = curve_from_strings(k,J[0].split()[6:11])
-
-        for p in Plists[k]:
-                c = int(ap(E_I, p) - ap(E_J, p))
-                if c: return cmp(c,0)
-
-        raise NotImplementedError("Bound on primes is too small to determine...")
 
 # Isogeny class comparison: experimental for, based on comparison
 # between the L-functions as rational Dirichlet series (indexed by
@@ -675,9 +661,25 @@ def isog_class_cmp2(k, I, J):
         return curve_cmp_via_L(E1,E2)
 
 
+# Isogeny class comparison: original form, using the L-functions as
+# sums over integral ideals of k.  This matches the sorting of Bianchi
+# newforms.
+
+def isog_class_cmp1(k, I, J):
+        E_I = curve_from_strings(k,I[0].split()[6:11])
+        E_J = curve_from_strings(k,J[0].split()[6:11])
+
+        for p in Plists[k]:
+                c = int(ap(E_I, p) - ap(E_J, p))
+                if c: return sign(c)
+
+        raise NotImplementedError("Bound on primes is too small to determine...")
+
+
+
 fields = {} # keys are field labels, values are NumberFields
 import yaml
-field_dict = yaml.load(file("HMField_data.yaml")) # all the totally real fields in the LMFDB
+field_dict = yaml.load(open("HMField_data.yaml")) # all the totally real fields in the LMFDB
 
 def field_from_label(lab):
         if lab in fields:
@@ -704,7 +706,7 @@ def field_from_label(lab):
                 raise NotImplementedError("cannot yet handle field %s" % lab)
         K = NumberField(pol, name)
         fields[lab] = K
-        print "Created field from label %s: %s" % (lab,K)
+        print("Created field from label {}: {}".format(lab,K))
         return K
 
 def read_curve_file(infile):
@@ -715,7 +717,7 @@ def read_curve_file(infile):
     """
     curves = []
     index = 0
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         if L[0]=='#': # allow for comment lines
             continue
         data = L.split()
@@ -746,7 +748,7 @@ def read_curvedata_file(infile):
     """
     curves = []
     index = 0
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         if L[0]=='#': # allow for comment lines
             continue
         data = L.split()
@@ -779,7 +781,7 @@ def read_isoclass_file(infile):
     """
     curves = []
     index = 0
-    for L in file(infile).readlines():
+    for L in open(infile).readlines():
         if L[0]=='#': # allow for comment lines
             continue
         data = L.split()
@@ -803,7 +805,7 @@ def write_curve_file(curves, outfile):
     Write a curves file, each line containing 13 data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
-    out = file(outfile, 'w')
+    out = open(outfile, 'w')
     for c in curves:
         line = " ".join([c['field_label'],
                          c['N_label'],
@@ -820,7 +822,7 @@ def write_curvedata_file(curves, outfile):
     Write a curves file, each line containing 9+ngens data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
-    out = file(outfile, 'w')
+    out = open(outfile, 'w')
     for c in curves:
         line = " ".join([c['field_label'],
                          c['N_label'],
@@ -838,7 +840,7 @@ def write_isoclass_file(curves, outfile):
     Write an isoclass file, each line containing 5 data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
-    out = file(outfile, 'w')
+    out = open(outfile, 'w')
     for c in curves:
         line = " ".join([c['field_label'],
                          c['N_label'],
@@ -891,11 +893,11 @@ def read_curves(infile, only_one=False, ncurves=0):
         *not* 1, hence only yielding one curve per isogeny class.
         """
         count=0
-        for L in file(infile).readlines():
+        for L in open(infile).readlines():
                 #sys.stdout.write(L)
                 data = L.split()
                 if len(data)!=13:
-                        print "line %s does not have 13 fields, skipping" % L
+                        print("line {} does not have 13 fields, skipping".format(L))
                         continue
                 if only_one and data[3]!='1':
                         continue
@@ -981,9 +983,9 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
         the letter labels are of the form "CMa", "CMb", etc and not
         just "a", "b", etc.  """
         if outfile:
-                outfile = file(outfile, mode="a")
+                outfile = open(outfile, mode="a")
         if classfile:
-                classfile = file(classfile, mode="a")
+                classfile = open(classfile, mode="a")
 
         data = {} # holds line to be output into the main output file,
                   # indexed by (1) field (2) conductor norm (3,4) HNF
@@ -1145,8 +1147,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
         #print(data)
         ks = data.keys()
         if verbose>0:
-                print
-                print "fields: %s" % ks
+                print()
+                print("fields: {}".format(ks))
         ks.sort()
         for k in ks:
             data_k = data[k]
@@ -1175,7 +1177,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                         if classfile:
                                                 classfile.write(isoline+'\n')
                                         if verbose>0:
-                                                print isoline
+                                                print(isoline)
                                         for E_data in cdata:
                                                 line = E_data
                                                 if isog==":isog":
@@ -1184,7 +1186,7 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                                 if outfile:
                                                         outfile.write(line+'\n')
                                                 if verbose>0:
-                                                        print line
+                                                        print(line)
 
 def run1(pth,fld):
     infile = "%s/curves1.%s" % (pth,fld)
@@ -1244,11 +1246,11 @@ def fix_conductors(infile, outfile = None, verbose=False):
     """
     f = outfile
     if f:
-        outfile = file(f,'w')
-    for L in file(infile).readlines():
+        outfile = open(f,'w')
+    for L in open(infile).readlines():
         data = L.split()
         if len(data)!=13:
-            print "line %s does not have 13 fields, skipping" % L
+            print("line {} does not have 13 fields, skipping".format(L))
             continue
         field_label = data[0]
         K = nf_lookup(field_label)
@@ -1267,7 +1269,7 @@ def fix_conductors(infile, outfile = None, verbose=False):
                 print("writing to {}: {}".format(f,data))
             outfile.write(" ".join(data)+"\n")
         if verbose:
-            print " ".join(data)
+            print(" ".join(data))
     if f:
         outfile.close()
 
@@ -1277,11 +1279,11 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
     """
     f = outfile
     if f:
-        outfile = file(f,'w')
-    for L in file(infile).readlines():
+        outfile = open(f,'w')
+    for L in open(infile).readlines():
         data = L.split()
         if len(data)!=13:
-            print "line %s does not have 13 fields, skipping" % L
+            print("line {} does not have 13 fields, skipping".format(L))
             continue
         field_label = data[0]
         K = nf_lookup(field_label)
@@ -1295,7 +1297,7 @@ def fix_conductor_ideals(infile, outfile = None, verbose=False):
                 print("writing to {}: {}".format(f,data))
             outfile.write(" ".join(data)+"\n")
         if verbose:
-            print " ".join(data)
+            print(" ".join(data))
     if f:
         outfile.close()
 
@@ -1348,12 +1350,12 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
         writing output file in format needed by Sutherlands galdata program.
         """
         count=0
-        outfile = file(outfilename, mode='w')
-        for L in file(infilename).readlines():
+        outfile = open(outfilename, mode='w')
+        for L in open(infilename).readlines():
             #sys.stdout.write(L)
             data = L.split()
             if len(data)!=13:
-                print "line %s does not have 13 fields, skipping" % L
+                print("line {} does not have 13 fields, skipping".format(L))
                 continue
             count +=1
             if ncurves and count>ncurves:
