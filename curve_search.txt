@@ -120,6 +120,16 @@ Log  of imaginary quadratic field curves searches:
          2.0.4.1-34225.3-b: bc=0, cm=0
          2.0.4.1-34225.3-a: bc=0, cm=0
 
+         Comparing data files with database on 2019-03-28:
+
+         Form 2.0.4.1-34225.3-a has no matching curve
+         Form 2.0.4.1-34225.3-b has no matching curve
+         Form 2.0.4.1-34225.7-a has no matching curve
+         Form 2.0.4.1-34225.7-b has no matching curve
+         Field 2.0.4.1: file and database both have 40275 classes
+         Field 2.0.4.1: file and database both have 74037 curves
+
+
 2.0.8.1: 10001-20000:all 7120 found
 
          20k-30k search: done. isogs. uploaded.
@@ -138,6 +148,19 @@ Log  of imaginary quadratic field curves searches:
          2.0.8.1-21609.3-b: bc=-7, cm=0
          2.0.8.1-21609.1-c: bc=-7, cm=0
          2.0.8.1-21609.1-b: bc=-7, cm=0
+
+         Comparing data files with database on 2019-03-28:
+
+         Form 2.0.8.1-5625.1-b has no matching curve
+         Form 2.0.8.1-5625.3-b has no matching curve
+         Form 2.0.8.1-6561.5-a has no matching curve
+         Form 2.0.8.1-6561.5-d has no matching curve
+         Form 2.0.8.1-21609.1-b has no matching curve
+         Form 2.0.8.1-21609.1-c has no matching curve
+         Form 2.0.8.1-21609.3-b has no matching curve
+         Form 2.0.8.1-21609.3-c has no matching curve
+         Field 2.0.8.1: file and database both have 36907 classes
+         Field 2.0.8.1: file and database both have 70040 curves
 
 2.0.3.1: all 2593 found 10001-20000, 5244 isogs, uploaded.
 
@@ -192,6 +215,12 @@ Log  of imaginary quadratic field curves searches:
          140k-150k:  2873 of 2875 found. 4835 isogs, uploaded.
          **********No curve found to match newform  146716.62680.2-a/b*************
          cm 100k-200k done
+
+         Comparing data files with database on 2019-03-28:
+         (the 4 extra curves/classes are still in separate files)
+         Field 2.0.3.1: file has 42814 classes, database has 42818
+         Field 2.0.3.1: file has 77091 curves, database has 77095
+
 
 2.0.7.1: 10001-20000: all 7054 found
          20001-30000: all 7296 found

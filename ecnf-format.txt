@@ -4,6 +4,8 @@
 #                                    #
 #  Data stored in the mongo database #
 #                                    #
+#  NB needs updating for postgresql  #
+#                                    #
 ######################################
 
 See
@@ -128,7 +130,7 @@ labels of elliptic curves over Q.  (When K is quadratic this will
 noramlly contain 2 entries, labels of curves which are quadratic
 twists of each other.)  This field depends on the curve, not just its
 isogeny class.  By contrast, Q-curve is True iff the curve is
-isogenous to all its Galois conjugates, which is an isogeny-invariant
+isogenous (over Qbar) to all its Galois conjugates, which is an isogeny-invariant
 property.  If any curve in the class is a base-change then all curves
 in the class are Q-curves (including those definable over Q), but it
 is possible for an isogeny class of Q-curves not to contain any

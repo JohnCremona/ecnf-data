@@ -53,7 +53,7 @@ def check_data1(fld, pre, verbose=True):
     iso_file = "{}/isoclass.{}".format(pre,fld)
     cur_file = "{}/curves.{}".format(pre,fld)
     try:
-        n_iso = len(file(iso_file).readlines())
+        n_iso = len(open(iso_file).readlines())
     except:
         print("No file {} exists".format(iso_file))
         n_iso = 0
@@ -64,7 +64,7 @@ def check_data1(fld, pre, verbose=True):
         print("Field {}: file and database both have {} classes".format(fld,ncl))
 
     try:
-        n_cur = len(file(cur_file).readlines())
+        n_cur = len(open(cur_file).readlines())
     except:
         print("No file %s exists" % cur_file)
         n_cur = 0
