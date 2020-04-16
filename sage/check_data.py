@@ -2,16 +2,19 @@ fields = {}
 field_types = {2: 'RQF', -2:'IQF', 3: 'cubics', 4: 'quartics', 5: 'quintics', 6: 'sextics'}
 dirs = {}
 
-forms = None
-nfcurves = None # keep pyflakes happy: the function below needs
-                # nfcurves and forms to be set to the nfcurves collection.
+# Needs to be %runfile'd from lmfdb root directory!
+
+import os
+from lmfdb import db
+nfcurves = db.ec_nfcurves
+forms = db.bmf_forms
 
 def set_fields(degree=2):
     global fields, dirs
     if degree in fields:
         return
-    fields[degree] = nfcurves.find({'degree':int(degree)}).distinct('field_label')
-    dirs[degree] = "/home/jec/ecnf-data/{}".format(field_types[degree])
+    fields[degree] = nfcurves.distinct('field_label', {'degree':degree})
+    dirs[degree] = os.environ['HOME'] + "/ecnf-data/{}".format(field_types[degree])
 
 
 def check_data1(fld, pre, verbose=True):
@@ -27,23 +30,23 @@ def check_data1(fld, pre, verbose=True):
     """
     if verbose:
         print("Checking data for field {}".format(fld))
-    nforms = forms.find({'field_label':fld, 'dimension':int(1)}).count()
+    nforms = forms.count({'field_label':fld, 'dimension':1})
     if verbose:
         print("{} rational newforms".format(nforms))
     if nforms==0:
         return
-    ncu = nfcurves.find({'field_label':fld}).count()
-    ncl = nfcurves.find({'field_label':fld, 'number':int(1)}).count()
-    #ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$regex':'CM'}})
-    ncl_CM = nfcurves.find({'field_label':fld, 'number':int(1), 'label': {'$regex':'CM'}}).count()
+    ncu = nfcurves.count({'field_label':fld})
+    ncl = nfcurves.count({'field_label':fld, 'number':1})
+    #ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$like':'%CM%'}})
+    ncl_CM = nfcurves.count({'field_label':fld, 'number':1, 'label': {'$like':'%CM%'}})
     #ncu_nonCM = ncu-ncu_CM
     ncl_nonCM = ncl-ncl_CM
     if nforms!=ncl_nonCM:
         print("Field {} has {} rational newforms but {} non-CM isogeny classes".format(fld,nforms,ncl_nonCM))
         if nforms>ncl_nonCM:
             print("{} missing isogeny classes:".format(nforms-ncl_nonCM))
-            for f in forms.find({'field_label':fld, 'dimension':int(1)}):
-                if not nfcurves.find_one({'class_label':f['label']}):
+            for f in forms.search({'field_label':fld, 'dimension':1}):
+                if not nfcurves.count({'class_label':f['label']}):
                     print("Form {} has no matching curve".format(f['label']))
     else:
         print("Field {} has {} rational newforms and non-CM isogeny classes".format(fld,nforms))
@@ -72,10 +75,3 @@ def check_data1(fld, pre, verbose=True):
     else:
         print("Field {}: file and database both have {} curves".format(fld,ncu))
 
-def check_data2(fld):
-    """Wrapper round the find_curve_labels() function from
-    hmf_check_find, which will check that for each rational newform
-    there is a curve with the correct label, conductor and ap.
-    """
-    print("Field %s" % fld)
-    find_curve_labels(fld)
