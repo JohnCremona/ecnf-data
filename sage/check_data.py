@@ -4,6 +4,7 @@ dirs = {}
 
 # Needs to be %runfile'd from lmfdb root directory!
 
+import os
 from lmfdb import db
 nfcurves = db.ec_nfcurves
 forms = db.bmf_forms
@@ -36,9 +37,9 @@ def check_data1(fld, pre, verbose=True):
         return
     ncu = nfcurves.count({'field_label':fld})
     ncl = nfcurves.count({'field_label':fld, 'number':1})
-    ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$like':'%CM%'}})
+    #ncu_CM = nfcurves.count({'field_label':fld, 'label': {'$like':'%CM%'}})
     ncl_CM = nfcurves.count({'field_label':fld, 'number':1, 'label': {'$like':'%CM%'}})
-    ncu_nonCM = ncu-ncu_CM
+    #ncu_nonCM = ncu-ncu_CM
     ncl_nonCM = ncl-ncl_CM
     if nforms!=ncl_nonCM:
         print("Field {} has {} rational newforms but {} non-CM isogeny classes".format(fld,nforms,ncl_nonCM))
@@ -74,10 +75,3 @@ def check_data1(fld, pre, verbose=True):
     else:
         print("Field {}: file and database both have {} curves".format(fld,ncu))
 
-def check_data2(fld):
-    """Wrapper round the find_curve_labels() function from
-    hmf_check_find, which will check that for each rational newform
-    there is a curve with the correct label, conductor and ap.
-    """
-    print("Field %s" % fld)
-    find_curve_labels(fld)

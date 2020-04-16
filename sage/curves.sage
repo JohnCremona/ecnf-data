@@ -883,7 +883,6 @@ def rewrite_curve_file(infile, outfile, verbose=True):
 
     write_file(curves, outfile)
 
-
 def read_curves(infile, only_one=False, ncurves=0):
         r"""
         Iterator to loop through lines of a curves.* file each
@@ -913,6 +912,49 @@ def read_curves(infile, only_one=False, ncurves=0):
                 N_def = data[4]
                 E = curve_from_strings(K, data[6:11])
                 yield (field_label,N_label,N_def,iso_label,c_num,E)
+
+def read_classes(infile):
+        r"""
+        Iterator to loop through lines of a curves.* file each
+        containing 13 data fields as defined the in the ecnf-format.txt file,
+        yielding complete isogeny classes.  These are dicts with keys
+
+        field_label, N_label, N_def, N_norm, iso_label, curves
+
+        the last being a list of EllipticCurves.
+        """
+        count=0
+        prev_class_id = ''
+        this_class = {}
+        for L in open(infile).readlines():
+                data = L.split()
+                if len(data)!=13:
+                        print("line {} does not have 13 fields, skipping".format(L))
+                        continue
+                count +=1
+                field_label = data[0]
+                K = nf_lookup(field_label)
+                N_label = data[1]
+                iso_label = data[2]
+                c_num = data[3]
+                N_def = data[4]
+                N_norm = int(data[5])
+                E = curve_from_strings(K, data[6:11])
+                this_class_id = "-".join(data[:3])
+                if this_class_id == prev_class_id:
+                    this_class['curves'].append(E)
+                else:
+                    if this_class:
+                        yield this_class
+                    this_class = {}
+                    this_class['field_label'] = field_label
+                    this_class['N_label'] = N_label
+                    this_class['N_def'] = N_def
+                    this_class['N_norm'] = N_norm
+                    this_class['iso_label'] = iso_label
+                    this_class['curves'] = [E]
+                    prev_class_id = this_class_id
+        yield this_class
 
 def get_isoclass_letter(N, E):
         K = E.base_field()
