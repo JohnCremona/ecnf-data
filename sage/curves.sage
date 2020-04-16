@@ -76,7 +76,8 @@ def add_field(K, field_label=None, prime_norm_bound=200):
             #nf_filename = nf_filename_from_D(absD)
             #nf_filename = "/home/jec/bianchi-data/nflist/nflist.11.20001-30000"
             #nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.120001-130000"
-            nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.missing_curves"
+            #nf_filename = "/home/jec/bianchi-data/newforms/newforms.3.missing_curves"
+            nf_filename = "/home/john/ecnf-data/sage/newforms.11.9900.5"
             print("reading newform data from {}".format(nf_filename))
             nf_data[K] = read_newform_data(nf_filename)
     print("...finished adding field.")
@@ -1149,23 +1150,19 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
         if verbose>0:
                 print()
                 print("fields: {}".format(ks))
-        ks.sort()
-        for k in ks:
+        for k in sorted(ks):
             data_k = data[k]
             isogdata_k = isogdata[k]
             norms = data_k.keys()
-            norms.sort()
-            for norm in norms:
+            for norm in sorted(norms):
                 data_k_n = data_k[norm]
                 isogdata_k_n = isogdata_k[norm]
                 hnf0s = data_k_n.keys()
-                hnf0s.sort()
-                for hnf0 in hnf0s:
+                for hnf0 in sorted(hnf0s):
                         data_k_n_h = data_k_n[hnf0]
                         isogdata_k_n_h = isogdata_k_n[hnf0]
                         hnf1s = data_k_n_h.keys()
-                        hnf1s.sort()
-                        for hnf1 in hnf1s:
+                        for hnf1 in sorted(hnf1s):
                                 dat = data_k_n_h[hnf1]
                                 isogdat = isogdata_k_n_h[hnf1]
                                 #dat.sort(cmp = isog_class_cmp)
