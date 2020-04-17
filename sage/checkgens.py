@@ -18,6 +18,7 @@
 # data in the latter).
 
 from sage.all import QQ, ZZ, polygen, NumberField, EllipticCurve
+from fields import nf_lookup
 
 def field_data(s):
     r"""
@@ -32,6 +33,17 @@ def parse_NFelt(K, s):
     Returns an element of K defined by the string s.
     """
     return K([QQ(c) for c in s.split(",")])
+
+def parse_point(K,s):
+    r"""
+    Returns an list of 3 elements of K defined by the string s.
+
+    Example: K=Q(a) quadratic
+             s = '[[-302/9,-16/3],[3098/27,-685/27],[1,0]]'
+
+    returns [-302/9-(16/3)*a, 3098/27-(685/27)*a, 1]
+    """
+    return [K([QQ(c) for c in coord.split(",")]) for coord in s[2:-2].split('],[')]
 
 fields = {}
 # This function only works for quadratic fields, where the label
@@ -52,14 +64,12 @@ def field_from_label(lab):
         print("Created field from label {}: {}".format(lab,K))
         return K
 
-def read_curves(infile):
-    curves = {}
-    for L in open(infile).readlines():
+def parse_curves_line(L):
         data = L.split()
         if len(data)!=13:
             print("line {} does not have 13 fields, skipping".format(L))
-            continue
-        K = field_from_label(data[0])
+            return ('', None)
+        K = nf_lookup(data[0])
         ainvs = [parse_NFelt(K,ai) for ai in data[6:11]]
         E = EllipticCurve(ainvs)
 
@@ -69,20 +79,11 @@ def read_curves(infile):
         number = int(data[3])       # int
         short_label = "%s-%s%s" % (conductor_label, iso_label, str(number))
         label = "%s-%s" % (field_label, short_label)
-        curves[label] = E
+        return (label, E)
 
-    return curves
-
-def check_gens(suffix):
-    curves_file = "curves.%s" % suffix
-    curvedata_file = "curve_data.%s" % suffix
-    curves = read_curves(curves_file)
-    print("Read {} curves".format(len(curves)))
-    for L in open(curvedata_file).readlines():
+def parse_curve_data_line(L):
         data = L.split()
         ngens = int(data[7])
-        if not ngens:
-            continue
         if len(data)!=9+ngens:
             print("line {} does not have 9 fields (excluding gens), skipping".format(L))
         field_label = data[0]       # string
@@ -91,15 +92,63 @@ def check_gens(suffix):
         number = int(data[3])       # int
         short_label = "%s-%s%s" % (conductor_label, iso_label, str(number))
         label = "%s-%s" % (field_label, short_label)
-        try:
-            E = curves[label]
-        except KeyError:
-            print("{} is not the label of a curve read from the curves file".format(label))
+        return (label, data[8:8+ngens])
+
+def read_curves(infile):
+    curves = {}
+    for L in open(infile).readlines():
+        label, E = parse_curves_line(L)
+        if label:
+            yield (label, E)
+        else:
+            print("line {} does not have 13 fields, skipping".format(L))
             continue
+
+def check_gens(suffix, verbose=False):
+    curves_file = "curves.%s" % suffix
+    curvedata_file = "curve_data.%s" % suffix
+    cfile = open(curves_file)
+    cdfile = open(curvedata_file)
+    all_good = True
+    bad_curves = []
+    n = 0
+    m = 0
+    while True:
+        L1 = cfile.readline()
+        if not L1:
+            break
+        L2 = cdfile.readline()
+        if not L2:
+            break
+        n += 1
+        if verbose and n%100==0:
+            print("{} curves read".format(n))
+        lab2, pts = parse_curve_data_line(L2)
+        if not pts:
+            continue
+        m += 1
+        label, E = parse_curves_line(L1)
+        if label!=lab2:
+            print("label mismatch! {} from {} but {} from {}".format(label,curves_file, lab2, curvedata_file))
+            cfile.close()
+            cdfile.close()
+            return
+
         K = E.base_field()
-        genstringlists = [g[1:-1].split(":") for g in data[8:8+ngens]]
-        try:
-            assert [E([parse_NFelt(K,c) for c in cc]) for cc in genstringlists]
-        except:
-            print("Bad generators {} for curve {}".format(genstringlists,label))
-        #print("Curve {}: all {} gens OK".format(label,ngens))
+        for pt in pts:
+            try:
+                assert E(parse_point(K,pt))
+                if verbose:
+                    print("{} OK on {}".format(pt,label))
+            except:
+                print("Bad point {} for curve {}".format(pt,label))
+                if not label in bad_curves:
+                    bad_curves.append(label)
+                all_good = False
+    print("Processed {} curves of which {} had any points".format(n,m))
+    if all_good:
+        print("All generators check OK")
+    else:
+        print("Bad generators for {}".format(bad_curves))
+    cfile.close()
+    cdfile.close()
