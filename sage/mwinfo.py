@@ -105,7 +105,7 @@ def map_points(maps, source, Plist, verbose=False):
                         pts, index, reg = E.saturation(Qlists[j], one_prime=p)
                         if index > 1:
                             Qlists[j] = E.lll_reduce(pts)[0]
-                            if True:  # verbose:
+                            if verbose:
                                 print("%s-saturation needed on curve %s, gaining index %s" % (p, list(E.ainvs()), index))
                         else:
                             if verbose:
@@ -195,13 +195,6 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
     # Check we have it right:
     assert all([all([P in curves[i] for P in fixed_MWI[i][1]]) for i in range(n)])
     return fixed_MWI
-
-
-def old_encode_point(P):
-    r"""
-    Converts a point [x,y,z] into a 3-list of d-lists of strings
-    """
-    return [[str(x) for x in list(c)] for c in list(P)]
 
 def encode_point(P):
     r"""
@@ -321,7 +314,7 @@ def make_curve_data(curves_filename, curve_data_filename, min_cond_norm=None, ma
             #continue
             break
 
-        if verbose:
+        if True:#verbose:
             class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
             print("Processing class {}".format(class_label))
         cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
