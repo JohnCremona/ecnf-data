@@ -2,13 +2,31 @@
 r"""Functions to find ranks and generators of elliptic curves by
  interfacing with Magma
 
-This version reads curves from a curves.* file and outputs a curvedata.* file
+This version reads curves from a curves.* file and outputs a mwdata.* file
+
+Format of mwdata file supercedes that of curve_data file, including
+also heights and regulator and torsion data.
+
+1. field_label
+2. conductor_label
+3. iso_label
+4. number
+5: rank                   int or ?
+6: rank_bounds      [int,int] or ?
+7: analytic_rank          int or ?
+8: ngens (number of generators of infinite order) int
+9: gens  (list of ngens lists of 3 lists of d rationals)
+10: heights         list of ngens reals
+11: regulator       real
+12: ntorsion         int
+13: torstruct       [int,int]
+14: torgens (list of 0,1 or 2 lists of 3 lists of d rationals)
+
 """
 from __future__ import print_function
-
-from sage.all import EllipticCurve
-from fields import nf_lookup
-#from curves import curve_from_strings
+from sage.all import magma, union
+from files import read_classes
+from codec import encode_points
 
 def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     r"""
@@ -43,7 +61,6 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
         return E([K(c.sage()) for c in P.Eltseq()])
     if verbose:
         print("calling magma...")
-    from sage.all import magma
     if HeightBound is None:
         MWSI = magma(E).MordellWeilShaInformation(nvals=3)
     else:
@@ -150,7 +167,6 @@ def find_source(maps):
     vertex, and we return such an i.  For example if
     maps=[[0,0],[1,0]] then vertex 1 is good but vertex 0 is not!
     """
-    from sage.all import union
     n = len(maps)
     mat = [[int((maps[i][j] != 0) or (i == j)) for j in range(n)] for i in range(n)]
     # print("mat = %s" % mat)
@@ -184,6 +200,8 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
     # Now we must map the points to the correct curves!
 
     n = len(Cl.curves)
+    if not n==len(curves):
+        print("MWInfo_curves list of curves had length {} but isogeny class from 1st curve has length {}".format(len(curves),n))
     fixed_MWI = [None for _ in range(n)]  # just to set length
     for i in range(n):
         E = curves[i]
@@ -196,21 +214,9 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
     assert all([all([P in curves[i] for P in fixed_MWI[i][1]]) for i in range(n)])
     return fixed_MWI
 
-def encode_point(P):
-    r"""
-    Converts a point into a string encoding a 3-list of d-lists of rationals
-    """
-    return str([list(c) for c in list(P)]).replace(" ","")
-
-def encode_points(Plist):
-    r"""
-    Converts a list of points into a list of lists of 3 lists of d lists of strings
-    """
-    return [encode_point(P) for P in Plist]
-
 def get_generators(iso_class, test_saturation=False, verbose=False):
     r"""Given an isogeny class, finds the rank (or bounds) and
-    generators.
+    generators and torsion data for each curve in the class.
 
     iso_class is a dict as yielded by the read_classes() function, with keys:
     field_label, N_label, N_def, iso_label, curves
@@ -218,8 +224,11 @@ def get_generators(iso_class, test_saturation=False, verbose=False):
 
     Returns iso_class with an extra key 'mwdata' whose value is a list
     of data, for each curve in the class, the data being a dict with
-    keys 'rank_bounds', 'rank', 'gens', 'heights', 'reg'.  If the rank
-    bounds are not equal then key 'rank' is missing.
+    keys
+
+    'rank_bounds', 'rank', 'gens', 'hts', 'reg', 'ntors', 'torstruct', 'tgens'.
+
+    If the rank bounds are not equal then key 'rank' is missing.
 
     """
     class_label = "-".join([iso_class['field_label'], iso_class['N_label'], iso_class['iso_label']])
@@ -236,15 +245,103 @@ def get_generators(iso_class, test_saturation=False, verbose=False):
         data['rank_bounds'] = [int(r) for r in mw[0]]
         if mw[0][0] == mw[0][1]:
             data['rank'] = int(mw[0][0])
-        gens = mw[1]
-        data['gens'] = encode_points(gens)
-        data['heights'] = [str(P.height()) for P in gens]
-        data['reg'] = E.regulator_of_points(gens)
+        data['gens'] = gens = mw[1]
+        data['hts'] = [P.height() for P in gens]
+        data['reg'] = E.regulator_of_points(gens) if gens else 1
+
+        # get torsion order, structure and generators:
+        torgroup = E.torsion_subgroup()
+        data['ntors'] = torgroup.order()
+        data['torstruct'] = list(torgroup.invariants())
+        data['tgens'] = [P.element() for P in torgroup.gens()]
+
         if verbose:
             print("MW data for E={}:\n{}".format(E.ainvs(),data))
         iso_class['mwdata'].append(data)
 
     return iso_class
+
+def make_mwdata_line(c):
+    r"""return a string for one line of a mwdata file.
+
+    c is a dict with keys:
+    field_label, conductor_label, iso_label, number, mwdata
+    where mwdata is a dict with keys
+    rank (int or '?')
+    rank_bounds (list of 2 ints)
+    analytic_rank (int or '?')
+    ngens (int: 0 means we have no gens, whatever the rank)
+    gens (list of points)
+    ntors (torsion order)
+    torstruct (list of <=2 ints>1, defining the torsion structure)
+    tgens (list of points)
+
+    Output line fields (14); all but the first 4 are optional. If
+    rank, rank_bounds or analytic_rank are not known they must be "?".
+
+    field_label conductor_label iso_label number rank rank_bounds
+    analytic_rank ngens gens heights regulator ntors torstruct torgens
+
+    Sample output line:
+
+    2.0.4.1 2053.1809.1 a 1 2 [2,2] ? 2 [[[0,0],[-1,0],[1,0]];[[2,0],[2,0],[1,0]]] 1 [] []
+
+    """
+    mwdata = c['mwdata']
+    r = str(mwdata['rank']) if 'rank' in mwdata else '?'
+    rbds = str(mwdata['rank_bounds']).replace(" ", "")
+    ar = str(mwdata['analytic_rank']) if 'analytic_rank' in mwdata else '?'
+    ngens = str(len(mwdata['gens']))
+    gens = encode_points(mwdata['gens'])
+    hts = str(mwdata['hts']).replace(" ", "")
+    reg = str(mwdata['reg'])
+    ntors = str(mwdata['ntors'])
+    torstruct = str(mwdata['torstruct']).replace(" ", "")
+    tgens = encode_points(mwdata['tgens'])
+    output_fields = [c['field_label'], c['N_label'], c['iso_label'], str(c['number']),
+                     r, rbds, ar, ngens, gens, hts, reg,
+                     ntors, torstruct, tgens]
+    return " ".join(output_fields)
+
+def make_mwdata_lines(cl):
+    r""" return a string for all lines of a mwdata file for one isogeny class.
+    """
+    return "\n".join([make_mwdata_line(
+        {
+            'field_label': cl['field_label'],
+            'N_label': cl['N_label'],
+            'iso_label': cl['iso_label'],
+            'number': i+1,
+            'mwdata': mw,
+            }
+    ) for i,mw in enumerate(cl['mwdata'])])
+
+def make_mwdata(curves_filename, mwdata_filename, min_cond_norm=None, max_cond_norm=None,
+                test_saturation=False, verbose=False):
+    r""" Retrieves curves from a curves file
+    with conductor norm between given bounds (optional), finds their
+    ranks (or bounds) and generators, and outputs an mwdata file.
+    """
+    with open(mwdata_filename, 'w') as mw_out:
+        for cl in read_classes(curves_filename):
+            NN = cl['N_norm']
+            if min_cond_norm and NN<min_cond_norm:
+                if verbose:
+                    print("Skipping class as conductor norm < {}".format(min_cond_norm))
+                continue
+            if max_cond_norm and NN>max_cond_norm:
+                if verbose:
+                    print("Skipping rest of file as conductor norms >= {} > {}".format(NN,max_cond_norm))
+                break
+
+            if True:#verbose:
+                class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
+                print("Processing class {}".format(class_label))
+            cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
+            mwlines = make_mwdata_lines(cl)
+            if verbose:
+                print(mwlines)
+            mw_out.write(mwlines+"\n")
 
 def make_curve_data_line(c):
     r""" return a string for one line of  a curve_data file.
@@ -277,7 +374,6 @@ def make_curve_data_line(c):
     ar = str(mwdata['analytic_rank']) if 'analytic_rank' in mwdata else '?'
     sha = str(int(mwdata['sha_an'])) if 'sha_an' in mwdata else '?'
 
-    cond_lab = c['N_label']
     output_fields = [c['field_label'], c['N_label'], c['iso_label'], str(c['number']),
                      r, rbds, ar, ngens] + gens + [sha]
     return " ".join(output_fields)

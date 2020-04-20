@@ -17,52 +17,9 @@
 # file which do not appear in the curve_data file (e.g. incomplete
 # data in the latter).
 
-from sage.all import QQ, ZZ, polygen, NumberField, EllipticCurve
+from sage.all import EllipticCurve
 from fields import nf_lookup
-
-def field_data(s):
-    r"""
-    Returns full field data from field label.
-    """
-    deg, r1, abs_disc, n = [int(c) for c in s.split(".")]
-    sig = [r1, (deg-r1)//2]
-    return [s, deg, sig, abs_disc]
-
-def parse_NFelt(K, s):
-    r"""
-    Returns an element of K defined by the string s.
-    """
-    return K([QQ(c) for c in s.split(",")])
-
-def parse_point(K,s):
-    r"""
-    Returns an list of 3 elements of K defined by the string s.
-
-    Example: K=Q(a) quadratic
-             s = '[[-302/9,-16/3],[3098/27,-685/27],[1,0]]'
-
-    returns [-302/9-(16/3)*a, 3098/27-(685/27)*a, 1]
-    """
-    return [K([QQ(c) for c in coord.split(",")]) for coord in s[2:-2].split('],[')]
-
-fields = {}
-# This function only works for quadratic fields, where the label
-# defined the field uniquely and easily without having to look up in
-# the LMFDB!
-def field_from_label(lab):
-        if lab in fields:
-                return fields[lab]
-        dummy, deg, sig, abs_disc = field_data(lab)
-        d = ZZ(abs_disc)
-        if sig[0]==0: d=-d
-        x = polygen(QQ)
-        t = d%4
-        assert t in [0,1]
-        pol = x**2 - t*x + (t-d)/4
-        K = NumberField(pol, 'a')
-        fields[lab] = K
-        print("Created field from label {}: {}".format(lab,K))
-        return K
+from nfscripts import parse_point, parse_NFelt
 
 def parse_curves_line(L):
         data = L.split()
@@ -95,7 +52,6 @@ def parse_curve_data_line(L):
         return (label, data[8:8+ngens])
 
 def read_curves(infile):
-    curves = {}
     for L in open(infile).readlines():
         label, E = parse_curves_line(L)
         if label:

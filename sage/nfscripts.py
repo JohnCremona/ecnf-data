@@ -4,264 +4,16 @@
 # quadratic field) curve tables, using Bianchi newforms data and Magma
 # scripts.
 #
-import sys
-import os
-from sage.all import polygen, ZZ, QQ, NumberField, PolynomialRing, Magma, EllipticCurve
-HOME = os.getenv("HOME")
+from sys import stdout
+from os import getenv
+from sage.all import (polygen, ZZ, QQ, Magma, EllipticCurve, primes,
+                      flatten, Primes, legendre_symbol, prod, RR, PowerSeriesRing, O, Integer, srange, sign)
+from fields import add_field, field_data, field_label, cm_j_dict, get_IQF_info, get_field_name
+from files import read_newform_data, read_missing_levels
+from psort import nf_key, primes_of_degree_iter, ideal_from_label
+from codec import curve_from_strings, ideal_to_string, old_ideal_label
 
-field_names=dict([(-4,'i'),(-8,'t'),(-3,'w')])
-def get_field_name(disc):
-    r"""
-    Returns the name of the generator for the field of given discriminant.
-
-    INPUT:
-
-    - ``disc`` (integer)-- a field discriminant
-
-    OUTPUT:
-
-    'w', 'i', 't' for discriminants -3.-4.-8, else 'a'.
-    """
-    return field_names.get(disc,'a')
-
-def field_data(s):
-    r"""
-    Returns full field data from field label.
-
-    INPUT:
-
-    - ``s`` (string)-- an LMFDB field label
-
-    OUTPUT:
-
-    List containing the input string, degree, signature (list), absolute discriminant.
-    """
-    deg, r1, abs_disc, n = [int(c) for c in s.split(".")]
-    sig = [r1, (deg-r1)//2]
-    return [s, deg, sig, abs_disc]
-
-def field_from_label(lab):
-    r"""
-    Returns a number field from its LMFDB label.
-
-    INPUT:
-
-    - ``s`` (string)-- an LMFDB field label
-
-    OUTPUT:
-
-    A number field.
-    """
-    dummy, deg, sig, abs_disc = field_data(lab)
-    x = polygen(QQ)
-    if deg==2:
-        d = ZZ(abs_disc)
-        if sig[0]==0: d=-d
-        t = d%4
-        assert t in [0,1]
-        pol = x**2 - t*x + (t-d)/4
-    elif lab=='3.1.23.1':
-        pol = x**3 - x**2 +1
-    else:
-        raise NotImplementedError("cannot yet handle field %s" % lab)
-    K = NumberField(pol, 'a')
-    print("Created field from label {}: {}".format(lab,K))
-    return K
-
-def field_label(K):
-    r"""
-    Returns the LMFDB label of a number field.
-
-    *** Only works when the label's last component is 1 ***
-
-    INPUT:
-
-    - ``K`` -- a number field
-
-    OUTPUT:
-
-    (string) the LMFDB label of K.
-    """
-    d = K.degree()
-    r = K.signature()[0] # number of real embeddings
-    D = K.discriminant().abs()
-    return "{}.{}.{}.1".format(d,r,D)
-    return "%s.%s.%s.1" % (d,r,D)
-
-def ideal_from_label(K,lab):
-    r"""
-    Returns an ideal in quadratic field K from its label.
-
-    INPUT:
-
-    - ``K`` -- a quadratic number field
-
-    - ``lab`` (string) -- label of an ideal in K
-
-    OUTPUT:
-
-    The ideal defined by the label.  Labels have the form '[N,c,d]'
-    where `N` is the norm of the ideal and the HNF of the ideal is
-    `\left<a,c+d\alpha\right>` with `a=N/d` and `\alpha` the standard
-    integral generator of `K`.
-    """
-    if '[' in lab:
-        lab = lab[1:-1].replace(",",".")
-    a,c,d = [ZZ(x) for x in lab.split(".")]
-
-    a /= d
-    P = K.ideal([a,c+d*K.gen()])
-    return P
-
-
-# HNF of an ideal I in a quadratic field
-
-def ideal_HNF(I):
-    r"""
-    Returns an HNF triple defining the ideal I in a quadratic field
-    with integral basis [1,w].
-
-    This is a list [a,b,d] such that [a,c+d*w] is a Z-basis of I, with
-    a,d>0; c>=0; N = a*d = Norm(I); d|a and d|c; 0 <=c < a.
-    """
-    N = I.norm()
-    (a, c), (b, d) = [[ZZ(x) for x in row] for row in I.pari_hnf().python()]
-    assert a > 0 and d > 0 and N == a * d and d.divides(a) and d.divides(b) and 0 <= c < a
-    return [a, c, d]
-
-# Label of an ideal I in a quadratic field: string formed from the
-# Norm and HNF of the ideal
-
-def old_ideal_label(I):
-    r"""
-    Returns the HNF-based label of an ideal I in a quadratic field
-    with integral basis [1,w].  This is the string 'N.c.d' where
-    [a,c,d] is the HNF form of I and N=a*d=Norm(I).
-    """
-    a, c, d = ideal_HNF(I)
-    return "%s.%s.%s" % (a * d, c, d)
-
-def ideal_to_string(I,IQF_format=False):
-    K = I.number_field()
-    if IQF_format:
-        a, c, d = ideal_HNF(I)
-        return "[%s,%s,%s]" % (a * d, c, d)
-    N = I.norm()
-    a = I.smallest_integer()
-    gens = I.gens_reduced()
-    alpha = gens[-1]
-    assert I == K.ideal(a,alpha)
-    alpha = str(alpha).replace(str(K.gen()),'w')
-    return ("[%s,%s,%s]" % (N,a,alpha)).replace(" ","")
-
-def get_field_info(field_info_filename, maxpnorm=200, verbose=False):
-    r"""
-    Returns a number field and ordered list of primes.
-
-    INPUT:
-
-    - ``field_info_filename`` (string) -- name of data file.
-
-    - ``maxpnorm`` (integer) -- bound on norm of primes to return.
-
-    - ``verbose`` (boolean, default False) -- verbosity flag.
-
-    OUTPUT:
-
-    Tuple of a number field and a list of prime ideals, ordered as in the data file.
-    """
-    field_info_file = open(field_info_filename)
-    Plist=[]
-    for L in field_info_file.readlines():
-        if "Q" in L: # first line
-            Zx = PolynomialRing(ZZ,'x')
-            poly = Zx(L.split()[-1][:-1])
-            name = get_field_name(poly.discriminant())
-            K = NumberField(poly,name)
-            if verbose:
-                print("Field is %s" % K)
-        else:
-            nm,lab,gen,p,e,deg = L.split()
-            nm = ZZ(nm)
-            if nm>maxpnorm:
-                break
-            p = ZZ(p)
-            e = ZZ(e)
-            deg = ZZ(deg)
-            P = ideal_from_label(K,lab)
-            assert P.norm()==nm
-            #print("Prime %s with char %s, degree %s, label %s, norm %s" % (P,p,deg,lab,nm))
-            Plist += [P]
-    field_info_file.close()
-    return K, Plist
-
-def nf_filename_from_D(absD):
-    d=absD if absD%4 else absD//4
-    return HOME + "/bianchi-data/nflist/nflist.{}.1-20000".format(d)
-
-def read_newform_data(nf_filename, verbose=False):
-    r"""
-    Returns a dict containing Bianchi newforms read from a file.
-
-    INPUT:
-
-    - ``nf_filename`` (string) -- name of file containing Bianchi
-      newform data.  Either starts with "nflist" or "newforms"; the
-      latter has additional fields which we ignore here.
-
-    - ``verbose`` (boolean, default False) -- verbosity flag.
-
-    OUTPUT:
-
-    dict with keys level labels (strings), values dicts with keys
-    newforms labels (strings 'a', 'b', etc), values dicts with keys
-    'gen_str' (string representing generator of the level as a
-    principal ideal), 'sign' (sign of functional equation of the
-    L-function), 'aq' (list of Atkin-Lehner eigenvalues), 'ap' (list
-    of L-function coefficients of prime ideals in standard order).
-
-    """
-    nf_file = open(nf_filename)
-    old_fmt =  "nflist" in nf_filename
-    print("file has {} format".format('old' if old_fmt else 'new'))
-    newforms = {}
-    for L in nf_file.readlines():
-        #if verbose:
-        #    print("raw input: %s" % L)
-        if old_fmt:
-            label, gen, sfe, loverp, ALs, aplist = L.split()
-            level, letter = label.split("-")
-        else:
-            field_label, level, letter, gen, wt, bc, cm, sfe, loverp, ALs, poly, aplist = L.split()
-
-        if not level in newforms:
-            newforms[level] = {}
-        nfs = newforms[level]
-        nfs[letter] = nf = {}
-        nf['gen_str'] = gen[1:-1]
-        nf['sign'] = int(sfe)
-        nf['aq'] = [int(e) for e in ALs[1:-1].split(",")]
-        nf['ap'] = [int(e) for e in aplist[1:-1].split(",")]
-        if verbose:
-            print("newform data: %s" % L)
-
-    nf_file.close()
-    return newforms
-
-def read_missing_levels(infile):
-    r"""
-    Yields level labels from a file of newform/isogeny class labels, without repeats.
-    """
-    levels = []
-    for L in infile.readlines():
-        if "nflist" in infile:
-            level = L.split("-")[0]
-        else:
-            level = L.split()[1]
-        if not level in levels:
-            levels += [level]
-            yield level
-
+HOME = getenv("HOME")
 bianchi_data_dir = HOME + "/bianchi-data"
 
 # copy of function in lmfdb/scripts/ecnf/hmf_check_find.py
@@ -337,9 +89,9 @@ def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
         mag.quit()
     return Elist
 
-def magma_search(field, missing_label_file=None, field_info_filename=None, nf_filename=None, min_norm=None, max_norm=None, outfilename=None, effort=1000, verbose=False):
+def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, effort=1000, verbose=False):
     r"""
-    Uses Magma via EllipticCurveSearch() to search for missing curves.
+    Uses Magma via EllipticCurveSearch() to search for missing curves (over IQFs given some BMFs).
 
     INPUT:
 
@@ -353,9 +105,8 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
       field information.  Defaults to
       HOME + "/bianchi-data/fieldinfo/findinfo-%s" % field
 
-    - ``nf_filename`` (string) -- filename of file containing
-      newforms.  Defaults to
-      HOME + "/bianchi-data/nflist.%s.1-20000" % field
+    - ``bmf_filename`` (string) -- filename of file containing
+      newforms.
 
     - ``outfilename`` (string, default ``None``) -- name of output file
 
@@ -375,27 +126,28 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, nf_fi
         if outfilename:
             outfile.write(L)
         if verbose:
-            sys.stdout.write(L)
+            stdout.write(L)
     if field_info_filename==None:
         field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
         if verbose:
             print("Using {} for field info".format(field_info_filename))
-    if nf_filename==None:
-        nf_filename = "%s/nflist/nflist.%s.1-20000" % (bianchi_data_dir,str(field))
+    if bmf_filename==None:
+        print("Must supply name of a file containing BMFs over {} in {}".format(field, bianchi_data_dir))
+    else:
         if verbose:
-            print("Using {} for newform input".format(nf_filename))
+            print("Using {} for newform input".format(bmf_filename))
 
-    K, Plist = get_field_info(field_info_filename, 200, verbose)
+    K, Plist = get_IQF_info(field_info_filename, 200, verbose)
     field_lab = field_label(K)
     if outfilename:
         outfile=open(outfilename, mode="a")
         if verbose:
             print("Using {} for output".format(outfile))
-    newforms = read_newform_data(nf_filename)
+    newforms = read_newform_data(bmf_filename)
     if verbose:
         print("...read newform data finished")
     if missing_label_file==None:
-        missing_label_file = nf_filename
+        missing_label_file = bmf_filename
         if verbose:
             print("Using {} for missing labels".format(missing_label_file))
 
@@ -516,7 +268,7 @@ def output_magma_field(field_label, K, Plist, outfilename=None, verbose=False):
         if outfilename:
             outfile.write(L)
         if verbose:
-            sys.stdout.write(L)
+            stdout.write(L)
     output('print "Field %s";\n' % field_label)
     output("Qx<x> := PolynomialRing(RationalField());\n")
     output("K<%s> := NumberField(%s);\n" % (name, pol))
@@ -548,7 +300,7 @@ def output_magma_field(field_label, K, Plist, outfilename=None, verbose=False):
         output("\n")
         outfile.close()
 
-def magma_search_script(field, missing_label_file=None, field_info_filename=None, nf_filename=None, outfilename=None, verbose=False):
+def magma_search_script(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, outfilename=None, verbose=False):
     r"""
     Creates Magma script to search for missing curves.
 
@@ -564,9 +316,8 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
       field information.  Defaults to
       HOME + "/bianchi-data/fieldinfo/findinfo-%s" % field
 
-    - ``nf_filename`` (string) -- filename of file containing
-      newforms.  Defaults to
-      HOME + "/bianchi-data/nflist.%s.1-10000" % field
+    - ``bmf_filename`` (string) -- filename of file containing
+      newforms.
 
     - ``outfilename`` (string, default ``None``) -- name of output file
 
@@ -584,13 +335,16 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         if outfilename:
             outfile.write(L)
         if verbose:
-            sys.stdout.write(L)
+            stdout.write(L)
     if field_info_filename==None:
         field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
-    if nf_filename==None:
-        nf_filename = "%s/nflist.%s.1-10000" % (bianchi_data_dir,str(field))
+    if bmf_filename==None:
+        print("Must supply name of a file containing BMFs over {} in {}".format(field, bianchi_data_dir))
+    else:
+        if verbose:
+            print("Using {} for newform input".format(bmf_filename))
 
-    K, Plist = get_field_info(field_info_filename, 200, verbose)
+    K, Plist = get_IQF_info(field_info_filename, 200, verbose)
     field_lab = field_label(K)
     if outfilename:
         output_magma_field(field_lab,K,Plist,outfilename)
@@ -598,13 +352,13 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
             print("...output definition of field and primes finished")
     if outfilename:
         outfile=open(outfilename, mode="a")
-    newforms = read_newform_data(nf_filename)
+    newforms = read_newform_data(bmf_filename)
     if verbose:
         print("...read newform data finished")
     effort = 400;
     output("effort := %s;\n" % effort);
     if missing_label_file==None:
-        missing_label_file = nf_filename
+        missing_label_file = bmf_filename
 
     for level in read_missing_levels(open(missing_label_file)):
         N = ideal_from_label(K, level)
@@ -658,7 +412,7 @@ def parse_magma_output(d, infilename, outfilename=None, verbose=False):
         if outfilename:
             outfile.write(L)
         if verbose:
-            sys.stdout.write(L)
+            stdout.write(L)
 
     if d<3:
         output("K.<%s> = QuadraticField(%s)\n" % (name,-d))
@@ -821,51 +575,516 @@ def make_isoclass_line(ec):
                      mat]
     return " ".join(output_fields)
 
-#####################################################################
-#
-# utility for making a look-up table for converting labels over IQFs
-#
-#####################################################################
+def ap(E, p):
+        r"""
+        Return a_p(E).
 
-from psort import ideal_label
+        INPUT:
 
-the_labels = {}
-field_labels = ['2.0.{}.1'.format(d) for d in [4,8,3,7,11]]
-the_fields = dict([(lab,field_from_label(lab)) for lab in field_labels])
-print(the_fields)
+        - ``E`` - an elliptic curve defined over a number field `k`;
 
-def convert_ideal_label(K, lab):
-    """An ideal label of the form N.c.d is converted to N.i.  Here N.c.d
-    defines the ideal I with Z-basis [a, c+d*w] where w is the standard
-    generator of K, N=N(I) and a=N/d.  The standard label is N.i where I is the i'th ideal of norm N in the standard ordering.
+        - ``p`` - a prime ideal of `k`.
 
-    NB Only intended for use in coverting IQF labels!  To get the standard label from any ideal I just use ideal_label(I).
+        OUTPUT:
+
+        `a_p(E)`: the trace of Frobenius of `E` at `p` if `E` has good
+        reduction, otherwise the appropriate L-series coefficient
+        depending on the type of bad reduction.
+        """
+        if E.has_good_reduction(p):
+                return E.reduction(p).trace_of_frobenius()
+        elif E.has_split_multiplicative_reduction(p):
+                return 1
+        elif E.has_nonsplit_multiplicative_reduction(p):
+                return -1
+        elif E.has_additive_reduction(p):
+                return 0
+
+def minimal_model(E):
+        r""" Return a reduced minimal (or semi-minimal) model; here 'reduced'
+        means by unit scaling and then by translation.
+
+        NB The isogeny_class function does not currently do any
+        minimisation or reduction of models.
+        """
+        return E.global_minimal_model(E, semi_global=True)
+
+def min_disc_norm(E):
+        r"""
+        Return the norm of the minimal discriminant ideal of `E`.
+        """
+        I = E.minimal_discriminant_ideal()
+        if I.ring()==ZZ:
+            return I.gen()
+        return I.norm()
+
+def ap_list(E, Plist=None):
+        r"""
+        Return [a_p(E) for p in Plist].
+
+        INPUT:
+
+        - ``E`` - an elliptic curve defined over a number field `k`;
+        - ``Plist`` - a list of primes of `k`, or None (default) in which case field_data[k]['Plist'] is used.
+
+        OUTPUT:
+
+        A list of a_P(E) for P in the list Plist.
+        """
+        if Plist is None:
+            K = E.base_field()
+            add_field(K)
+            Plist = field_data[K]['Plist']
+        return [ap(E,p) for p in Plist]
+
+# Functions for testing if E is a Q-curve
+
+def is_Galois_invariant(N, field_label=None):
+    r"""
+    Return ``True`` if this number field element or ideal is Galois-invariant.
     """
-    global the_labels
-    if K in the_labels:
-        if lab in the_labels[K]:
-            return the_labels[K][lab]
+    try:
+        K = N.number_field()
+    except AttributeError:
+        try:
+            K = N.parent()
+        except AttributeError:
+            raise ValueError("unable to determine field from %s" % N)
+    if K is QQ: return True
+    add_field(K, field_label=field_label)
+    G = field_data[K]['G']
+    NL = G[0](N) # base-change to Galois closure
+    return all([sigma(N)==NL for sigma in G.gens()])
+
+def conj_curve(E,sigma):
+    r"""
+    Return the Galois conjugate elliptic curve under sigma.
+    """
+    return EllipticCurve([sigma(a) for a in E.ainvs()])
+
+def is_Q_curve(E, field_label=None, verbose=False):
+    r"""
+    Return True if this elliptic curve is isogenous to all its
+    Galois conjugates.
+
+    Note: if the base field K is not Galois we compute the Galois
+    group of its Galois closure L, and test for isogeny over L.
+    Is this right?  Following Elkies ('On elliptic K-curves',
+    2004) this is the correct set of Galois conjugates but we
+    should be looking for isogeny over the algebraic closure.
+
+    If E does not have CM (defined over L) and there is an isogeny
+    phi from E to E' where E' is defined over L but phi need not
+    be, then considering the composite of phi with the dual of its
+    Galois conjugates shows that each of these conjugates is equal
+    to phi up to sign.  If the signs are all +1 then phi is also
+    defined over L, but otherwise it is only defined over a
+    quadratic extension M of L.  In that case, replacing E' by its
+    quadratic twist and phi by its composite with the isomorphism
+    (defined over M) from E' to its twist gives a new curve
+    defined over L and isogenous to E via an L-rational isogeny of
+    the same degree as the original phi.  For our test for being a
+    Q-curve to be correct (in this non-CM case) -- i.e., agree
+    with Elkies' definition -- we require that no quadratic twist
+    of a curve L-isogenous to E is a Galois conjugate of E.
+    """
+    if verbose:
+        print("Checking whether {} is a Q-curve".format(E))
+
+    # all curves with rational j-invariant are Q-curves:
+    jE = E.j_invariant()
+    if jE in QQ:
+        if verbose:
+            print("Yes: j(E) is in QQ")
+        return True
+
+    K = E.base_field()
+    jpoly = jE.minpoly()
+    if jpoly.degree()<K.degree():
+        print("switching to smaller base field: j's minpoly is {}".format(jpoly))
+        K1, _ = K.subfield(jE, 'j')
+        #print("K1 = {}".format(K1))
+        K2, iso, inv = K1.optimized_representation()
+        #print("K2 = {}".format(K2))
+        jE = inv(K1.gen())
+        print("New j is {} with minpoly {}".format(jE, jE.minpoly()))
+        assert jE.minpoly()==jpoly
+        E = EllipticCurve(j=jE)
+        K = K2
+        field_label=None
+        print("New test curve is {}".format(E))
+
+    add_field(K, field_label=field_label)
+    Kdata = field_data[K]
+
+    # CM curves are Q-curves:
+    if cm_j_dict[jE]:
+        if verbose:
+            print("Yes: E is CM")
+        return True
+
+    # Simple test should catch many non-Q-curves: find primes of
+    # good reduction and of the same norm and test if the
+    # traces of Frobenius are equal *up to sign*
+
+    pmax = 1000
+    NN = E.conductor().norm()
+    for p in primes(pmax):
+        if p.divides(NN):
+            continue
+        Plist = [P for P in K.primes_above(p)
+                 if P.residue_class_degree() == 1]
+        if len(Plist)<2:
+            continue
+        aP0 = ap(E,Plist[0])
+        for P in Plist[1:]:
+            aP = ap(E,P)
+            if aP.abs() != aP0.abs():
+                if verbose:
+                    print("No: incompatible traces of Frobenius at primes above {}: {} and {}".format(p,aP0,aP))
+                return False
+
+    if verbose:
+        print("...all aP test pass for p<{}".format(pmax))
+
+    C = E.isogeny_class()
+    jC = [E2.j_invariant() for E2 in C]
+    if any(j in QQ for j in jC):
+        if verbose:
+            print("j-invariants in class: {}".format(jC))
+            print("Yes: an isogenous curve has j in QQ")
+        return True
+
+    # Galois case:
+    if Kdata['is_galois']:
+        autos = Kdata['autos']
+        t = all(sigma(jE) in jC for sigma in autos)
+        if verbose:
+            print("j-invariants in class: {}".format(jC))
+            if t:
+                print("Yes: class contains all conjugate j-invariants")
+            else:
+                print("No: class does not contain all conjugate j-invariants")
+        return t
+
+    if verbose:
+        print("K not Galois, E might be a Q-curve but not yet proved")
+
+    if K.degree() in [3,4]:
+        L = K.galois_closure('b')
+        emb = K.embeddings(L)[0]
+        EL = E.change_ring(emb)
+        if verbose:
+            print("Base changing to the Galois closure {}".format(L))
+            # Don't do this as it will cause an infinite loop
+            # return is_Q_curve(EL, verbose=verbose)
+        autos = L.automorphisms()
+        jE = emb(jE)
+        nC = len(C)
+        from sage.schemes.elliptic_curves.gal_reps_number_field import reducible_primes_naive
+        red_pr = reducible_primes_naive(EL, 31, 100)
+        # Compute partial isogeny class only using p-iogenies
+        # for the primes p in red_pr.  This is much faster since
+        # the slow part of computing isgeny classes is finding
+        # the reducible primes.
+        if verbose:
+            print("Computing isogeny class using only the primes in {}".format(red_pr))
+            CL = EL.isogeny_class(red_pr)
+        if len(CL)==nC:
+            if verbose:
+                print(" -- no more curves in the class")
+        else:
+            nC=len(CL)
+            if verbose:
+                print(" -- class now contains {} curves".format(nC))
+                jCL = [E2.j_invariant() for E2 in CL]
+                t = all(sigma(jE) in jCL for sigma in autos)
+            if verbose:
+                print("j-invariants in class: {}".format(jCL))
+                if t:
+                    print("Yes: class contains all conjugate j-invariants")
+                else:
+                    print("No: class does not contain all conjugate j-invariants")
+            if t:
+                return t
+
+        if verbose:
+            print("%%%%%%%%%%")
+            print("No conclusion after computing the isogeny class over the Galois closure using these primes")
+            print("%%%%%%%%%%")
+            print("Computing full isogeny class...")
+            CL = EL.isogeny_class()
+        if len(CL)==nC:
+            if verbose:
+                print("No more isogenies, so not a Q-curve")
+            return False
+        print("Full isogeny class has {} curves".format(len(CL)))
+        jCL = [E2.j_invariant() for E2 in CL]
+        t = all(sigma(jE) in jC for sigma in autos)
+        if verbose:
+            print("j-invariants in class: {}".format(jC))
+            if t:
+                print("Yes: class contains all conjugate j-invariants")
+            else:
+                print("No: class does not contain all conjugate j-invariants")
+            return t
+
+    return '?'
+
+
+# Comparison of curves in one isogeny class using j-invariants, based
+# on Lemma: if E1 and E2 are isogenous and not isomorphic (over k)
+# then j(E1)!=j(E2) *except* when E1 has potential but not rational CM
+# by discriminant d<0 and E2 is the quadratic twist by d of E1.  One
+# solution for the tie-break situation was being worked on at ICTP in
+# September 2014 by Maarten Derrickx and Heline Deckonick.  The
+# solution implemented here was developed by Andrew Sutherland and
+# John Cremona in June 2016, and requires using the "first" degree 1
+# prime with certain properties, hence requires a fixed ordering of
+# prime ideals.  This was also developed by Andrew Sutherland, John
+# Cremona and Aurel Page in June 2016.
+
+
+# key functions for sorting curves in an isogeny class
+def isogeny_class_key_traditional(E):
+        return flatten([list(ai) for ai in E.ainvs()])
+
+def isogeny_class_key_cm(E):
+        return (int(E.has_rational_cm() and -E.cm_discriminant()),
+                flatten([list(ai) for ai in E.ainvs()]))
+
+# A version of primes_of_degree_iter for K=Q:
+def primes_iter_Q(condition):
+    for p in Primes():
+        if condition(p):
+            yield(p)
+
+def cmj_key(E):
+    r""" Key to compare curves with non-rational CM which are quadratic
+    twists over the CM field.  This will be called on lots of curves
+    for which this tie-break comparison is not needed, so we return 0
+    instantly when we know that is the case.
+    """
+    if (not E.has_cm()) or E.has_rational_cm():
+        return 0
+    d = E.cm_discriminant()
+    K = E.base_field()
+    deg = K.absolute_degree()
+    D = 1 if deg==1 else ZZ(K.defining_polynomial().discriminant())
+    j = E.j_invariant()
+    c4, c6 = E.c_invariants()
+    jj, c, w = (j, c4, 4) if j==1728 else (j-1728, c6, 6)
+    NN = E.conductor() if deg==1 else E.conductor().norm()
+    bad = 6*d*D*NN
+
+    # Get the first degree 1 prime P, dividing a prime p not dividng
+    # bad for which d is a quadratic non-residue, such that j-1728 (or
+    # j when j=1728) is a P-unit:
+    ptest = lambda p: not p.divides(bad) and legendre_symbol(d,p)==-1
+    if deg==1:
+        it = primes_iter_Q(ptest)
     else:
-        the_labels[K] = {}
+        it = primes_of_degree_iter(K,deg=1, condition = ptest)
+    P = it.next()
+    while jj.valuation(P)!=0:
+        P = it.next()
+    p = P if deg==1 else P.smallest_integer() # = residue characteristic
+    print("E = {} with j = {}: tie-break prime P = {} above p = {}".format(E.ainvs(), j, P, p))
 
-    comps = lab.split(".")
-    # test for labels which do not need any conversion
-    if len(comps)==2:
-        return lab
-    assert len(comps)==3
-    N, c, d = [int(x) for x in comps]
-    a = N//d
-    I = K.ideal(a, c+d*K.gen())
-    newlab = ideal_label(I)
-    #print("Ideal label converted from {} to {} over {}".format(lab,newlab,K))
-    the_labels[K][lab] = newlab
-    return newlab
+    # The key is now (c6|p) (or (c4|p) if c6=0) with c4, c6 from the
+    # P-minimal model.  Although E has good reduction at P the model
+    # may not be minimal, and some adjustment is necessary:
+    k = c.valuation(P)
+    if k>0:
+        assert w.divides(k)
+        pi = K.uniformizer(P,others='negative')
+        c = c/pi**(k//w) # still integral everywhere
+    return legendre_symbol(K.residue_field(P)(c),p)
 
-def label_conversion_table(infile, outfile):
-    out = open(outfile, mode='w')
-    for L in open(bianchi_data_dir + "/ideals/" + infile).readlines():
-        field, ideal = L.split()
-        label = convert_ideal_label(the_fields[field],ideal)
-        out.write(' '.join([field, ideal, label])+'\n')
-    out.close()
+def isomorphism_class_key_j(E):
+    """FOr isogenous curves, first sort by CM-discriminant, then by
+    j-invariant, then (only necessary when E has potential CM) the
+    tie-break.
 
+    """
+    return (int(E.has_rational_cm() and -E.cm_discriminant()),
+            nf_key(E.j_invariant()),
+            cmj_key(E))
+
+isomorphism_class_key = isomorphism_class_key_j
+
+def Euler_polynomial(E,P):
+        r"""
+        Return the Euler polynomial of E at the prime P.
+
+        INPUT:
+
+        - `E` -- an elliptic curve defined over a number field K
+
+        - `P` -- a prime ideal of K
+
+        OUTPUT:
+
+        The polynomial `f(X) \in \ZZ[X]` such that `f(N(P)^{-s})` is
+        the inverse of the Euler factor of the L-function of `E` at
+        `P`.
+        """
+        EP = E.local_data(P)
+        if EP.has_good_reduction():
+                return E.reduction(P).frobenius_polynomial().reverse()
+        else:
+                return 1-EP.bad_reduction_type()*polygen(ZZ)
+
+def rational_Euler_polynomial(E,p):
+        r"""
+        Return the Euler polynomial of E at the rational prime p.
+
+        INPUT:
+
+        - `E` -- an elliptic curve defined over a number field K
+
+        - `P` -- a prime number
+
+        OUTPUT:
+
+        The polynomial `f(X) \in \ZZ[X]` such that `f(p^{-s})` is
+        the inverse of the Euler factor of the L-function of `E` at
+        `p`.
+        """
+        x = polygen(ZZ)
+        K = E.base_field()
+        return prod([Euler_polynomial(E,P)(x^P.residue_class_degree())
+                     for P in K.primes_above(p)])
+
+def rational_L_coefficients(E, nmax, prime_powers_only=True):
+        r"""
+        Return a dict giving the first ``nmax`` coefficients of the
+        L-function of E.
+
+        INPUT:
+
+        - ``E`` -- an elliptic curve defined over a number field.
+
+        - ``nmax`` -- a positive integer
+
+        - ``prime_powers_only`` (bool, default ``True``) -- if
+          ``True``, the keys will be restricted to primes powers;
+          otherwise all positive integers up to ``nmax``.
+
+        OUTPUT:
+
+        A dict keyed by positive integers `n` up to ``nmax`` whose
+        value at `n` is the cofficient of `n^{-s}` in the L-function
+        of ``E``, for `n=1,2,\dots,` ``nmax`` (or just the prime
+        powers `n>1`).
+        """
+        # maxexp(p) = max{i: p^i <= nmax}
+        lognmax = RR(nmax).log()
+        maxexp = lambda p: (lognmax/RR(p).log()).floor()
+
+        polydata = [(p,maxexp(p),rational_Euler_polynomial(E,p))
+                    for p in primes(nmax+1)]
+        t = PowerSeriesRing(ZZ,'t').gen()
+        c = {}
+        for p,e,pol in polydata:
+                s = (1/pol(t) + O(t**nmax)).dict()
+                cp = dict([(p^i,s.get(i,0)) for i in range(1,e+1)])
+                c.update(cp)
+
+        # so far, c[n] is defined for n=p^i with 1<n<=nmax, but only when c[n]!=0
+        c[1] = Integer(1)
+        if prime_powers_only:
+                return c
+
+        for n in srange(2,nmax+1):
+                if not n in c: # we do not yet know c[n]
+                        nf =n.factor()
+                        assert len(nf)>1
+                        n1 = nf[0][0]**nf[0][1] # p**e
+                        n2 = n//n1 # n2<n so we have c[n2]
+                        c[n] = c[n1]*c[n2]
+        return c
+
+def curve_cmp_via_L(E1,E2,nmax=100):
+        r"""
+        Comparison function for elliptic curves, using rational L-functions.
+
+        INPUT:
+
+        - ``E1``, ``E2`` - elliptic curves defined over number fields;
+
+        - ``nmax`` (int, default 100) - number of L-series coefficients to use.
+
+        OUTPUT:
+
+        0,+1,-1 (for comparison) based on lexicographical ordering of
+        the Dirichlet expansions of the L-functions of E1,E2 (in the
+        form `\sum_{n=1}^{\infty}a_n/n^s`).  Since the L-function is
+        isogeny-invariant, the output will be 0 only for isogenous
+        curves (but see below); this comparison is intended for the
+        purpose of sorting isogeny classes.
+
+        .. NOTE:
+
+        If ``nmax`` is too small, the output may be 0 even though the
+        curves are not isogenous.
+        """
+        L1 = rational_L_coefficients(E1,nmax)
+        L2 = rational_L_coefficients(E2,nmax)
+        L = [L1[n] for n in sorted(L1.keys())]
+        c = [L, [L2[n] for n in sorted(L2.keys())]]
+        if c:
+                return c
+        # For testing purposes:
+        if not E1.is_isogenous(E2):
+                print("Warning: curves %s and %s of conductor %s have matching L-functions\n   %s but are not isogenous!" % (E1.ainvs(),E2.ainvs(), E1.conductor(), L))
+                return c
+
+# Isogeny class comparison: experimental for, based on comparison
+# between the L-functions as rational Dirichlet series (indexed by
+# postive integers, hence no choices needed!)  implemented at ICTP
+# September 2014 by Angelos Koutsianas, Alejandro Argaez, Daniel
+# Kohen, and revised here by John Cremona.  NB This has been
+# *discarded* since Galois conjugate classes have the same rational
+# L-function and would need a tie-break anyway.
+
+def isog_class_cmp2(k, I, J):
+    E1 = curve_from_strings(k,I[0].split()[6:11])
+    E2 = curve_from_strings(k,J[0].split()[6:11])
+    return curve_cmp_via_L(E1,E2)
+
+
+# Isogeny class comparison: original form, using the L-functions as
+# sums over integral ideals of k.  This matches the sorting of Bianchi
+# newforms.
+
+def isog_class_cmp1(k, I, J):
+    E_I = curve_from_strings(k,I[0].split()[6:11])
+    E_J = curve_from_strings(k,J[0].split()[6:11])
+
+    if not k in field_data:
+        add_field(k)
+    for p in field_data[k]['Plist']:
+        c = int(ap(E_I, p) - ap(E_J, p))
+        if c: return sign(c)
+
+    raise NotImplementedError("Bound on primes is too small to determine...")
+
+
+def isModular(E):
+    # Create a new magma instance for each curve:
+    mag = Magma()
+    # read in Samir Siksek's code:
+    mag.eval('load "modularitycheck.m";\n')
+    # Define the number field in Magma and the list of primes
+    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    K = E.base_field()
+    name = K.gen()
+    pol = K.defining_polynomial()
+    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    mag.eval("K<%s> := NumberField(%s);\n" % (name, pol))
+    mag.eval("E := EllipticCurve(%s);\n" % list(E.ainvs()))
+    mag.eval("res := isModular(E);\n")
+    res = mag('res;').sage()
+    mag.quit()
+    return res
