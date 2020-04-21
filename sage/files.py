@@ -1,6 +1,6 @@
 # Functions for reading and writing data files
 
-from codec import convert_conductor_label, curve_from_strings, convert_ideal_label
+from codec import convert_conductor_label, curve_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string
 from fields import nf_lookup
 from os import getenv
 #from sys import stdout
@@ -111,7 +111,7 @@ def write_curve_file(curves, outfile):
 
 def write_curvedata_file(curves, outfile):
     r"""
-    Write a curves file, each line containing 9+ngens data fields as defined
+    Write a curvedata file, each line containing 9+ngens data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
     with open(outfile, 'w') as out:
@@ -359,3 +359,22 @@ def label_conversion_table(infile, outfile):
         label = convert_ideal_label(nf_lookup(field),ideal)
         out.write(' '.join([field, ideal, label])+'\n')
     out.close()
+
+def make_local_data_file(curves_filename, ld_filename, verbose=False):
+    r"""Create a local_data file from a curves file.  This will not be
+    needed once we create the local_data file at the same time as the
+    curves files.
+    """
+    from nfscripts import local_data
+    with open(ld_filename, 'w') as ldfile:
+        for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_filename):
+            if verbose:
+                print("Processing {}".format("-".join([field_label,N_label,iso_label,c_num])))
+            Eld, nonminP, minD = local_data(E)
+            #print("local data: {}".format(Eld))
+            Eld = local_data_to_string(Eld)
+            #print("local data encoded: {}".format(Eld))
+            nonminP = str([ideal_to_string(P) for P in nonminP])
+            minD = ideal_to_string(minD)
+            line = " ".join([field_label,N_label,iso_label,c_num,Eld, nonminP, minD])
+            ldfile.write(line + "\n")

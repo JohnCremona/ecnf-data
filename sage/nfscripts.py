@@ -6,7 +6,7 @@
 #
 from sys import stdout
 from os import getenv
-from sage.all import (polygen, ZZ, QQ, Magma, EllipticCurve, primes,
+from sage.all import (polygen, ZZ, QQ, Magma, magma, latex, EllipticCurve, primes,
                       flatten, Primes, legendre_symbol, prod, RR, PowerSeriesRing, O, Integer, srange, sign)
 from fields import add_field, field_data, field_label, cm_j_dict, get_IQF_info, get_field_name
 from files import read_newform_data, read_missing_levels
@@ -1088,3 +1088,43 @@ def isModular(E):
     res = mag('res;').sage()
     mag.quit()
     return res
+
+def local_data(E):
+    r"""Return a local data structure, which is a list of dicts, one for each bad prime, with keys
+
+    'p', 'normp', 'ord_cond', 'ord_disc', 'ord_den_j', 'red', 'rootno', 'kod', 'cp'
+
+    These are all computable in Sage except for the local root number at additive primes.
+
+    Note that The model of E might not be a global minimal model, so
+    there may be one or more (in practice no more than one) entry with
+    good reduction in the list. This causes no problems except that
+    the bad_reduction_type is then None which cannot be converted to
+    an integer.  The bad reduction types are coded as (Sage) integers
+    in {-1,0,1}.
+
+    """
+    Eld = E.local_data()
+    if any([ld.bad_reduction_type()==0 for ld in E.local_data()]):
+        mE = magma(E) # for local root numbers if not semistable
+    def local_root_number(ldp): # ldp is a component of E.local_data()
+        red_type = ldp.bad_reduction_type()
+        if red_type==0: # additive reduction: call Magma
+            eps = mE.RootNumber(ldp.prime())
+        elif red_type==+1:
+            eps = -1
+        else:  # good or non-split multiplcative reduction
+            eps = +1
+        return int(eps)
+
+    local_data = [{'p': ideal_to_string(ld.prime()),
+                   'normp': str(ld.prime().norm()),
+                   'ord_cond': int(ld.conductor_valuation()),
+                   'ord_disc': int(ld.discriminant_valuation()),
+                   'ord_den_j': int(max(0,-(E.j_invariant().valuation(ld.prime())))),
+                   'red': None if ld.bad_reduction_type() is None else int(ld.bad_reduction_type()),
+                   'rootno': local_root_number(ld),
+                   'kod': str(latex(ld.kodaira_symbol())),
+                   'cp': int(ld.tamagawa_number())}
+                  for ld in Eld]
+    return local_data, E.non_minimal_primes(), E.minimal_discriminant_ideal()

@@ -201,3 +201,28 @@ def encode_points(Plist):
     """
     return '[' + ','.join([encode_point(P) for P in Plist]) + ']'
 
+##########################################################
+
+def local_data_to_string_one_prime(ldp):
+    # we do not just join ldp.values() since we want to fix the order
+    ldstr = ":".join([str(ldp[k]) for k in ['p', 'normp', 'ord_cond', 'ord_disc', 'ord_den_j', 'red', 'rootno', 'kod', 'cp']])
+    ldstr = ldstr.replace(" ","")
+    return ldstr
+
+def local_data_to_string(ld):
+    return ";".join([local_data_to_string_one_prime(ldp) for ldp in ld])
+
+def local_data_from_string_one_prime(s):
+    dat = s.split(":")
+    return {'p': dat[0], # string
+            'normp': int(dat[1]),
+            'ord_cond': int(dat[2]),
+            'ord_disc': int(dat[3]),
+            'ord_den_j': int(dat[4]),
+            'red': None if dat[5]=='None' else int(dat[5]),
+            'rootno': '?' if dat[6]=='?' else int(dat[6]),
+            'kod': dat[7], # string
+            'cp': int(dat[8])}
+
+def local_data_from_string(s):
+    return [local_data_from_string_one_prime(si) for si in s.split(";")]
