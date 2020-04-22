@@ -58,7 +58,8 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     K = E.base_field()
 
     def convert_point(P):
-        return E([K(c.sage()) for c in P.Eltseq()])
+        print(P)
+        return E([K([ci.sage() for ci in c.Eltseq()]) for c in P.Eltseq()])
     if verbose:
         print("calling magma...")
     if HeightBound is None:
