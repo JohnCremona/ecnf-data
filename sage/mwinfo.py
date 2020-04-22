@@ -58,7 +58,7 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     K = E.base_field()
 
     def convert_point(P):
-        return E([K(c.sage()) for c in P.Eltseq()])
+        return E([K([ci.sage() for ci in c.Eltseq()]) for c in P.Eltseq()])
     if verbose:
         print("calling magma...")
     if HeightBound is None:
@@ -119,7 +119,15 @@ def map_points(maps, source, Plist, verbose=False):
                     # now do p-saturation (if possible)
                     try:
                         E = Qlists[j][0].curve()
-                        pts, index, reg = E.saturation(Qlists[j], one_prime=p)
+                        pts, index, reg = E.saturation(Qlists[j], one_prime=p, debug=True)
+                        try:
+                            pts, index, reg = E.saturation(Qlists[j], one_prime=p)
+                        except RuntimeError:
+                            print("RuntimeError!")
+                            print("Base field K = {}".format(E.base_field()))
+                            print("E = {}".format(E.ainvs()))
+                            print("Points = {}".format(Qlists[j]))
+                            print("one_prime = {}".format(p))
                         if index > 1:
                             Qlists[j] = E.lll_reduce(pts)[0]
                             if verbose:
@@ -326,8 +334,8 @@ def make_mwdata(curves_filename, mwdata_filename, min_cond_norm=None, max_cond_n
         for cl in read_classes(curves_filename):
             NN = cl['N_norm']
             if min_cond_norm and NN<min_cond_norm:
-                if verbose:
-                    print("Skipping class as conductor norm < {}".format(min_cond_norm))
+                # if verbose:
+                #     print("Skipping class as conductor norm < {}".format(min_cond_norm))
                 continue
             if max_cond_norm and NN>max_cond_norm:
                 if verbose:
