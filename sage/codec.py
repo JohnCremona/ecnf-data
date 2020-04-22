@@ -3,6 +3,16 @@
 from sage.all import ZZ, QQ, EllipticCurve
 from fields import nf_lookup
 
+def NFelt(a):
+    r""" Returns an NFelt string encoding the element a (in a number field
+    K).  This consists of d strings representing the rational
+    coefficients of a (with respect to the power basis), separated by
+    commas, with no spaces.
+
+    For example the element (3+4*w)/2 in Q(w) gives '3/2,2'.
+    """
+    return ",".join([str(c) for c in list(a)])
+
 # The next 2 functions are copied from lmfdb/ecnf/WebEllipticCurve.py
 
 def ideal_from_string(K,s, IQF_format=False):
@@ -123,7 +133,26 @@ def ainvs_to_string(ainvs):
         comma-separated list of strings representing rational numbers
         representing the NF element with respect to its (power) basis.
         """
-        return " ".join([",".join([str(c) for c in list(ai)]) for ai in ainvs])
+        return ";".join([NFelt(ai) for ai in ainvs])
+
+def ainvs_from_string(K, ainvs):
+        r"""Reverse of the previous function: converts a string, representing a
+        list of NF elements joined by ";", to a list of actual NF
+        elements in K.
+        """
+        return [parse_NFelt(K,ai) for ai in ainvs.split(";")]
+
+def curve_from_string(K, ainvs):
+        r"""
+        Given a number field K and a list of 5 strings, each
+        representing an NF element, converts these to elements of K
+        and returns the elliptic curve with these a-invariants.
+        """
+        return EllipticCurve(ainvs_from_string(K,ainvs))
+
+# The next two are the old version of the previous two, when we used 5
+# separate strings for the a-invariants instead of a single string
+# joined by ";" as used in the database itself.
 
 def ainvs_from_strings(K, ainv_string_list):
         r"""
@@ -226,3 +255,30 @@ def local_data_from_string_one_prime(s):
 
 def local_data_from_string(s):
     return [local_data_from_string_one_prime(si) for si in s.split(";")]
+
+def curves_data_to_string(c, old_style=False):
+    r"""Given a dict containing the data for one line of a curves file,
+    return the strong for one line of the file.
+    """
+    if old_style:
+        return " ".join([c['field_label'],
+                         c['N_label'],
+                         c['iso_label'],
+                         c['c_num'],
+                         c['N_def'],
+                         c['N_norm']]
+                        + c['ainvs']
+                        + [c['cm_flag'], c['q_curve_flag']])
+    else:
+        return " ".join([c['field_label'],
+                         c['N_label'],
+                         c['iso_label'],
+                         c['c_num'],
+                         c['N_def'],
+                         c['N_norm'],
+                         c['ainvs'],
+                         c['jinv'],
+                         c['equation'],
+                         c['cm_flag'],
+                         c['base_change'],
+                         c['q_curve_flag']])

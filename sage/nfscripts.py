@@ -1117,7 +1117,7 @@ def local_data(E):
             eps = +1
         return int(eps)
 
-    local_data = [{'p': ideal_to_string(ld.prime()),
+    E_local_data = [{'p': ideal_to_string(ld.prime()),
                    'normp': str(ld.prime().norm()),
                    'ord_cond': int(ld.conductor_valuation()),
                    'ord_disc': int(ld.discriminant_valuation()),
@@ -1127,4 +1127,4 @@ def local_data(E):
                    'kod': str(latex(ld.kodaira_symbol())),
                    'cp': int(ld.tamagawa_number())}
                   for ld in Eld]
-    return local_data, E.non_minimal_primes(), E.minimal_discriminant_ideal()
+    return E_local_data, E.non_minimal_primes(), E.minimal_discriminant_ideal()
