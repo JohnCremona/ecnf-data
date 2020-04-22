@@ -1,160 +1,221 @@
 ﻿Notes on database entries for elliptic curves over number fields (other than Q)
 
-######################################
-#                                    #
-#  Data stored in the mongo database #
-#                                    #
-#  NB needs updating for postgresql  #
-#                                    #
-######################################
+#########################################
+#                                       #
+#  Data stored in the ec_nfcurves table #
+#                                       #
+#########################################
 
-See
-https://github.com/LMFDB/lmfdb-inventory/blob/master/db-elliptic_curves.md
-for what should be an up to date and definitive version of what is
-stored on the database.  Here we also describe the format of the data
-files needed foruploading new data.
+Here we decribe the format of the data text files in the ecnf-data
+repository together with all the columns of the ec_nfcurves table in
+the LMFDB.  The underlying principle is that all computations needed
+for the table contents should be done in creating the data text files
+and stored there, so that the upload process only does trivial data
+manipulation and (in particular) does not need to construct any number
+fields or elliptic curves in Sage; so the table contents can be
+recreated quickly from te data text files, which are under revision
+control.
 
-In the existing (mongodb) Database elliptic_curves there is a
-Collection called curves, containing elliptic curves over Q only.  We
-have added *one* new collection, called nfcurves, which will hold one
-"document" (mongo-ese for a single database record) for each curve
-over a number field other than Q.
+In the postgresql database there is a table ec_curves, containing
+elliptic curves over Q only, and ec_nfcurves, which contains curves
+over a number field other than Q.  This document only concerns the
+latter.
 
-Each document has keys which we group for convenience here into two
-parts: field keys and curve keys.  The field keys identify the field K
-over which the curve E is defined, with enough detail so that searches
-can be done for curves over specific fields or (for example) over real
-quadratic fields.  The curve fields identify the curve and contains
-various invariants and properties of the curve.  In many cases some of
-these will not be known, in which case they are simply omitted; and
-the code which deals with these documents and creates web pages will
-have to be aware of this partial data.  Some of these are isogeny
-invariant, but at the moment such data (e.g. rank, conductor) is
-stored with each curve.
+The table has several columns which we group for convenience here into
+two parts: field keys and curve keys.  The field keys identify the
+field K over which the curve E is defined, with enough detail so that
+searches can be done for curves over specific fields or (for example)
+over real quadratic fields.  The curve fields identify the curve and
+contains various invariants and properties of the curve.  In some
+cases some of these will not be known, in which case they contain None
+(or its postgresql equivalent); the code which deals with this and
+creates web pages must be aware of this partial data and handle it
+properly.  Some columns are isogeny invariant, but are still stored
+with every curve in the isogeny class. [Except for isogeny_matrix,
+currently only stored with the first curve each class.]
 
-I have given these keys long names here for clarity.  Harald
-recommends using short names to save space, as in our code we can
-easily define longer pseudonyms (e.g. conductor_norm = "cn").  **THIS
-HAS NOT YET BEEN DONE** and if not done soon it will be too late,
-since changing these names requires (1) changing the upload scripts;
-(2) re-running the upload scripts on all the data; (3) changing all
-the website scripts.  (2) could be done in other ways, but probably
-not worth it.
+Every data text file contains the label components (field_label,
+conductor_label, iso_label, number).
 
-FIELD KEYS (Mandatory keys marked with *)
+FIELD COLUMNS (4 columns)
 
-field_label  *   string          2.2.5.1
-degree       *   int             2
-signature    *   [int,int]       [2,0]
-abs_disc     *   int             5
+field_label     text                 2.2.5.1
+degree          smallint             2
+signature       jsonb [int,int]      [2,0]
+abs_disc        bigint               5
 
-CURVE KEYS (Mandatory keys marked with *)
+Definition of field_label: standard LMFDB number field label, with
+four components separated by ".": degree, #real embeddings, abs value
+of discriminant, index number (for when the first three do not
+uniquely identify the field).
 
-label              *     string (see below)
-short_label        *     string
-conductor_label    *     string
-iso_label          *     string (letter code of isogeny class)
-conductor_ideal    *     string
-conductor_norm     *     int
-number             *     int    (number of curve in isogeny class, from 1)
+On upload the last 3 of these columns are extracted from the field
+label.
+
+CURVE COLUMNS (36 = 16+5+3+10+2 columns)
+
+We subdivide these according to which data text file they are in but
+there is no such distinction in the table.
+
+(1) 16 columns from the curves.* files
+
+label              text     (curve label including field)
+short_label        text     (curve label excluding field)
+class_label        text     (isogeny class label including field)
+short_class_label  text     (isogeny class label excluding field)
+conductor_label    text     (conductor label)
+iso_label          text     (letter code of isogeny class)
+iso_nlabel         smallint (numeric version of previous)
+conductor_ideal    text     (ideal generators)
+conductor_norm     bigint   (norm of conductor)
+number             smallint (number of curve in isogeny class, from 1)
+ainvs              text     (a-invariants)
+jinv               text     (j-invariant)
+equation           text     (latex string)
+cm                 integer  (CM discriminant, or 0)
+base_change        jsonb    (list of text labels of curves/Q)
+q_curve            boolean  (Q-curve flag)
 
 Here,
 
- label = "%s-%s" % (field_label, short_label)
- short_label = "%s-%s%s" % (conductor_label, iso_label, str(number))
+ label = "{}-{}".format(field_label, short_label)
+ short_label = "{}-{}{}".format(conductor_label, iso_label, number)
+ class_label = "{}-{}".format(field_label, short_class_label)
+ short_class_label = "{}-{}".format(conductor_label, iso_label)
 
-We do not insist on a common format for the conductor_label.  The
-conductor_ideal should contain enough information to uniquely
-construct the conductor as an ideal.  The conductor_label need not, it
-could be something like "17.1" for the first ideal of norm 17 in some
-order.  For each type of field we include (real quadratic, imaginary
-quadratic, etc) these label formats will need to be specified
-somewhere and functions provided in the code to parse them.  See the
-file quadratic_ideals.txt for the quadratic case.
+ iso_label is a lower case base 26 representation of the number of the
+ isogeny class for fixed conductor (starting from 0 and with leading
+ a's removed), so that class_label exactly matches the label of a
+ corresponding HMF or BMF, with the following exceptions: (i) for
+ curves over 3.1.23.1 there are no matching newforms and the iso_label
+ is in upper case; (ii) over IQFs, curves with CM by an order in the
+ same IQF have no associated BMF and the iso_label has a prefix CM
+ followed by a lower case base 26 label as for non-CM curves.
 
-The uniform format for the conductor_ideal is a string representing
-[N,a,alpha] where N is the norm, a the smallest positive integer in
-the ideal, and alpha is a polynomial in w such that the ideal is
-(a,alpha).  In the data files there are no embedded spaces so this is
-one field.  The same format is used in the database for prime ideals
-and the discriminant ideal.
+ iso_nlabel is the same as an integer starting at 0 (so a=0, b=1,
+ etc), except for the special CM labels where we use negative integers
+ offset by 1 (so CMa=-1, CMb=-2, etc).
 
-Number field elements (NFelt) will be represented in the database
-either as a single NFelt-string representing a comma-separated list of
-d=[K:Q] rationals, with no embedded spaces, or as a string
-representing a polynomial in w with rational coefficients where
-K=Q(w).  The d rationals in the list are the coefficients of the
-number field element with respect to the power basis on the generator
-w of K whose minimal polynomial is stored in the number field
-database; it is the unique polredabs polynomial defining the field.
+ conductor_labels = "{}.{}".format(norm, index)
 
-The a-invariants will be a stored as a single string begin the
-concatenation of the 5 individual NFelt-strings separated by ";".  In
-the input files we use 5 separate fields for these instead (i.e. use "
-" instead of ";" as separator.
+ where index is the ideal's index, starting from 1, in a list of all
+ integral ideals of the same norm.  Over IQFs the index is determined
+ using the standard sorting convention.  Over TR fields the conductor
+ labels just match the level labels for the corresponding HMFs.  Over
+ 3.1.23.1 the order was fixed by the original Gunnells-Yasaki
+ computation in Magma.
 
-A point is stored as a point-string representing [[x,y,z]] where each
-of x,y,z is an NF_elt string.  In the curve_data files each generator
-is in a separate datafield separated by " " and preceded by the number
-of generators stored.  In the database, gens and torsion_gens fields
-are lists of points-strings.
+ conductor_ideal is a string from which the conductor may be
+ constructed as an ideal. It is a string representing [N,a,alpha]
+ where N is the norm, a the smallest positive integer in the ideal,
+ and alpha is a polynomial in w such that the ideal is (a,alpha) where
+ the field is Q(w).  In the data files there are no embedded spaces so
+ this is one data field.  The same format is used in the database for
+ prime ideals and the discriminant ideal.
 
-CURVE KEYS continued. (Mandatory keys marked with *)
+ Number field elements (NFelt) will be represented in the database
+ either as a single NFelt-string representing a comma-separated list
+ of d=[K:Q] rationals, with no embedded spaces, or as a string
+ representing a polynomial in w with rational coefficients where
+ K=Q(w).  The d rationals in the list are the coefficients of the
+ number field element with respect to the power basis on the generator
+ w of K whose minimal polynomial is stored in the number field
+ database; it is the unique polredabs polynomial defining the field.
 
-ainvs                  *         5-NFelts joined by ";" (Weierstrass coefficients)
-jinv                   *         NFelt
-cm                     *         int (a negative discriminant, or 0)
-base_change            *         list of labels of curves over Q (or [])
-Q-curve                *         boolean (True, False)
-rank                             int
-rank_bounds                      2-list of ints
-analytic_rank                    int
-torsion_order                    int
-torsion_structure                {0,1,2}-list of ints
-gens                             list of point-strings
-torsion_gens                     list of point-strings
-sha_an                           int
-isogeny_matrix         *         list of list of ints (degrees)
-non-surjective_primes            list of ints
-galois_images                    list of strings
+ The a-invariants are stored as a single string, being the
+ concatenation of the 5 individual NFelt-strings separated by ";".
 
-There is no need for the Weierstrass coefficients to have any
-properties such as minimal / reduced model, but they should be
-integral.  Obviously one would not have both rank_bounds and rank (and
-similar).
+(2) 5 Columns from isoclass.* files
 
-N.B. base_change should be [] unless E is isomorphic over K to an
-elliptic curve E0 defined over Q.  For this it is necessary but not
-sufficient that j(E) lie in Q!  If not [], the value is a list of
-labels of elliptic curves over Q.  (When K is quadratic this will
-noramlly contain 2 entries, labels of curves which are quadratic
-twists of each other.)  This field depends on the curve, not just its
-isogeny class.  By contrast, Q-curve is True iff the curve is
-isogenous (over Qbar) to all its Galois conjugates, which is an isogeny-invariant
-property.  If any curve in the class is a base-change then all curves
-in the class are Q-curves (including those definable over Q), but it
-is possible for an isogeny class of Q-curves not to contain any
-individual curves defined over Q.  N.B. Sage version >= 6.3 is needed
-for E.descend_to(QQ) to give a list of curves over Q, as the import
-script needs, rather than either None or a single label (and will a
-lot of bugs) as it used to.
+class_size          smallint (size of the isogeny class)
+isogeny_matrix      integer  (largest isogeny degree for this class)
+class_deg           smallint (size of the isogeny class)
+isogeny_degrees     jsonb    (degrees of isogenies from this curve to all in the class)
+trace_hash          bigint   (hash of a_p for the class)
 
-Isogeny degree matrix: under construction (August 2014) after
-implementing in Sage an extension of the E.isogeny_class() function
-previously only available over Q.  Not in Sage 6.3, relies on code at
-http://trac.sagemath.org/ticket/16743 currently awaiting review.  The
-idea is to process all the curves.* files provided by people, taking
-only one curve in each class and recomputing the class; sending the
-output to a file called (perhaps) allcurves.* in the same format as
-curves.*, and hopefully having the same number of lines if the
-original curves.* did actually contain complete isogeny classes, as
-well as a file isoclass.* (see below for the format of these files).
+Here, class_size is the size n of the isogeny class of this curve;
+      isogeny_matrix is a list of n lists of n integers, the (i,j)
+            entry being the degree of a cyclic isogeny between curves i and
+            j in this isogeny class;
+      class_deg is the largest isogeny degree in the class;
+      isogeny_degrees is a list of n integers, the i'th being the
+            isogeny degree between this curve and the i'th curve in
+            the class;
+      trace_hash is the LMFDB-standard hash function for the
+            L-function of this class
 
-*NB* Even if the original curves.* files were complete (closed under
-isogeny), since we do not yet have a canonical choice of model for
-elliptic curves over number fields other than Q, we cannot compare the
-content of the input with the new allcurves.* output using simple
-text-based tools such as diff.
+Note that for isogeny classes with rational CM, the degree of a cyclic
+isogeny between two isogenous curves is not uniquely determined.
+
+(3) 3 Columns from the local_data.* files
+
+local_data   jsonb   (list of local data entries, one per prime)
+non_min_p    jsonb   (list of primes at which the stored model is non-minimal)
+minD         text    (minimal discriminant ideal)
+
+The local_data list contains an entry for each prime of bad reduction
+for the model of the curve stored, which is a global minimal model
+when such exists, but otherwise includes a single prime of good
+reduction.  non_min_p is a list of these non-minimal primes, so is
+either empty or contains just one prime.  minD is the minimal
+discriminant ideal.  Both the primes in the non_min_p list and minD
+are strings representing ideals, as for the conductor ideal (i.e. of
+the form [N,a,alpha]).
+
+Local data format:
+
+In the database this is a list, with one entry per prime dividing the
+discriminant of the stored model, of dicts with keys as follows:
+
+    'p':           string: the prime ideal P as [N,a,alpha]
+    'normp'        integer: norm(P)
+    'ord_cond'     integer: valuation of conductor at P
+    'ord_disc'     integer: valuation of minimal discriminant at P
+    'ord_den_j'    integer: valuation of j-invariant denominator at P
+    'red'          None or integer in {0,1,-1}: reduction type
+    'rootno'       integer in {1,-1}: root number
+    'kod'          string: Kodaira symbol (latex)
+    'cp'           integer: Tamagawa number at P
+
+The reduction type is None for good reduction
+                       0 for additive reduction
+                      +1 for split multiplicative reduction
+                      -1 for nonsplit multiplicative reduction
+
+In the local_data files, the local_data field is a single string
+containing substrings for each prime, delimited by ";".  Each
+substring is delimited by ":" and contains the fields in the above
+order.
+
+(4) 10 Columns from the mwdata.* files
+
+rank                smallint
+rank_bounds         jsonb    list of 2 ints
+analytic_rank       smallint
+ngens               smallint
+gens                jsonb    list of ngens strings representing points
+heights             jsonb    list of ngens reals
+reg                 numeric  real
+torsion_order       smallint
+torsion_structure   jsonb    list of 0,1,2 ints
+torsion_gens        jsonb    list of 0,1,2 strings representing points
+
+Each point is stored as a string representing a list of 3 lists of d
+rationals.  These are projective coordinates, though the z-coordinate
+hould aways be 1.  In the mwdata files both the gens and torsion_gens
+are in single fields as lists of points e.g. [P,Q].  In the database
+they are lists of strings.
+
+(5) 2 Columns from the galdata.* files
+
+galois_images           jsonb  list of strings
+non-surjective_primes   jsonb  list of integers
+
+The Galois image strings are Sutherland codes for Galois images when
+not maximal (i.e. non-surjective for non-CM curves, not the maximal
+possible image given the base field for CM curves).  e.g. '3B.1.1',
+'2Cs'.  The database also contains the list of non-maximal primes (the
+prefixes of the image codes).
 
 ###################################################
 #                                                 #
@@ -162,144 +223,103 @@ text-based tools such as diff.
 #                                                 #
 ###################################################
 
-We agreed to create plain text files with one line per curve
-containing data from which the above data fields can be obtained.
-These files can obviously come from a variety of sources (Sage
-scripts, Magma scripts, C++ programs, etc.)  but will share a common
-format.  See the file sample-nfcurve for the details.
+The data is split across 5 sets of files for each field: curves.*,
+isoclass.*, local_data.*, mwdata.*, galdata.* with suffix the field
+label.  In each file there is one line per curve except for isoclass.*
+which has one line per isogeny class.
 
-There is no need for contributors to provide all of the data fields,
-for several reasons:
-
-1. There is no need to include (for example) j-invariants as these can
-be computed on the fly when uploading; similarly for torsion, and
-other "easy" invariants;
-
-2. We may not have complete data for all curves, e.g. we may have no
-generators or not know the rank.  But we want to use common
-file-parsing and upload scripts.  These have now been written,
-similarly to those in lmfdb/elliptic_curves/import_ec_data.py, for
-curves.*, isoclass.* (under construction) and curve_data.* files (see
-later for these).
-
-3. Although we initially expected torsion structure and gens to be
-supplied, we later decided that it was easy and quick to complete
-these on the fly.  (Actually it is not so quick, and is probably the
-main reason the upload scripts are currently slow, but there are no
-current plans to change this.)  We keep the number of data fields per
-input line constant (or predictable), by putting "?" into the raw data
-files when a field is missing (either unknown, or redundant --
-e.g. rank bounds not needed if rank known).  Each data field must not
-contain any whitespace, since the parsing script uses whitespace to
-split each line up into data fields.
-
--- Common Data Fields and conventions --
-
-The import scripts can handle more than one set of files, each of
-which has exactly one line per curve (note: isoclass.* files may have
-only one per isogeny class).  For this to work, each line in each set
-of files has 4 common label fields which uniquely identify each curve.
-These common fields for every file are the following:
+In each file, every line starts with the following four columns
 
 1. field_label
 2. conductor_label
 3. iso_label
 4. number
 
-since the unique label is then obtained by concatenating these, joined
-as field_label + "-" + conductor_label + "-" + iso_label + number.
-The isogeny class label is the same without the final number, and the
-"short" label curve curves and classes omits the field label.  Over
-imaginary quadratic and totally real fields respectively, the short
-class labels currently agree with the labels of Bianchi
-(resp. Hilbert) modular forms.  This may not be the case in future
-since we have developed a more canonical way of ordering ideals of the
-same norm (and hence labelling conductors), primes (and hence ordering
-isogeny classes by a_p vectors) and finally isomorphism classes within
-an isogeny class.  This may lead to different curve labels, but where
-relevant we will still keep the current class labels to link to the
-associated modular form.
+except that in galdata.* these are combined into a single label column
+{}-{}-{}{}.
 
-See above for the format of (1) conductor ideals, (2) a-invariants,
-(3) points.
+In curves.* there are 8 further columns, 12 in all:
 
-Currently we cater for up to 3 sets of files: curves and isoclass
-(obligatory) and curve_data (optional) with the following fields after
-the above 4.  The file names should be of the form "curves.xyz",
-"isoclass.xyz" and "curve_data.xyz" with the same suffix (here "xyz")
-to identify the dataset in some way; mostly these are field labels.
-These raw data files are kept under revision control, possibly by
-their creators and certainly by John Cremona, who has created this git
-repository https://github.com/JohnCremona/ecnf-data for this.
+5. conductor_ideal
+6. conductor_norm
+7. ainvs
+8. jinv
+9. equation
+10. cm
+11. base_change
+12. q_curve
 
--- Additional data fields in curves.xyz --
+In isoclass.* there is 1 further columns, 5 in all:
 
-5: conductor_ideal
-6: conductor_norm
-7...11: ainvs (5 NFelt fields separated by space)
-12: cm (0 or a negative discriminant or ?)
-13: Q_curve (0 and 1 for False and True, or ?)
+5. isogeny_matrix
 
-Sample line: 2.2.5.1 31.1 a 1 [31,18,1] 31  1,0 -1,-1 0,1 0,0 0,0 0 0
+In local_data.* there are 3 further columns, 7 in all:
 
--- Additional data fields in curve_data.xyz --
+5. local_data
+6. non_min_p
+7. minD
 
-5: rank                   int or ?
-6: rank_bounds      [int,int] or ?
-7: analytic_rank          int or ?
-8: ngens (number of generators of infinite order which follow) int
-9...8+ngens: gens (number of fields equals ngens or absent if ngens=0) point-string
-9+ngens:  sha_an          int or ?
+In mwdata.* there are 10 further columns, 14 in all:
 
-For point-string the syntax see above: no embedded spaces.
+5. rank
+6. rank_bounds
+7. analytic_rank
+8. ngens
+9. gens
+10. heights
+11. reg
+12. torsion_order
+13. torsion_structure
+14. torsion_gens
 
-Sample line:
+In galdata.* the number of extra columns is 0 or more, one per
+non-maximal prime (5) above
 
-2.2.5.1 1831.2 c 1 2 [2,2] 2 2 [[1,0],[-1,0],[1,0]] [[0,0],[-1,0],[1,0]] ?
+---------------------------------------------------------------------------
 
--- Additional data fields in isoclass.xyz --
+Schema of table ec_nfcurves
 
-5: a list of lists of positive integers, so that the (i,j) entry is
-the degree of a cyclic isogeny from curve i to curve j in the class.
-Symmetric, with diagonal entries 1.  For non-CM classes the degrees
-are uniquely determined by (i,j), and we will create an isogeny graph
-based on the "unfilled" version of the matrix with all non-prime
-entries replaced by 0 to indicate a non-edge.  For CM classes the
-situation is more complicated as there are multiple possible degrees
-between the i'th and j'th curves when these have the same endomorphism
-ring (strinctly greater than Z).  The current code has a small prime
-in each such position (i,j) with i!=j, even though this makes for a
-graph with too many edges when the class number is larger.
+u'field_label': 'text'
+u'degree': 'smallint'
+u'signature': 'jsonb'
+u'abs_disc': 'bigint'
+u'label': 'text'
+u'short_label': 'text'
+u'class_label': 'text'
+u'short_class_label': 'text'
+u'conductor_label': 'text'
+u'iso_label': 'text'
+u'iso_nlabel': 'smallint'
+u'conductor_ideal': 'text'
+u'conductor_norm': 'bigint'
+u'number': 'smallint'
+u'ainvs': 'text'
+u'jinv': 'text'
+u'equation': 'text'
+u'cm': 'integer'
+u'base_change': 'jsonb'
+u'q_curve': 'boolean'
+u'class_size': 'smallint'
+u'isogeny_matrix': 'jsonb'
+u'class_deg': 'integer'
+u'isogeny_degrees': 'jsonb'
+u'trace_hash': 'bigint'
+u'local_data': 'jsonb'
+u'non_min_p': 'jsonb'
+u'minD': 'text'
+u'rank': 'smallint'
+u'rank_bounds': 'jsonb'
+u'analytic_rank': 'smallint'
+u'ngens': 'smallint'
+u'gens': 'jsonb'
+u'heights': 'jsonb'
+u'reg': 'numeric'
+u'torsion_order': 'smallint'
+u'torsion_structure': 'jsonb'
+u'torsion_gens': 'jsonb'
+u'galois_images': 'jsonb'
+u'non-surjective_primes': 'jsonb'
 
-Sample line:
+and
 
-2.0.4.1 [65,18,1] a 1 [[1,6,3,2,6,3],[6,1,2,3,9,18],[3,2,1,6,18,9],[2,3,6,1,3,6],[6,9,18,3,1,2],[3,18,9,6,2,1]]
-
--- Additional data fields in galrep.xyz --
-
-5++: 0 or more strings representing images of mod-p representations of
-     non-maximal image
-
-Sample line:
-
-2.2.437.1 4.1 a 1 3Nn
-
--- Other fields --
-
-Some of the database fields (e.g. short_label, jinv) are trivially
-obtained from these, and the torsion structure and torsion gens will
-also be computed during the upload.  I divided up the two raw data
-files so that if you only know the basics about curves (its equation,
-and cm & Q_curve flags) then you only need provide the curves file
-while if you know more about their Mordell-Weil group then you can
-provide curve_data files too.  The upload scripts will check for
-consistency that the conductor is correct. (This has already revealed
-some glitches in the files, so was definitely a good idea!).  The
-base_change field in the database will be computed on upload (for
-curves for which Q_curve is True) by checking that the j-invariant is
-in QQ and using Sage's E.descends_to(QQ) function; in the database
-we'll store a list (possibly empty) of labels of elliptic curves over
-Q of which this curve is the base change.
-
-We can use uniform upload scripts, which have been written: see
-lmfdb/ecnf/import_ecnf_data.py.
+u'id': 'bigint'

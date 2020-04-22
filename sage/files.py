@@ -1,9 +1,158 @@
 # Functions for reading and writing data files
 
-from codec import convert_conductor_label, curve_from_strings, convert_ideal_label
+from sage.all import ZZ, QQ, latex
+from sage.databases.cremona import cremona_to_lmfdb
+from codec import convert_conductor_label, curve_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string
 from fields import nf_lookup
 from os import getenv
 #from sys import stdout
+
+# Functions to parse a single line from one of the files curves.*, isoclass.*, mwdata.*, local_data.*, galdata.*
+#
+# In each case the function returns a full label and a dict whose kets are exactly the relevant table columns
+#
+
+# The first 4 columns in curves.*, isoclass.*, mwdata.*, local_data.*
+# are the same and define the full label, so we factor out this part.
+#
+
+def split_field_label(field_label):
+    d, r, a, i = field_label.split(".")
+    d = int(d)
+    r = int(r)
+    a = ZZ(a)
+    i = int(i)
+    s = [r,(d-r)//2]
+    return (d,s,a,i)
+
+def numerify_iso_label(lab):
+    from sage.databases.cremona import class_to_int
+    if 'CM' in lab:
+        return -1 - class_to_int(lab[2:])
+    else:
+        return class_to_int(lab.lower())
+
+def parse_line_label_cols(L):
+    r"""
+    Parse the first 4 columns of one line from a curves/isoclass/mwdata/local_data file
+    """
+    data = L.split()
+    record = {}
+    record['field_label'] = field_label = data[0]
+    degree, signature, abs_disc, _ = split_field_label(field_label)
+
+    conductor_label = data[1]
+    iso_label = data[2]
+    number = int(data[3])
+    short_label = "{}-{}{}".format(conductor_label, iso_label, number)
+    label = "{}-{}".format(field_label, short_label)
+    short_class_label = "{}-{}".format(conductor_label, iso_label)
+
+    record['conductor_label'] = conductor_label
+    record['iso_label'] = iso_label
+    record['iso_nlabel'] = numerify_iso_label(iso_label)
+    record['number'] = number
+    record['short_label'] = short_label
+    record['label'] = label
+    record['short_class_label'] = short_class_label
+    record['class_label'] = "{}-{}".format(field_label, short_class_label)
+    return label, record
+
+def parse_curves_line(L):
+    r"""
+    Parse one line from a curves file
+    """
+    data = L.split()
+    if len(data)!=12:
+        print("curves line {} does not have 12 fields, skipping".format(L))
+        return
+    label, record = parse_line_label_cols(L)
+
+    record['conductor_ideal'] = data[4]
+    record['conductor_norm'] = ZZ(data[5])
+
+    record['ainvs'] = data[6]
+    record['jinv'] = data[7]
+    record['equation'] = data[8]
+    record['cm'] = ZZ(data[9])
+    bc = data[10][1:-1]
+    record['base_change'] = [str(lab) for lab in bc.split(",")] if bc else []
+    record['q_curve'] = (data[1]==1)
+
+    return label, record
+
+def parse_isoclass_line(L):
+    r"""
+    Parse one line from an isoclass file
+    """
+    data = L.split()
+    if len(data)!=5:
+        print("isoclass line {} does not have 5 fields, skipping".format(L))
+        return
+    label, record = parse_line_label_cols(L)
+
+    mat = data[4]
+    record['isogeny_matrix'] = mat = [[int(a) for a in r.split(",")]
+                                      for r in mat[2:-2].split("],[")]
+    record['class_size'] = ncurves = len(mat)
+    record['class_deg'] = max(max(r) for r in mat)
+    record['all_iso_degs'] = dict([[n+1,sorted(list(set(row)))] for n,row in enumerate(mat)])
+
+    # NB Every curve in the class has the same 'isogeny_matrix',
+    # 'class_size', 'class_deg', and the for the i'th curve in the
+    # class (for i=1,2,3,...) its 'isogeny_degrees' column is
+    # all_iso_degs[i].
+
+    return label, record
+
+def parse_local_data_line(L):
+    r"""
+    Parse one line from a local_data file
+    """
+    data = L.split()
+    if len(data)!=7:
+        print("local_data line {} does not have 7 fields, skipping".format(L))
+        return
+    label, record = parse_line_label_cols(L)
+
+    record['local_data'] = local_data_from_string(data[4])
+    # The non_min_p column is a list of strings
+    # e.g. ['[N1,a1,alpha1]', '[N2,a2,alpha2]'] while the string in
+    # the file will contain [[N1,a1,alpha1],[N2,a2,alpha2]].
+    # Currently the list has 0 or 1 entries but we do not want to rely
+    # on this.
+    nmp = data[5]
+    record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
+    minD = data[6]
+
+    return label, record
+
+def parse_mwdata_line(L):
+    r"""
+    Parse one line from an mwdata file
+    """
+    data = L.split()
+    if len(data)!=12:
+        print("local_data line {} does not have 7 fields, skipping".format(L))
+        return
+    label, record = parse_line_label_cols(L)
+
+    r = data[4]
+    record['rank'] = None if r=='?' else int(r)
+    record['rank_bounds'] = [int(r) for r in data[5][1:-1].split(",")]
+    r = data[6]
+    record['analytic_rank'] = None if r=='?' else int(r)
+    record['ngens'] = ngens = int(data[7])
+    gens = data[8]
+    record['gens'] = [] if gens == '[]' else gens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
+    record['heights'] = data[9]
+    record['reg'] = data[10]
+    record['torsion_order'] = int(data[11])
+    record['torsion_structure'] = [int(r) for r in data[12][1:-1].split(",")]
+    tgens = data[13]
+    record['torsion_gens'] = [] if tgens == '[]' else tgens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
+
+    return label, record
 
 def read_curve_file(infile):
     r"""
@@ -111,7 +260,7 @@ def write_curve_file(curves, outfile):
 
 def write_curvedata_file(curves, outfile):
     r"""
-    Write a curves file, each line containing 9+ngens data fields as defined
+    Write a curvedata file, each line containing 9+ngens data fields as defined
     the in the ecnf-format.txt file. Input is a list of dicts.
     """
     with open(outfile, 'w') as out:
@@ -359,3 +508,90 @@ def label_conversion_table(infile, outfile):
         label = convert_ideal_label(nf_lookup(field),ideal)
         out.write(' '.join([field, ideal, label])+'\n')
     out.close()
+
+def make_local_data_file(curves_filename, ld_filename, verbose=False):
+    r"""Create a local_data file from a curves file.  This will not be
+    needed once we create the local_data file at the same time as the
+    curves files.
+    """
+    from nfscripts import local_data
+    with open(ld_filename, 'w') as ldfile:
+        for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_filename):
+            if verbose:
+                print("Processing {}".format("-".join([field_label,N_label,iso_label,c_num])))
+            Eld, nonminP, minD = local_data(E)
+            #print("local data: {}".format(Eld))
+            Eld = local_data_to_string(Eld)
+            #print("local data encoded: {}".format(Eld))
+            nonminP = str([ideal_to_string(P) for P in nonminP]).replace(" ","")
+            minD = ideal_to_string(minD)
+            line = " ".join([field_label,N_label,iso_label,c_num,Eld, nonminP, minD])
+            ldfile.write(line + "\n")
+
+def extend_curves_file(infilename, outfilename, verbose=False):
+    r"""One-off function to extend a curves file from the old format (13
+    columns, with the ai taking 5 columns) to the new (12 columns,
+    just one for the ai and three extras), the extra ones being
+    'jinv', 'equation', 'base_change'
+
+    In addition to adding the three columns we ensure that the
+    is_Q_curve column is not '?'.
+    """
+    nmax = -1 # make this positive for a test run which stops after this many lines
+    n = 0
+    with open(outfilename, 'w') as out:
+        for curve in read_curve_file(infilename):
+            n += 1
+            label = "-".join([curve['field_label'], curve['N_label'], curve['iso_label']]) + curve['c_num']
+            if verbose:
+                print("Processing {}".format(label))
+                line = curves_data_to_string(curve, old_style=True)
+                print("Old line:\n{}".format(line))
+            E = curve_from_data(curve)
+            curve['ainvs'] = ";".join(curve['ainvs'])
+            curve['jinv'] = NFelt(E.j_invariant())
+            curve['equation'] = str(latex(E)).replace(" ","") # no "\(", "\)"
+            if curve['q_curve_flag'] == '?':
+                from nfscripts import is_Q_curve
+                qc = is_Q_curve(E)
+                print("Filling in Q-curve flag for curve {} to {}".format(label, qc))
+                curve['q_curve_flag'] = int(qc)
+            EQlist = E.descend_to(QQ)
+            if EQlist:
+                bc = [cremona_to_lmfdb(EQ.label()) for EQ in EQlist]
+                if verbose:
+                    print("{} is base change of {}".format(label, bc))
+            else:
+                bc = []
+            curve['base_change'] = "[" + ",".join(bc) + "]"
+            if False:
+                print("New curve struct: {}".format(curve))
+            line = curves_data_to_string(curve)
+            if verbose:
+                print("New line:\n{}".format(line))
+            out.write(line+"\n")
+            if n==nmax:
+                break
+            if n%1000==0:
+                print("{} curves processed".format(n))
+
+def add_trace_hashes(curves_file, isoclass_file, verbose=False):
+    r"""One-off function to read a curves file and an isoclass file,
+    compute the trace-hashes of one curve in each isogeny class and
+    add that to the isoclass file.
+    """
+    from trace_hash import TraceHash
+    hash_table = {}
+    for (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_file, only_one=True):
+        label = "-".join([field_label,N_label,iso_label])
+        if verbose:
+            print("Processing {}".format(label))
+        hash_table[label+"1"] = TraceHash(E)
+    print("hash table:\n{}".format(hash_table))
+    with open(isoclass_file) as isofile, open(isoclass_file+"x",'w') as new_isofile:
+        for L in isofile.readlines():
+            label, record = parse_line_label_cols(L)
+            if label in hash_table:
+                hash = str(hash_table[label])
+                new_isofile.write(L[:-1]+" "+hash+"\n")
+
