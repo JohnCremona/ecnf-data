@@ -1,6 +1,7 @@
 # Sage translation of the Magma function TraceHash(), just for elliptic curves /Q and /NF
 
 from sage.all import GF, ZZ, QQ, pari, prime_range
+from nfscripts import ap
 
 TH_C = [326490430436040986,559705121321738418,1027143540648291608,1614463795034667624,455689193399227776,
  812966537786397194,2073755909783565705,1309198521558998535,486216762465058766,1847926951704044964,
@@ -112,16 +113,16 @@ def TraceHash(E):
     QQ or a number field.
 
     """
-    K = E.base_field() 
+    K = E.base_field()
     if K == QQ:
         E_pari = pari(E.a_invariants()).ellinit()
         return TraceHash_from_ap([E_pari.ellap(p) for p in TH_P])
 
     if not K in TH_P_cache:
         TH_P_cache[K] = dict([(p,[P for P in K.primes_above(p) if P.norm()==p]) for p in TH_P])
-    def ap(p):
-        return sum([E.reduction(P).trace_of_frobenius() for P in TH_P_cache[K][p]], 0)
-    return TraceHash_from_ap([ap(p) for p in TH_P])
+    def apsum(p):
+        return sum([ap(E,P) for P in TH_P_cache[K][p]], 0)
+    return TraceHash_from_ap([apsum(p) for p in TH_P])
 
 # Dictionary to hold the trace hashes of isogeny classes by label.  We
 # store the trace hash for every curve but isogenous curves have the
