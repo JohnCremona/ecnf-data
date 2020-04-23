@@ -1,6 +1,7 @@
 # Functions for reading and writing data files
 
-from sage.all import ZZ, QQ, latex
+import re
+from sage.all import ZZ, QQ, latex, Set
 from sage.databases.cremona import cremona_to_lmfdb
 from codec import convert_conductor_label, curve_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string
 from fields import nf_lookup
@@ -17,6 +18,8 @@ from os import getenv
 #
 
 def split_field_label(field_label):
+    r"""Return (degree, signature, abs(disc), index) from an LMFDB field label
+    """
     d, r, a, i = field_label.split(".")
     d = int(d)
     r = int(r)
@@ -26,11 +29,31 @@ def split_field_label(field_label):
     return (d,s,a,i)
 
 def numerify_iso_label(lab):
+    r"""Return the numerical equivalent of an isogeny class letter-code.
+
+    Normally this is the integer>=0 which lab represents in base 26,
+    with digits a=0,...,z=25, but if lab starts with 'CM' and the rest
+    represents the integer n as above, the numerical version is
+    -n-1. (Not -n as then 0 would be ambiguous).  This variant is only
+    relevant (currently) over imaginary quadratic fields.  The label
+    may be in upper case (currently only over 3.1.23.1), but that
+    should not be used over any field for whcih a CM label is
+    possible.
+    """
     from sage.databases.cremona import class_to_int
     if 'CM' in lab:
         return -1 - class_to_int(lab[2:])
     else:
         return class_to_int(lab.lower())
+
+def split_galois_image_code(s):
+    """Each code starts with a prime (1-3 digits but we allow for more)
+    followed by an image code for that prime.  This function returns
+    two substrings, the prefix number and the rest.
+    """
+    p = re.findall(r'\d+', s)[0]
+    return p, s[len(p):]
+
 
 def parse_line_label_cols(L):
     r"""
@@ -40,6 +63,9 @@ def parse_line_label_cols(L):
     record = {}
     record['field_label'] = field_label = data[0]
     degree, signature, abs_disc, _ = split_field_label(field_label)
+    record['degree'] = degree
+    record['signature'] = signature
+    record['abs_disc'] = abs_disc
 
     conductor_label = data[1]
     iso_label = data[2]
@@ -86,17 +112,17 @@ def parse_isoclass_line(L):
     Parse one line from an isoclass file
     """
     data = L.split()
-    if len(data)!=5:
-        print("isoclass line {} does not have 5 fields, skipping".format(L))
+    if len(data)!=6:
+        print("isoclass line {} does not have 6 fields, skipping".format(L))
         return
     label, record = parse_line_label_cols(L)
 
-    mat = data[4]
     record['isogeny_matrix'] = mat = [[int(a) for a in r.split(",")]
-                                      for r in mat[2:-2].split("],[")]
-    record['class_size'] = ncurves = len(mat)
+                                      for r in data[4][2:-2].split("],[")]
+    record['class_size'] = len(mat)
     record['class_deg'] = max(max(r) for r in mat)
     record['all_iso_degs'] = dict([[n+1,sorted(list(set(row)))] for n,row in enumerate(mat)])
+    record['trace_hash'] = ZZ(data[5])
 
     # NB Every curve in the class has the same 'isogeny_matrix',
     # 'class_size', 'class_deg', and the for the i'th curve in the
@@ -123,7 +149,7 @@ def parse_local_data_line(L):
     # on this.
     nmp = data[5]
     record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
-    minD = data[6]
+    record['minD'] = data[6]
 
     return label, record
 
@@ -132,8 +158,8 @@ def parse_mwdata_line(L):
     Parse one line from an mwdata file
     """
     data = L.split()
-    if len(data)!=12:
-        print("local_data line {} does not have 7 fields, skipping".format(L))
+    if len(data)!=14:
+        print("mwdata line {} does not have 14 fields, skipping".format(L))
         return
     label, record = parse_line_label_cols(L)
 
@@ -142,7 +168,7 @@ def parse_mwdata_line(L):
     record['rank_bounds'] = [int(r) for r in data[5][1:-1].split(",")]
     r = data[6]
     record['analytic_rank'] = None if r=='?' else int(r)
-    record['ngens'] = ngens = int(data[7])
+    record['ngens'] = int(data[7])
     gens = data[8]
     record['gens'] = [] if gens == '[]' else gens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
     record['heights'] = data[9]
@@ -153,6 +179,182 @@ def parse_mwdata_line(L):
     record['torsion_gens'] = [] if tgens == '[]' else tgens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
 
     return label, record
+
+def parse_galrep_line(L):
+    r"""
+    Parse one line from a galrep file
+    """
+    data = L.split()
+    label = data[0]
+    galois_images = data[1:]
+    pr = [ int(split_galois_image_code(s)[0]) for s in galois_images]
+    record = {'label': label,
+              'non-surjective_primes': pr,
+              'galois_images': galois_images,
+    }
+
+    return label, record
+
+# Python types of the columns in ec_nfcurves:
+
+from six import text_type
+str_type = text_type
+int_type = type(int(1))
+float_type = type(float(1))
+list_type = type([1,2,3])
+bool_type = type(True)
+hash_type = type(ZZ(2**65).__int__())
+
+keys_and_types = {'field_label':  str_type,
+                  'degree': int_type,
+                  'signature': list_type, # of ints
+                  'abs_disc': int_type,
+                  'label':  str_type,
+                  'short_label':  str_type,
+                  'class_label':  str_type,
+                  'short_class_label':  str_type,
+                  'class_deg':  int_type,
+                  'class_size':  int_type,
+                  'conductor_label': str_type,
+                  'conductor_ideal': str_type,
+                  'conductor_norm': int_type,
+                  'iso_label': str_type,
+                  'iso_nlabel': int_type,
+                  'number': int_type,
+                  'ainvs': str_type,
+                  'jinv': str_type,
+                  'cm': int_type,
+                  'ngens': int_type,
+                  'rank': int_type,
+                  'rank_bounds': list_type, # 2 ints
+                  'analytic_rank': int_type,
+                  'torsion_order': int_type,
+                  'torsion_structure': list_type, # 0,1,2 ints
+                  'gens': list_type, # of strings
+                  'torsion_gens': list_type, # of strings
+                  'isogeny_matrix': list_type, # of lists of ints
+                  'isogeny_degrees': list_type, # of ints
+                  'class_deg': int_type,
+                  'non-surjective_primes': list_type, # of ints
+                  'galois_images': list_type, # of strings
+                  'equation': str_type,
+                  'local_data': list_type, # of dicts
+                  'non_min_p': list_type, # of strings
+                  'minD': str_type,
+                  'heights': list_type, # of floats
+                  'reg': float_type, # or int(1)
+                  'q_curve': bool_type,
+                  'base_change': list_type, # of strings
+                  'trace_hash': hash_type
+}
+
+ec_nfcurves_columns = Set(['field_label', 'degree', 'signature',
+                           'abs_disc', 'label', 'short_label',
+                           'class_label', 'short_class_label',
+                           'conductor_label', 'iso_label',
+                           'iso_nlabel', 'conductor_ideal',
+                           'conductor_norm', 'number', 'ainvs',
+                           'jinv', 'equation', 'cm', 'base_change',
+                           'q_curve', 'class_size', 'isogeny_matrix',
+                           'class_deg', 'isogeny_degrees',
+                           'trace_hash', 'local_data', 'non_min_p',
+                           'minD', 'rank', 'rank_bounds',
+                           'analytic_rank', 'ngens', 'gens',
+                           'heights', 'reg', 'torsion_order',
+                           'torsion_structure', 'torsion_gens',
+                           'galois_images', 'non-surjective_primes'])
+
+assert ec_nfcurves_columns==Set(keys_and_types.keys())
+
+def read_all_field_data(base_dir, field_label, check_cols=True):
+    r"""Given a field label, read all the data in files curves.field_label,
+    isoclass.field_label, local_data.field_label, mwdata.field_label,
+    galrep.field_label (from directory base_dir), returning a single
+    dict with keys full labels and values complete curve records.
+    Here field_label does not have to actually be a field label
+    (e.g. for testing).
+
+    If we knew that the data in all 5 files was in the same order
+    (taking into account the fact that isoclass.* files only have one
+    line per isogeny class) this could be a generator yielding one
+    curve record at a time, but we do not want to assume that, so we
+    collect everything and return it all at once.
+
+    If check_cols is True then we check that every record has keys
+    exactly as in the standard list from the table ec_nfcurves
+    (omitting the 'id' column).
+
+    """
+    curves_filename = '{}/curves.{}'.format(base_dir,field_label)
+    isoclass_filename = '{}/isoclass.{}'.format(base_dir,field_label)
+    local_data_filename = '{}/local_data.{}'.format(base_dir,field_label)
+    mwdata_filename = '{}/mwdata.{}'.format(base_dir,field_label)
+    galrep_filename = '{}/galrep.{}'.format(base_dir,field_label)
+
+    all_data = {}
+    n = 0
+
+    with open(curves_filename) as curves:
+        for L in curves.readlines():
+            label, record = parse_curves_line(L)
+            if label:
+                n += 1
+                all_data[label] = record
+    print("Read {} curves from {}".format(n,curves_filename))
+    n = 0
+
+    with open(isoclass_filename) as isoclass:
+        for L in isoclass.readlines():
+            label, record = parse_isoclass_line(L)
+            if label:
+                n += 1
+                nc = record['class_size']
+                all_iso_degs = record.pop('all_iso_degs')
+                label = label[:-1] # delete final '1'
+                for ic in range(1,nc+1):
+                    record['isogeny_degrees'] = all_iso_degs[ic]
+                    all_data[label+str(ic)].update(record)
+    print("Read {} classes from {}".format(n,isoclass_filename))
+    n = 0
+
+    with open(local_data_filename) as local_data:
+        for L in local_data.readlines():
+            label, record = parse_local_data_line(L)
+            if label:
+                n += 1
+                all_data[label].update(record)
+    print("Read {} local_data records from {}".format(n,local_data_filename))
+    n = 0
+
+    with open(mwdata_filename) as mwdata:
+        for L in mwdata.readlines():
+            label, record = parse_mwdata_line(L)
+            if label:
+                n += 1
+                all_data[label].update(record)
+    print("Read {} mwdata records from {}".format(n,mwdata_filename))
+    n = 0
+
+    with open(galrep_filename) as galrep:
+        for L in galrep.readlines():
+            label, record = parse_galrep_line(L)
+            if label:
+                n += 1
+                all_data[label].update(record)
+    print("Read {} galrep records from {}".format(n,galrep_filename))
+
+    if check_cols:
+        for label in all_data:
+            cols = Set(all_data[label])
+            if cols != ec_nfcurves_columns:
+                print("Wrong key set for {}".format(label))
+                diff = cols - ec_nfcurves_columns
+                if diff:
+                    print("data has extra keys {}".format(diff))
+                diff = ec_nfcurves_columns - cols
+                if diff:
+                    print("data is missing keys {}".format(diff))
+    return all_data
 
 def read_curve_file(infile):
     r"""
