@@ -582,16 +582,24 @@ def add_trace_hashes(curves_file, isoclass_file, verbose=False):
     """
     from trace_hash import TraceHash
     hash_table = {}
+    n = 0
     for (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_file, only_one=True):
         label = "-".join([field_label,N_label,iso_label])
         if verbose:
             print("Processing {}".format(label))
         hash_table[label+"1"] = TraceHash(E)
-    print("hash table:\n{}".format(hash_table))
+        n += 1
+    print("Finished computing {} hashes from curves, now rewriting isoclass file".format(n))
+    #print("hash table:\n{}".format(hash_table))
+    n = 0
     with open(isoclass_file) as isofile, open(isoclass_file+"x",'w') as new_isofile:
         for L in isofile.readlines():
             label, record = parse_line_label_cols(L)
             if label in hash_table:
                 hash = str(hash_table[label])
                 new_isofile.write(L[:-1]+" "+hash+"\n")
+            else:
+                print("label {} in {} has no hash".format(label, isoclass_file))
+            n+=1
+    print("Finished rewriting {} lines to new isoclass file {}".format(n, isoclass_file+"x"))
 
