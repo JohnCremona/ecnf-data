@@ -3,7 +3,7 @@
 import re
 from sage.all import ZZ, QQ, latex, Set
 from sage.databases.cremona import cremona_to_lmfdb
-from codec import convert_conductor_label, curve_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string
+from codec import convert_conductor_label, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string
 from fields import nf_lookup
 from os import getenv
 #from sys import stdout
@@ -165,7 +165,7 @@ def parse_mwdata_line(L):
 
     r = data[4]
     record['rank'] = None if r=='?' else int(r)
-    record['rank_bounds'] = [int(r) for r in data[5][1:-1].split(",")]
+    record['rank_bounds'] = [int(rb) for rb in data[5][1:-1].split(",")]
     r = data[6]
     record['analytic_rank'] = None if r=='?' else int(r)
     record['ngens'] = int(data[7])
@@ -174,7 +174,7 @@ def parse_mwdata_line(L):
     record['heights'] = data[9]
     record['reg'] = data[10]
     record['torsion_order'] = int(data[11])
-    record['torsion_structure'] = [int(r) for r in data[12][1:-1].split(",")]
+    record['torsion_structure'] = [int(t) for t in data[12][1:-1].split(",")]
     tgens = data[13]
     record['torsion_gens'] = [] if tgens == '[]' else tgens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
 
@@ -717,7 +717,7 @@ def make_local_data_file(curves_filename, ld_filename, verbose=False):
     curves files.
     """
     from nfscripts import local_data
-    with open(ld_filename, 'w') as ldfile:
+    with open(ld_filename, 'w', 1) as ldfile:
         for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_filename):
             if verbose:
                 print("Processing {}".format("-".join([field_label,N_label,iso_label,c_num])))
@@ -741,7 +741,7 @@ def extend_curves_file(infilename, outfilename, verbose=False):
     """
     nmax = -1 # make this positive for a test run which stops after this many lines
     n = 0
-    with open(outfilename, 'w') as out:
+    with open(outfilename, 'w', 1) as out:
         for curve in read_curve_file(infilename):
             n += 1
             label = "-".join([curve['field_label'], curve['N_label'], curve['iso_label']]) + curve['c_num']
@@ -777,31 +777,62 @@ def extend_curves_file(infilename, outfilename, verbose=False):
             if n%1000==0:
                 print("{} curves processed".format(n))
 
-def add_trace_hashes(curves_file, isoclass_file, verbose=False):
+def read_ai(curvefile, only_one=False, ncurves=0):
+    r"""Iterator to loop through lines of a curves.* file each containing
+    data fields as defined the in the ecnf-format.txt file, yielding
+    pairs (K,ainvs).  Quicker than read_curves as the elliptic curves
+    are not constructed.
+
+    If only_one is True, skips curves whose 4th data field is
+    *not* 1, hence only yielding one curve per isogeny class.
+
+    """
+    count=0
+    with open(curvefile) as file:
+        for L in file.readlines():
+            #stdout.write(L)
+            data = L.split()
+            if len(data)!=13:
+                print("line {} does not have 13 fields, skipping".format(L))
+                continue
+            if only_one and data[3]!='1':
+                continue
+            count +=1
+            if ncurves and count>ncurves:
+                return
+            field_label = data[0]
+            K = nf_lookup(field_label)
+            N_label = data[1]
+            iso_label = data[2]
+            c_num = data[3]
+            N_def = data[4]
+            ainvs = ainvs_from_strings(K, data[6:11])
+            yield (field_label,N_label,N_def,iso_label,c_num,ainvs)
+
+def add_trace_hashes(curves_file, isoclass_file, suffix='x', verbose=False):
     r"""One-off function to read a curves file and an isoclass file,
     compute the trace-hashes of one curve in each isogeny class and
     add that to the isoclass file.
     """
-    from trace_hash import TraceHash
+    from trace_hash import TraceHash_from_ainvs
     hash_table = {}
     n = 0
-    for (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_file, only_one=True):
+    for (field_label,N_label,N_def,iso_label,c_num,ainvs) in read_ai(curves_file, only_one=True):
         label = "-".join([field_label,N_label,iso_label])
-        if verbose:
-            print("Processing {}".format(label))
-        hash_table[label+"1"] = TraceHash(E)
+        hash_table[label+"1"] = ainvs
         n += 1
-    print("Finished computing {} hashes from curves, now rewriting isoclass file".format(n))
-    #print("hash table:\n{}".format(hash_table))
+    print("Finished reading {} curves, now computing hashes".format(n))
     n = 0
-    with open(isoclass_file) as isofile, open(isoclass_file+"x",'w') as new_isofile:
+    with open(isoclass_file) as isofile, open(isoclass_file+suffix,'w') as new_isofile:
         for L in isofile.readlines():
             label, record = parse_line_label_cols(L)
             if label in hash_table:
-                hash = str(hash_table[label])
+                if verbose:
+                    print("Processing {}".format(label))
+                hash = str(TraceHash_from_ainvs(hash_table[label]))
                 new_isofile.write(L[:-1]+" "+hash+"\n")
             else:
-                print("label {} in {} has no hash".format(label, isoclass_file))
+                print("label {} in {} has no curve in {}".format(label, isoclass_file, curves_file))
             n+=1
     print("Finished rewriting {} lines to new isoclass file {}".format(n, isoclass_file+"x"))
 

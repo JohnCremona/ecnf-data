@@ -1,7 +1,6 @@
 # Sage translation of the Magma function TraceHash(), just for elliptic curves /Q and /NF
 
-from sage.all import GF, ZZ, QQ, pari, prime_range
-from nfscripts import ap
+from sage.all import GF, ZZ, QQ, pari, prime_range, PariError
 
 TH_C = [326490430436040986,559705121321738418,1027143540648291608,1614463795034667624,455689193399227776,
  812966537786397194,2073755909783565705,1309198521558998535,486216762465058766,1847926951704044964,
@@ -107,22 +106,49 @@ def TraceHash_from_ap(aplist):
 
 TH_P_cache = {}
 
-
-def TraceHash(E):
-    r"""Return the trace hash of this elliptic curve defined over either
-    QQ or a number field.
-
+def residues_mod_deg_1_primes(K,p):
+    r"""
+    For each degree 1 prime P dividing p
     """
-    K = E.base_field()
+    return K.defining_polynomial().roots(GF(p), multiplicities=False)
+
+def ap1(ainvs,p):
+    r"""Return the a_p of the elliptic curve with these a-invariants, in
+    ZZ or GF(p).
+    """
+    try:
+        return int(pari.ellinit(ainvs).ellap(p))
+    except PariError:
+        return int(pari.ellinit([int(a) for a in ainvs]).ellap(p))
+
+def ap(K, ainvs, p):
+    r"""Return the a_p of the elliptic curve with these a-invariants in
+    the number field K.
+    """
+    res = TH_P_cache[K][p]
+    ai = [a.lift().change_ring(GF(p)) for a in ainvs] # polys
+    return sum([ap1([a(r) for a in ai], p) for r in res], 0)
+
+def TraceHash_from_ainvs(ainvs):
+    r"""Return the trace hash of the elliptic curve with these ainvariants,
+    defined over either QQ or a number field.
+    """
+    K = ainvs[0].parent()
     if K == QQ:
-        E_pari = pari(E.a_invariants()).ellinit()
+        E_pari = pari(ainvs).ellinit()
+        # We cannot use ellaplist() since that only gives the first n a_p
         return TraceHash_from_ap([E_pari.ellap(p) for p in TH_P])
 
     if not K in TH_P_cache:
-        TH_P_cache[K] = dict([(p,[P for P in K.primes_above(p) if P.norm()==p]) for p in TH_P])
-    def apsum(p):
-        return sum([ap(E,P) for P in TH_P_cache[K][p]], 0)
-    return TraceHash_from_ap([apsum(p) for p in TH_P])
+        TH_P_cache[K] = dict([(p,residues_mod_deg_1_primes(K,p)) for p in TH_P])
+
+    return TraceHash_from_ap([ap(K, ainvs, p) for p in TH_P])
+
+def TraceHash(E):
+    r"""Return the trace hash of the elliptic curve E, defined over either
+    QQ or a number field.
+    """
+    return TraceHash_from_ainvs(E.ainvs())
 
 # Dictionary to hold the trace hashes of isogeny classes by label.  We
 # store the trace hash for every curve but isogenous curves have the
