@@ -60,7 +60,7 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     def convert_point(P):
         return E([K([ci.sage() for ci in c.Eltseq()]) for c in P.Eltseq()])
     if verbose:
-        print("calling magma...")
+        print("calling magma on E={} over {}...".format(E.ainvs(),K))
     if HeightBound is None:
         MWSI = magma(E).MordellWeilShaInformation(nvals=3)
     else:
@@ -119,15 +119,15 @@ def map_points(maps, source, Plist, verbose=False):
                     # now do p-saturation (if possible)
                     try:
                         E = Qlists[j][0].curve()
-                        pts, index, reg = E.saturation(Qlists[j], one_prime=p, debug=True)
                         try:
-                            pts, index, reg = E.saturation(Qlists[j], one_prime=p)
+                            pts, index, reg = E.saturation(Qlists[j], one_prime=p, debug=True)
                         except RuntimeError:
                             print("RuntimeError!")
                             print("Base field K = {}".format(E.base_field()))
                             print("E = {}".format(E.ainvs()))
                             print("Points = {}".format(Qlists[j]))
                             print("one_prime = {}".format(p))
+                            index=1
                         if index > 1:
                             Qlists[j] = E.lll_reduce(pts)[0]
                             if verbose:
@@ -161,6 +161,8 @@ def MWInfo_class(Cl, HeightBound=None, test_saturation=False, verbose=False):
     # adiscs = [E.discriminant().norm().abs() for E in Cl.curves]
     # print("Abs disc list: %s" % adiscs)
     ss = [len(str(E.ainvs())) for E in Cl.curves]
+    # n = len(Cl.curves)
+    # source = 1 if n==2 else ss.index(min(ss))
     source = ss.index(min(ss))
     if verbose:
         print("Using curve %s to find points" % list(Cl.curves[source].ainvs()))
@@ -330,7 +332,7 @@ def make_mwdata(curves_filename, mwdata_filename, min_cond_norm=None, max_cond_n
     with conductor norm between given bounds (optional), finds their
     ranks (or bounds) and generators, and outputs an mwdata file.
     """
-    with open(mwdata_filename, 'w') as mw_out:
+    with open(mwdata_filename, 'w', 1) as mw_out:
         for cl in read_classes(curves_filename):
             NN = cl['N_norm']
             if min_cond_norm and NN<min_cond_norm:

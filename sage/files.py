@@ -720,7 +720,8 @@ def make_local_data_file(curves_filename, ld_filename, verbose=False):
     with open(ld_filename, 'w', 1) as ldfile:
         for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_filename):
             if verbose:
-                print("Processing {}".format("-".join([field_label,N_label,iso_label,c_num])))
+                print("Processing {}".format("-".join([field_label,N_label,iso_label])+c_num))
+                #print("E = {}".format(E.ainvs()))
             Eld, nonminP, minD = local_data(E)
             #print("local data: {}".format(Eld))
             Eld = local_data_to_string(Eld)

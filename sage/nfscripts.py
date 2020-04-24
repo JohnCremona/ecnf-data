@@ -1107,9 +1107,12 @@ def local_data(E):
     Eld = E.local_data()
     if any([ld.bad_reduction_type()==0 for ld in E.local_data()]):
         mE = magma(E) # for local root numbers if not semistable
+        mE.Conductor() # otherwise the RootNumber() function sometimes fails strangely
     def local_root_number(ldp): # ldp is a component of E.local_data()
         red_type = ldp.bad_reduction_type()
         if red_type==0: # additive reduction: call Magma
+            # print("Calling Magma's RootNumber(E,P) with E = {}".format(mE))
+            # print(" and P = {} = {}".format(ldp.prime(), magma(ldp.prime())))
             eps = mE.RootNumber(ldp.prime())
         elif red_type==+1:
             eps = -1
