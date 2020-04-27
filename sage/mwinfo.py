@@ -245,16 +245,21 @@ def get_generators(iso_class, test_saturation=False, verbose=False):
     Es = iso_class['curves']
     if verbose:
         print("Curves in class %s: %s" % (class_label, [E.ainvs() for E in Es]))
-    mwi = MWInfo_curves(Es, HeightBound=2, test_saturation=test_saturation, verbose=verbose)
-    if verbose:
-        print("MW data: %s" % mwi)
+    try:
+        mwi = MWInfo_curves(Es, HeightBound=2, test_saturation=test_saturation, verbose=verbose)
+        if verbose:
+            print("MW data: %s" % mwi)
+    except RuntimeError as e:
+        print("Unable to compute rank bounds for {}".format(class_label))
+        mwi = [[None, []] for E in Es]
 
     iso_class['mwdata'] = []
     for E, mw in zip(Es, mwi):
         data = {}
-        data['rank_bounds'] = [int(r) for r in mw[0]]
-        if mw[0][0] == mw[0][1]:
-            data['rank'] = int(mw[0][0])
+        if mw[0]: # else something went wrong and we have no rank bounds (or any gens)
+            data['rank_bounds'] = [int(r) for r in mw[0]]
+            if mw[0][0] == mw[0][1]:
+                data['rank'] = int(mw[0][0])
         data['gens'] = gens = mw[1]
         data['hts'] = [P.height() for P in gens]
         data['reg'] = E.regulator_of_points(gens) if gens else 1
@@ -299,7 +304,7 @@ def make_mwdata_line(c):
     """
     mwdata = c['mwdata']
     r = str(mwdata['rank']) if 'rank' in mwdata else '?'
-    rbds = str(mwdata['rank_bounds']).replace(" ", "")
+    rbds = str(mwdata['rank_bounds']).replace(" ", "") if 'rank_bounds' in mwdata else '?'
     ar = str(mwdata['analytic_rank']) if 'analytic_rank' in mwdata else '?'
     ngens = str(len(mwdata['gens']))
     gens = encode_points(mwdata['gens'])
@@ -326,14 +331,25 @@ def make_mwdata_lines(cl):
             }
     ) for i,mw in enumerate(cl['mwdata'])])
 
-def make_mwdata(curves_filename, mwdata_filename, min_cond_norm=None, max_cond_norm=None,
+def make_mwdata(curves_filename, mwdata_filename, label=None,
+                min_cond_norm=None, max_cond_norm=None,
                 test_saturation=False, verbose=False):
-    r""" Retrieves curves from a curves file
+    r"""Retrieves curves from a curves file
     with conductor norm between given bounds (optional), finds their
     ranks (or bounds) and generators, and outputs an mwdata file.
+
+    If label is given, it should be a short isogeny class label, and
+    then only that class will be run.  Otherwise, the minimum and
+    maximum conductor may optionally be given.  Otherwise all the
+    curves (isogeny classes) in the in put file are processed.
+
     """
     with open(mwdata_filename, 'w', 1) as mw_out:
         for cl in read_classes(curves_filename):
+            short_class_label = "-".join([cl['N_label'],cl['iso_label']])
+            class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
+            if label and label!=short_class_label:
+                continue
             NN = cl['N_norm']
             if min_cond_norm and NN<min_cond_norm:
                 # if verbose:
@@ -344,14 +360,15 @@ def make_mwdata(curves_filename, mwdata_filename, min_cond_norm=None, max_cond_n
                     print("Skipping rest of file as conductor norms >= {} > {}".format(NN,max_cond_norm))
                 break
 
-            if True:#verbose:
-                class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
-                print("Processing class {}".format(class_label))
-            cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
-            mwlines = make_mwdata_lines(cl)
-            if verbose:
-                print(mwlines)
-            mw_out.write(mwlines+"\n")
+            print("Processing class {}".format(class_label))
+            try:
+                cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
+                mwlines = make_mwdata_lines(cl)
+                if verbose:
+                    print(mwlines)
+                mw_out.write(mwlines+"\n")
+            except RuntimeError as e:
+                print("caught RuntimeError: {}".format(e))
 
 def make_curve_data_line(c):
     r""" return a string for one line of  a curve_data file.
