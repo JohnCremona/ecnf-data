@@ -3,7 +3,7 @@
 import re
 from sage.all import ZZ, QQ, latex, Set
 from sage.databases.cremona import cremona_to_lmfdb
-from codec import convert_conductor_label, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string
+from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string
 from fields import nf_lookup
 from os import getenv
 #from sys import stdout
@@ -100,7 +100,7 @@ def parse_curves_line(L):
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
     record['equation'] = data[8]
-    record['cm'] = ZZ(data[9])
+    record['cm'] = ZZ(data[9]) if data[9]!='?' else '?'
     bc = data[10][1:-1]
     record['base_change'] = [str(lab) for lab in bc.split(",")] if bc else []
     record['q_curve'] = (data[1]==1)
@@ -136,20 +136,21 @@ def parse_local_data_line(L):
     Parse one line from a local_data file
     """
     data = L.split()
-    if len(data)!=7:
-        print("local_data line {} does not have 7 fields, skipping".format(L))
+    ncols = len(data)
+    if not ncols in [6,7]:
+        print("local_data line {} does not have 6 or 7 fields, skipping".format(L))
         return
     label, record = parse_line_label_cols(L)
 
-    record['local_data'] = local_data_from_string(data[4])
+    record['local_data'] = [] if (ncols==6) else local_data_from_string(data[4])
     # The non_min_p column is a list of strings
     # e.g. ['[N1,a1,alpha1]', '[N2,a2,alpha2]'] while the string in
     # the file will contain [[N1,a1,alpha1],[N2,a2,alpha2]].
     # Currently the list has 0 or 1 entries but we do not want to rely
     # on this.
-    nmp = data[5]
+    nmp = data[-2]
     record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
-    record['minD'] = data[6]
+    record['minD'] = data[-1]
 
     return label, record
 
@@ -165,7 +166,8 @@ def parse_mwdata_line(L):
 
     r = data[4]
     record['rank'] = None if r=='?' else int(r)
-    record['rank_bounds'] = [int(rb) for rb in data[5][1:-1].split(",")]
+    r = data[5]
+    record['rank_bounds'] = '?' if r=='?' else [int(rb) for rb in r[1:-1].split(",")]
     r = data[6]
     record['analytic_rank'] = None if r=='?' else int(r)
     record['ngens'] = int(data[7])
@@ -174,7 +176,8 @@ def parse_mwdata_line(L):
     record['heights'] = data[9]
     record['reg'] = data[10]
     record['torsion_order'] = int(data[11])
-    record['torsion_structure'] = [int(t) for t in data[12][1:-1].split(",")]
+    ts = data[12]
+    record['torsion_structure'] = [] if ts=='[]' else [int(t) for t in ts[1:-1].split(",")]
     tgens = data[13]
     record['torsion_gens'] = [] if tgens == '[]' else tgens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
 
@@ -617,6 +620,47 @@ def read_classes(infile):
             N_norm = int(data[5])
             E = curve_from_strings(K, data[6:11])
             this_class_id = "-".join(data[:3])
+            if this_class_id == prev_class_id:
+                this_class['curves'].append(E)
+            else:
+                if this_class: # else we have just started
+                    yield this_class
+                this_class = {}
+                this_class['field_label'] = field_label
+                this_class['N_label'] = N_label
+                this_class['N_def'] = N_def
+                this_class['N_norm'] = N_norm
+                this_class['iso_label'] = iso_label
+                this_class['curves'] = [E]
+                prev_class_id = this_class_id
+    # final class:
+    yield this_class
+
+def read_classes_new(infile):
+    r"""
+    Iterator to loop through lines of a curves.* file each
+    containing 13 data fields as defined the in the ecnf-format.txt file,
+    yielding complete isogeny classes.  These are dicts with keys
+
+    field_label, N_label, N_def, N_norm, iso_label, curves
+
+    the last being a list of EllipticCurves.
+    """
+    count=0
+    prev_class_id = ''
+    this_class = {}
+    with open(infile) as file:
+        for L in file.readlines():
+            count +=1
+            label, record = parse_curves_line(L)
+            field_label = record['field_label']
+            K = nf_lookup(field_label)
+            N_label = record['conductor_label']
+            iso_label = record['iso_label']
+            N_def = record['conductor_ideal']
+            N_norm = record['conductor_norm']
+            E = curve_from_string(K, record['ainvs'])
+            this_class_id = record['class_label']
             if this_class_id == prev_class_id:
                 this_class['curves'].append(E)
             else:

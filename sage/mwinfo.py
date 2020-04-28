@@ -25,7 +25,7 @@ also heights and regulator and torsion data.
 """
 from __future__ import print_function
 from sage.all import magma, union
-from files import read_classes
+from files import read_classes_new
 from codec import encode_points
 
 def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
@@ -345,7 +345,7 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
 
     """
     with open(mwdata_filename, 'w', 1) as mw_out:
-        for cl in read_classes(curves_filename):
+        for cl in read_classes_new(curves_filename):
             short_class_label = "-".join([cl['N_label'],cl['iso_label']])
             class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
             if label and label!=short_class_label:
