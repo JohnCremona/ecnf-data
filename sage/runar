@@ -1,0 +1,21 @@
+#!/bin/bash
+degree=$1
+field=$2
+echo degree=${degree}
+echo field=${field}
+curves_file="${HOME}/ecnf-data/$1/curves.$2"
+mwdata_file="${HOME}/ecnf-data/$1/mwdata.$2"
+sage_out="sage.out.$1.$2"
+echo curves file: ${curves_file}
+echo mwdata file: ${mwdata_file}
+echo sage output file: ${sage_out}
+cline="from mwinfo import add_analytic_ranks; add_analytic_ranks('${curves_file}','${mwdata_file}')"
+echo ${cline} | sagedev -q > ${sage_out}
+
+# Use with parallel as follows:
+#
+#
+# parallel -j 5 --joblog ar.log --progress ./runar RQF :::: RQF.txt
+#
+# 5 parallel jobs, data in RQF/, list of fields in RQF.txt
+#
