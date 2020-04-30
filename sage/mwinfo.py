@@ -25,7 +25,7 @@ also heights and regulator and torsion data.
 """
 from __future__ import print_function
 from sage.all import magma, union
-from files import read_classes_new, parse_mwdata_line
+from files import read_classes, read_classes_new, parse_mwdata_line
 from codec import encode_points
 
 def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
@@ -66,7 +66,7 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
         MWSI = mE.MordellWeilShaInformation(nvals=3)
     else:
         MWSI = mE.MordellWeilShaInformation(nvals=3, HeightBound=HeightBound)
-    ar = mE.AnalyticRank()
+    ar = int(mE.AnalyticRank())
     if verbose:
         print("...done.")
     rank_bounds = MWSI[0].sage()
@@ -254,7 +254,7 @@ def get_generators(iso_class, test_saturation=False, verbose=False):
             print("MW data: %s" % mwi)
     except RuntimeError as e:
         # We can still try for the anayltic rank:
-        ar = magma(Es[0]).AnalyticRank()
+        ar = int(magma(Es[0]).AnalyticRank())
         print(e)
         print("Unable to compute rank bounds for {}, but analytic rank = {}".format(class_label, ar))
         mwi = [[None, [], ar] for E in Es]
@@ -393,7 +393,7 @@ def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=Fal
     for cl in read_classes_new(curves_filename):
         short_class_label = "-".join([cl['N_label'],cl['iso_label']])
         class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
-        ar = magma(cl['curves'][0]).AnalyticRank()
+        ar = int(magma(cl['curves'][0]).AnalyticRank())
         ar_table[class_label] = ar
         if verbose:
             print("Processing class {}: analytic rank = {}".format(class_label, ar))
