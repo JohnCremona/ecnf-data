@@ -1,6 +1,6 @@
 # Functions for coding/decoding data to/from strings
 
-from sage.all import ZZ, QQ, EllipticCurve
+from sage.all import ZZ, QQ, EllipticCurve, prod
 from fields import nf_lookup
 
 def NFelt(a):
@@ -143,10 +143,9 @@ def ainvs_from_string(K, ainvs):
         return [parse_NFelt(K,ai) for ai in ainvs.split(";")]
 
 def curve_from_string(K, ainvs):
-        r"""
-        Given a number field K and a list of 5 strings, each
-        representing an NF element, converts these to elements of K
-        and returns the elliptic curve with these a-invariants.
+        r""" Given a number field K and a string, representing a list of 5
+        elements, converts these to elements of K and returns the
+        elliptic curve with these a-invariants.
         """
         return EllipticCurve(ainvs_from_string(K,ainvs))
 
@@ -230,6 +229,28 @@ def encode_points(Plist):
     """
     return '[' + ','.join([encode_point(P) for P in Plist]) + ']'
 
+def decode_points_one2many(gens):
+    return [] if gens == '[]' else gens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
+
+def encode_points_many2one(gens):
+    return ("["+",".join(gens)+"]").replace(" ","")
+
+def encode_int_list(L):
+    """
+    From a list of ints return same as a string with no spaces.
+
+    e.g. from [1, 2, 3] return '[1,2,3]'
+    """
+    return str(L).replace(" ","")
+
+def decode_int_list(L):
+    """
+    From a string with no spaces representing a list of ints return the list of ints.
+
+    e.g. from  '[1,2,3]' return [1, 2, 3], from '[]' return []
+    """
+    return [] if L=='[]' else [int(a) for a in L[1:-1].split(",")]
+
 ##########################################################
 
 def local_data_to_string_one_prime(ldp):
@@ -254,7 +275,17 @@ def local_data_from_string_one_prime(s):
             'cp': int(dat[8])}
 
 def local_data_from_string(s):
-    return [local_data_from_string_one_prime(si) for si in s.split(";")]
+    if s:
+        ld = [local_data_from_string_one_prime(si) for si in s.split(";")]
+    else:
+        ld = []
+    # ld_extra holds anything else which is per curve not per prime
+    ld_extra = {}
+    ld_extra['badp'] = badp = [ldp['p'] for ldp in ld if ldp['ord_cond']]
+    ld_extra['nbadp'] = len(badp)
+    ld_extra['ss'] = all(ldp['ord_cond']<2 for ldp in ld)
+    ld_extra['tamprod'] = prod([ldp['cp'] for ldp in ld], 1)
+    return ld, ld_extra
 
 def curves_data_to_string(c, old_style=False):
     r"""Given a dict containing the data for one line of a curves file,
