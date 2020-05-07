@@ -1,7 +1,7 @@
 # Functions for reading and writing data files
 
 import re
-from sage.all import ZZ, QQ, latex, Set, magma, RealField
+from sage.all import ZZ, QQ, latex, Set, Magma, RealField, RR
 from sage.databases.cremona import cremona_to_lmfdb
 from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, parse_point, encode_points
 from fields import nf_lookup
@@ -784,7 +784,8 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, prec=
         magma_prec = 16
     else:
         RR  = RealField(prec)
-        magma_prec = (prec*log(2)/log(10)).round()
+        # log(2)/log(10) =  0.301029995663981
+        magma_prec = (prec*0.301029995663981).round()
 
     Kfactors = {} # BSD factor depending only on the field K
     nmag = 0 # count the number of times we use a Magma instance, and restart every 100
