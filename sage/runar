@@ -9,7 +9,7 @@ sage_out="sage.out.$1.$2"
 echo curves file: ${curves_file}
 echo mwdata file: ${mwdata_file}
 echo sage output file: ${sage_out}
-cline="from mwinfo import add_analytic_ranks; add_analytic_ranks('${curves_file}','${mwdata_file}')"
+cline="from mwinfo import add_analytic_ranks_new; add_analytic_ranks_new('${curves_file}','${mwdata_file}', verbose=True)"
 echo ${cline} | sagedev -q > ${sage_out}
 
 # Use with parallel as follows:
