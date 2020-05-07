@@ -24,9 +24,10 @@ also heights and regulator and torsion data.
 
 """
 from __future__ import print_function
-from sage.all import magma, union
-from files import read_classes, read_classes_new, parse_mwdata_line
-from codec import encode_points
+from sage.all import Magma, magma, union
+from fields import nf_lookup
+from files import read_classes_new, parse_mwdata_line, parse_curves_line
+from codec import encode_points, curve_from_string
 
 def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     r"""
@@ -61,6 +62,7 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
         return E([K([ci.sage() for ci in c.Eltseq()]) for c in P.Eltseq()])
     if verbose:
         print("calling magma on E={} over {}...".format(E.ainvs(),K))
+    magma = Magma()
     mE = magma(E)
     if HeightBound is None:
         MWSI = mE.MordellWeilShaInformation(nvals=3)
@@ -72,6 +74,7 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     rank_bounds = MWSI[0].sage()
     gens = [convert_point(P) for P in MWSI[1]]
     sha_bounds = dict(MWSI[2].sage())
+    magma.quit()
     if gens and test_saturation:
         if verbose:
             print("testing that Magma's generators are saturated...")
@@ -391,9 +394,10 @@ def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=Fal
     ar_table = {}
     n = 0
     for cl in read_classes_new(curves_filename):
-        short_class_label = "-".join([cl['N_label'],cl['iso_label']])
         class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
+        magma = Magma()
         ar = int(magma(cl['curves'][0]).AnalyticRank())
+        magma.quit()
         ar_table[class_label] = ar
         if verbose:
             print("Processing class {}: analytic rank = {}".format(class_label, ar))
@@ -408,6 +412,67 @@ def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=Fal
                 ar = ar_table[class_label]
                 if verbose:
                     print("Updating analytic rank of {} to {}".format(class_label,ar))
+                data = L.split()
+                data[6] = str(ar)
+                L = " ".join(data)
+                if verbose:
+                    print("New mwdata line: {}".format(L))
+                mw_out.write(L + "\n")
+            else:
+                mw_out.write(L)
+
+def add_analytic_ranks_new(curves_filename, mwdata_filename, suffix='x', verbose=False):
+    r"""Retrieves curves from a curves file and mwdata from the mwdata
+     file.  Computes analytic ranks and rewrites the mwdata file
+     adding the suffix to its filename.
+
+    This is a one-off since the orginal mwdata file code forgot to
+    compute and output analytic ranks.
+    """
+    curve_table = {}
+    n = 0
+    with open(curves_filename) as curves:
+        for L in curves.readlines():
+            label, record = parse_curves_line(L)
+            if label:
+                n += 1
+                curve_table[label] = record
+    print("Read {} curves from {}".format(n,curves_filename))
+
+    ar_table = {}
+    nmag = 0
+    magma = Magma()
+
+    def AnalyticRank(Edata):
+        nonlocal nmag, magma, verbose
+        class_label = "-".join([Edata['field_label'],Edata['conductor_label'],Edata['iso_label']])
+        if class_label in ar_table:
+            return ar_table[class_label]
+        if verbose:
+            print("Computing analytic rank of {}".format(class_label))
+        K = nf_lookup(Edata['field_label'])
+        E = curve_from_string(K, Edata['ainvs'])
+        nmag += 1
+        if nmag%100==0:
+            nmag = 0
+            magma.quit(verbose=verbose)
+            if verbose:
+                print("Starting a new Magma instance")
+            magma = Magma()
+        else:
+            if verbose:
+                print("Using Magma for the {}'th  time".format(nmag))
+        ar = int(magma(E).AnalyticRank())
+        ar_table[class_label] = ar
+        return ar
+
+    with open(mwdata_filename) as mw_in, open(mwdata_filename+suffix, 'w', 1) as mw_out:
+        for L in mw_in.readlines():
+            label, record = parse_mwdata_line(L)
+            if record['analytic_rank'] is None:
+                ar = AnalyticRank(curve_table[label])
+                if verbose:
+                    print("Updating analytic rank of {} to {}".format(label,ar))
                 data = L.split()
                 data[6] = str(ar)
                 L = " ".join(data)
