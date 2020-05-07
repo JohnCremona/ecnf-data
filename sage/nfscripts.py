@@ -1131,3 +1131,36 @@ def local_data(E):
                    'cp': int(ld.tamagawa_number())}
                   for ld in Eld]
     return E_local_data, E.non_minimal_primes(), E.minimal_discriminant_ideal()
+
+def global_period(E, scale = None, prec = None):
+    r"""Return the global period of E.  This is the product over all
+    infinite places v of the base field K of a local period at v,
+    times a scaling factor to allow for the model not being a global
+    minimal model.
+
+    The factor at each v is E.period_lattice(v).omega().  This
+    includes a factor 2 at real places where the discriminant is
+    positive, i.e. the number ofc onnected components.
+
+    The correction factor is the (rational) 12th root of the norm of
+    E.discriminant()/E.minimal_discriminant_ideal().
+    """
+    # In Sage 9.1 there's a bug in
+    # E.period_lattice(e).omega(prec=prec) for complex places where
+    # the prec parameter is *not* sassed onto the period computation.
+    #
+    # Otherwise this would just be
+    # return prod(E.period_lattice(e).omega(prec=prec) for e in K.places())
+
+    def omega(L):
+        if L.is_real():
+            return L.omega(prec) if prec else L.omega()
+        else:
+            w1,w2 = L.basis(prec) if prec else L.basis()
+            return (w1*w2.conjugate()).imag().abs()
+
+    om = prod(omega(E.period_lattice(e)) for e in E.base_field().places())
+    if scale:
+        om *= scale
+    return om
+
