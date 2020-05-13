@@ -833,14 +833,9 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
             if verbose:
                 print("analytic rank = {}\nL-value = {}".format(ar,lval))
 
-            # recompute regulator.  NB The precision handling in
-            # height computations is not easy to do, so for safety we
-            # compute heights and regulators at double the precision
-            # and then coerce back to RR which has the desired
-            # precision.  For example, 4.4.5125.1-475.1-c1 has rank
-            # one and in defailt precision Sage gives the height of
-            # its generator as 0.743563526471528 but it is actually
-            # 0.793129353853222.
+            # recompute regulator.  Original heights were computed
+            # before fixing Sage's height function precision issues
+            # properly.
 
             gens = [E(parse_point(K,P)) for P in Edata['gens']]
             if verbose:
@@ -858,7 +853,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
                     if verbose:
                         print("gens are saturated at primes up to {}".format(max_sat_prime))
 
-            heights = [RR(P.height(precision=2*prec)) for P in gens]
+            heights = [P.height(precision=prec) for P in gens]
             Edata['heights'] = str(heights).replace(" ","")
             if verbose:
                 print("heights = {}".format(heights))
