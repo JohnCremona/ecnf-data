@@ -841,11 +841,11 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
             if verbose:
                 print("gens = {}".format(gens))
 
-            if max_sat_prime:
+            if max_sat_prime and ngens:
                 if max_sat_prime==Infinity:
-                    new_gens, index, new_reg = E.saturation(gens, verbose=True)
+                    new_gens, index, new_reg = E.saturation(gens)
                 else:
-                    new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime, verbose=True)
+                    new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime)
                 if index>1:
                     print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
                     gens = new_gens
