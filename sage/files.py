@@ -1,7 +1,7 @@
 # Functions for reading and writing data files
 
 import re
-from sage.all import ZZ, QQ, latex, Set, Magma, RealField, RR
+from sage.all import ZZ, QQ, latex, Set, Magma, RealField, RR, Infinity
 from sage.databases.cremona import cremona_to_lmfdb
 from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, parse_point, encode_points
 from fields import nf_lookup
@@ -762,7 +762,7 @@ def make_local_data_file(curves_filename, ld_filename, verbose=False):
             line = " ".join([field_label,N_label,iso_label,c_num,Eld, nonminP, minD])
             ldfile.write(line + "\n")
 
-def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, prec=None, verbose=False):
+def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = 0, prec=None, verbose=False):
     r"""
     Reads curves and local data files.
     Computes analytic rank and L-value using Magma, and omega (global period).
@@ -790,9 +790,14 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, prec=
     Kfactors = {} # BSD factor depending only on the field K
     nmag = 0 # count the number of times we use a Magma instance, and restart every 100
     magma = Magma()
-
-    with open(base_dir+'/mwdata.'+field_label+suffix, 'w', 1) as mwdata:
+    if one_label:
+        mwoutfile = base_dir+'/mwdata.'+field_label+suffix+"."+one_label
+    else:
+        mwoutfile = base_dir+'/mwdata.'+field_label+suffix
+    with open(mwoutfile, 'w', 1) as mwdata:
         for label, Edata in data.items():
+            if one_label and one_label!=Edata['class_label']:
+                continue
             N = Edata['conductor_norm']
             if (minN and N<minN) or (maxN and N>maxN):
                 continue
@@ -840,6 +845,19 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, prec=
             gens = [E(parse_point(K,P)) for P in Edata['gens']]
             if verbose:
                 print("gens = {}".format(gens))
+
+            if max_sat_prime:
+                if max_sat_prime==Infinity:
+                    new_gens, index, new_reg = E.saturation(gens, verbose=True)
+                else:
+                    new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime, verbose=True)
+                if index>1:
+                    print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
+                    gens = new_gens
+                else:
+                    if verbose:
+                        print("gens are saturated at primes up to {}".format(max_sat_prime))
+
             heights = [RR(P.height(precision=2*prec)) for P in gens]
             Edata['heights'] = str(heights).replace(" ","")
             if verbose:
