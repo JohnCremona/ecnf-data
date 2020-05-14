@@ -6,7 +6,7 @@ echo base directory: ${degree}
 echo field: ${field}
 sage_out="sage.out.$1.$2"
 echo sage output file: ${sage_out}
-cline="from files import extend_mwdata; extend_mwdata('${base_dir}','${field}', verbose=True)"
+cline="from files import extend_mwdata; extend_mwdata('${base_dir}','${field}', max_sat_prime=100, verbose=True)"
 echo ${cline} | sagedev -q > ${sage_out}
 
 # Use with parallel as follows:

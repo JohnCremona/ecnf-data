@@ -762,7 +762,7 @@ def make_local_data_file(curves_filename, ld_filename, verbose=False):
             line = " ".join([field_label,N_label,iso_label,c_num,Eld, nonminP, minD])
             ldfile.write(line + "\n")
 
-def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = 0, prec=None, verbose=False):
+def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = Infinity, prec=None, verbose=False):
     r"""
     Reads curves and local data files.
     Computes analytic rank and L-value using Magma, and omega (global period).
@@ -777,6 +777,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
     from nfscripts import global_period
     data = read_all_field_data(base_dir, field_label, check_cols=False)
     classdata = {} # will hold isogeny-invariant values keyed by class label
+    sat_needed = {} # will hold True/False keyed by class label if curve #1's gens were not saturated
 
     if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
         RR = RealField()
@@ -841,17 +842,21 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
             if verbose:
                 print("gens = {}".format(gens))
 
-            if max_sat_prime and ngens:
+            if max_sat_prime and ngens and (Edata['number']==1 or sat_needed['class_label']):
                 if max_sat_prime==Infinity:
-                    new_gens, index, new_reg = E.saturation(gens)
+                    new_gens, index, new_reg = E.saturation(gens, verbose=verbose)
                 else:
                     new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime)
                 if index>1:
                     print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
                     gens = new_gens
+                    if Edata['number']==1:
+                        sat_needed['class_label'] = True
                 else:
                     if verbose:
                         print("gens are saturated at primes up to {}".format(max_sat_prime))
+                    if Edata['number']==1:
+                        sat_needed['class_label'] = False
 
             heights = [P.height(precision=prec) for P in gens]
             Edata['heights'] = str(heights).replace(" ","")
