@@ -839,6 +839,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
             # properly.
 
             gens = [E(parse_point(K,P)) for P in Edata['gens']]
+            ngens = len(gens)
             if verbose:
                 print("gens = {}".format(gens))
 

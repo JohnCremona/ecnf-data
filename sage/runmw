@@ -12,7 +12,7 @@ echo ${cline} | sagedev -q > ${sage_out}
 # Use with parallel as follows:
 #
 #
-# parallel -j 5 --joblog ar.log --progress ./runar RQF :::: RQF.txt
+# parallel -j 5 --joblog RQF.log --progress ./runmw RQF :::: RQF.txt
 #
 # 5 parallel jobs, data in RQF/, list of fields in RQF.txt
 #
