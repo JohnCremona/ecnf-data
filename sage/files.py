@@ -746,13 +746,10 @@ def make_local_data_file(curves_filename, ld_filename, verbose=False):
     r"""Create a local_data file from a curves file.  This will not be
     needed once we create the local_data file at the same time as the
     curves files.
-
-    The prec parameter only affects the precision to which the global
-    period is computed.
     """
     from nfscripts import local_data
     with open(ld_filename, 'w', 1) as ldfile:
-        for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves(curves_filename):
+        for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves_new(curves_filename):
             if verbose:
                 print("Processing {}".format("-".join([field_label,N_label,iso_label])+c_num))
             Eld, nonminP, minD = local_data(E)
