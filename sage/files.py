@@ -163,9 +163,9 @@ def parse_mwdata_line(L):
     Parse one line from an mwdata file
     """
     data = L.split()
-    if len(data)!=14:
-        print("mwdata line {} does not have 14 fields, skipping".format(L))
-        return
+    # if len(data)!=14:
+    #     print("mwdata line {} does not have 14 fields, skipping".format(L))
+    #     return
     label, record = parse_line_label_cols(L)
 
     r = data[4]
@@ -774,7 +774,6 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
     from nfscripts import global_period
     data = read_all_field_data(base_dir, field_label, check_cols=False)
     classdata = {} # will hold isogeny-invariant values keyed by class label
-    sat_needed = {} # will hold True/False keyed by class label if curve #1's gens were not saturated
 
     if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
         RR = RealField()
@@ -789,7 +788,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
     nmag = 0 # count the number of times we use a Magma instance, and restart every 100
     magma = Magma()
     if one_label:
-        mwoutfile = base_dir+'/mwdata.'+field_label+suffix+"."+one_label
+        mwoutfile = base_dir+'/mwdata.'+suffix+"."+one_label
     else:
         mwoutfile = base_dir+'/mwdata.'+field_label+suffix
     with open(mwoutfile, 'w', 1) as mwdata:
@@ -840,7 +839,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
             if verbose:
                 print("gens = {}".format(gens))
 
-            if max_sat_prime and ngens and (Edata['number']==1 or sat_needed['class_label']):
+            if max_sat_prime and ngens:
                 if max_sat_prime==Infinity:
                     new_gens, index, new_reg = E.saturation(gens, verbose=verbose)
                 else:
@@ -848,13 +847,9 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
                 if index>1:
                     print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
                     gens = new_gens
-                    if Edata['number']==1:
-                        sat_needed['class_label'] = True
                 else:
                     if verbose:
                         print("gens are saturated at primes up to {}".format(max_sat_prime))
-                    if Edata['number']==1:
-                        sat_needed['class_label'] = False
 
             heights = [P.height(precision=prec) for P in gens]
             Edata['heights'] = str(heights).replace(" ","")
