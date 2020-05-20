@@ -183,8 +183,7 @@ def parse_mwdata_line(L):
     ts = data[12]
     record['torsion_structure'] = [] if ts=='[]' else [int(t) for t in ts[1:-1].split(",")]
     record['torsion_primes'] = ZZ(nt).prime_divisors()
-    tgens = data[13]
-    record['torsion_gens'] = [] if tgens == '[]' else tgens.replace("[[[","[[").replace("]]]","]]").replace("]],[[","]];[[").split(";")
+    record['torsion_gens'] = decode_points_one2many(data[13])
 
     return label, record
 
@@ -207,7 +206,7 @@ def parse_new_mwdata_line(L):
     record['ngens']             = int(data[7])
     record['gens']              = decode_points_one2many(data[8])
     record['heights']           = data[9]
-    record['reg']               = decode_col(data[10], RR)
+    record['reg']               = decode_col(data[10], RR) if record['ngens'] else 1
     record['torsion_order']     = nt = int(data[11])
     record['torsion_primes']    = ZZ(nt).prime_divisors()
     record['torsion_structure'] = decode_int_list(data[12])
@@ -231,7 +230,9 @@ def make_mwdata_line(Edata):
     label_cols = make_line_label_cols(Edata)
 
     rank = str(Edata['rank']) if Edata['rank']!=None else '?'
-    reg  = str(Edata['reg'])  if Edata['reg']  else '?'
+    ngens = Edata['ngens']
+    # We want the regulator of 0 points to store as 1 exactly, not 1.00000
+    reg  = (str(Edata['reg'])  if Edata['reg']  else '?') if ngens else '1'
     sha  = str(Edata['sha'])  if Edata['sha']  else '?'
     rbds = str(Edata['rank_bounds']).replace(" ","")
     gens = encode_points_many2one(Edata['gens'])
@@ -242,7 +243,7 @@ def make_mwdata_line(Edata):
               rank,
               rbds,
               str(Edata['analytic_rank']),
-              str(Edata['ngens']),
+              str(ngens),
               gens,
               Edata['heights'],
               reg,
@@ -341,7 +342,20 @@ ec_nfcurves_columns = Set(['field_label', 'degree', 'signature',
 
 assert ec_nfcurves_columns==Set(keys_and_types.keys())
 
-def read_all_field_data(base_dir, field_label, check_cols=True):
+ec_nfcurves_extra_columns = Set(['omega', 'ss', 'tamprod', 'badp', 'Lvalue', 'sha', 'torsion_primes', 'nbadp'])
+
+extra_keys_and_types = {'omega': float_type,
+                        'ss': bool_type,
+                        'tamprod': int_type,
+                        'badp': list_type,
+                        'Lvalue': float_type,
+                        'sha': int_type,
+                        'torsion_primes': list_type,
+                        'nbadp': int_type}
+assert ec_nfcurves_extra_columns==Set(extra_keys_and_types.keys())
+ec_nfcurves_all_columns = ec_nfcurves_columns + ec_nfcurves_extra_columns
+
+def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='old'):
     r"""Given a field label, read all the data in files curves.field_label,
     isoclass.field_label, local_data.field_label, mwdata.field_label,
     galrep.field_label (from directory base_dir), returning a single
@@ -403,7 +417,10 @@ def read_all_field_data(base_dir, field_label, check_cols=True):
 
     with open(mwdata_filename) as mwdata:
         for L in mwdata.readlines():
-            label, record = parse_mwdata_line(L)
+            if mwdata_format=='old':
+                label, record = parse_mwdata_line(L)
+            else:
+                label, record = parse_new_mwdata_line(L)
             if label:
                 n += 1
                 all_data[label].update(record)
@@ -421,7 +438,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True):
     if check_cols:
         for label in all_data:
             cols = Set(all_data[label])
-            if cols != ec_nfcurves_columns:
+            if cols != ec_nfcurves_all_columns:
                 print("Wrong key set for {}".format(label))
                 diff = cols - ec_nfcurves_columns
                 if diff:
@@ -847,6 +864,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
                 if index>1:
                     print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
                     gens = new_gens
+                    Edata['gens'] = decode_points_one2many(encode_points(gens)) # list of strings
                 else:
                     if verbose:
                         print("gens are saturated at primes up to {}".format(max_sat_prime))
@@ -892,7 +910,8 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
                 print("{}: torsion order is {}, not {} as on file; updating data".format(label,nt,Edata['torsion_order']))
                 Edata['torsion_order'] = nt
                 Edata['torsion_structure'] = list(T.invariants())
-                Edata['torsion_gens'] = encode_points([P.element() for P in T.gens()])
+                tgens = [P.element() for P in T.gens()]
+                Edata['torsion_gens'] = decode_points_one2many(encode_points(tgens)) # list of strings
             if verbose:
                 print("Torsion order = {} (checked)".format(nt))
 
@@ -917,19 +936,48 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
                         print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
                     print("****************************Not good! 0 or non-square or not close to a positive integer!")
 
-                # gens = [E(parse_point(K,P)) for P in Edata['gens']]
-                # magma = Magma()
-                # Rsha_magma = RR(magma(E).ConjecturalSha(magma(gens)))
-                # magma.quit()
-                # if Rsha_magma.round() == sha:
-                #     print("-- agrees with Magma")
-                # else:
-                #     print("******** disagrees with Magma, which has {} =~= {}".format(Rsha_magma, Rsha_magma.round()))
-
             else:
                 if verbose:
                     print("Unable to compute regulator or analytic Sha, since analytic rank = {} but we only have {} generators".format(ar, Edata['ngens']))
                 Edata['sha'] = None
+
+            line = make_mwdata_line(Edata)
+            if verbose:
+                print("New mwdata line: {}".format(line))
+            mwdata.write(line + "\n")
+
+def fix_torsion(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, verbose=False):
+    r"""
+    Reads all data files.
+    Recomputes torsion data only (as this was corrupted in some cases).
+    Rewrites mwdata, with tosion fields corrected.
+    """
+    data = read_all_field_data(base_dir, field_label, check_cols=False, mwdata_format='new')
+    if one_label:
+        mwoutfile = base_dir+'/mwdata.'+suffix+"."+one_label
+    else:
+        mwoutfile = base_dir+'/mwdata.'+field_label+suffix
+    with open(mwoutfile, 'w', 1) as mwdata:
+        for label, Edata in data.items():
+            if one_label and one_label!=Edata['class_label']:
+                continue
+            N = Edata['conductor_norm']
+            if (minN and N<minN) or (maxN and N>maxN):
+                continue
+            if verbose:
+                print("Processing {}".format(label))
+                #print("Edata = {}".format(Edata))
+            K = nf_lookup(Edata['field_label'])
+            E = curve_from_string(K,Edata['ainvs'])
+            T = E.torsion_subgroup()
+            nt = T.order()
+            Edata['torsion_order'] = nt
+            Edata['torsion_structure'] = list(T.invariants())
+            tgens = [P.element() for P in T.gens()]
+            Edata['torsion_gens'] = decode_points_one2many(encode_points(tgens)) # list of strings
+            if verbose:
+                print("Torsion order = {}".format(nt))
+                print("Torsion gens = {}".format(Edata['torsion_gens']))
 
             line = make_mwdata_line(Edata)
             if verbose:
