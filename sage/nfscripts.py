@@ -6,12 +6,13 @@
 #
 from sys import stdout
 from os import getenv
-from sage.all import (polygen, ZZ, QQ, Magma, magma, latex, EllipticCurve, primes,
-                      flatten, Primes, legendre_symbol, prod, RR, PowerSeriesRing, O, Integer, srange, sign)
+from sage.all import (polygen, ZZ, QQ, Magma, magma, latex, EllipticCurve, primes, Infinity,
+                      flatten, Primes, legendre_symbol, prod, RR, RealField,
+                      PowerSeriesRing, O, Integer, srange, sign)
 from fields import add_field, field_data, field_label, cm_j_dict, get_IQF_info, get_field_name
 from files import read_newform_data, read_missing_levels
 from psort import nf_key, primes_of_degree_iter, ideal_from_label
-from codec import curve_from_strings, ideal_to_string, old_ideal_label
+from codec import curve_from_string, curve_from_strings, ideal_to_string, old_ideal_label, parse_point, encode_points, decode_points_one2many
 
 HOME = getenv("HOME")
 bianchi_data_dir = HOME + "/bianchi-data"
@@ -1164,3 +1165,155 @@ def global_period(E, scale = None, prec = None):
         om *= scale
     return om
 
+def extend_mwdata_one(Edata, classdata, Kfactors, magma,
+                      max_sat_prime = Infinity, prec=None, verbose=False):
+    r"""
+    Computes analytic rank and L-value using Magma, and omega (global period).
+    Computes analytic Sha (rounded).
+
+    The prec parameter affects the precision to which the L-value and
+    global period is computed.  It is bit precision.  Magma's default
+    is 6dp or 20 bits for the L-value and the running time increases
+    rapidly.
+    """
+    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
+        RR = RealField()
+        prec = RR.precision()
+        magma_prec = 16
+    else:
+        RR  = RealField(prec)
+        # log(2)/log(10) =  0.301029995663981
+        magma_prec = (prec*0.301029995663981).round()
+
+    from fields import nf_lookup
+    K = nf_lookup(Edata['field_label'])
+    # We need to construct every E as a Sage EllipticCurve in
+    # order to compute omega, but we only need construct it as
+    # a Magma curve once per isogeny class.
+    E = curve_from_string(K,Edata['ainvs'])
+
+    # find analytic rank and L-value:
+
+    class_label = Edata['class_label']
+    if not class_label in classdata: # then we need to compute analytic rank and L-value
+        mE = magma(E)
+        if verbose:
+            print("Calling Magma's AnalyticRank()")
+        ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
+        if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
+            if verbose:
+                print("Special CM case: E = {}".format(E.ainvs()))
+                print("AnalyticRank's ar={}, lval = {}".format(ar,lval))
+            ar *= 2
+            old_lval = lval
+            lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
+            if verbose:
+                print("ar doubled to {}, lval recomputed to {}".format(ar,lval))
+                print(" (compare square of old lval:       {})".format(old_lval**2))
+        lval = RR(lval)
+        ar = int(ar)
+        classdata[class_label] = (ar,lval)
+    else:
+        ar, lval = classdata[class_label]
+    Edata['analytic_rank'] = ar
+    Edata['Lvalue'] = lval
+    if verbose:
+        print("analytic rank = {}\nL-value = {}".format(ar,lval))
+
+    # recompute regulator.  Original heights were computed
+    # before fixing Sage's height function precision issues
+    # properly.
+
+    gens = [E(parse_point(K,P)) for P in Edata['gens']]
+    ngens = len(gens)
+    if verbose:
+        print("gens = {}".format(gens))
+
+    if max_sat_prime and ngens:
+        if max_sat_prime==Infinity:
+            try:
+                new_gens, index, new_reg = E.saturation(gens, verbose=verbose)
+            except ValueError:
+                print("Warning: unable to compute saturation index bound, using 100")
+                new_gens, index, new_reg = E.saturation(gens, max_prime=100, verbose=verbose)
+        else:
+            new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime, verbose=verbose)
+        if index>1:
+            print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
+            gens = new_gens
+            Edata['gens'] = decode_points_one2many(encode_points(gens)) # list of strings
+        else:
+            if verbose:
+                print("gens are saturated at primes up to {}".format(max_sat_prime))
+
+    heights = [P.height(precision=prec) for P in gens]
+    Edata['heights'] = str(heights).replace(" ","")
+    if verbose:
+        print("heights = {}".format(heights))
+    reg = E.regulator_of_points(gens, precision=prec)
+    Edata['reg'] = str(reg) if ar else '1'
+    if verbose:
+        print("regulator (of known points) = {}".format(reg))
+
+    # allow for the scaling in the Neron-Tate height
+    # pairing: for BSD we need non-normalised heights and
+    # normalization divides every height by K.degree(), so
+    # the regulator we need has to be multiplied by
+    # K.degree()**rank.
+    if len(gens) == ar:
+        NTreg = reg * K.absolute_degree()**ar
+        if verbose:
+            print("Neron-Tate regulator = {}".format(NTreg))
+    else:
+        NTreg = None
+
+    # compute omega
+
+    # find scaling factor in case we don't have a global minimal model
+    minDnorm = ZZ(Edata['minD'][1:].split(",")[0]).abs()
+    modelDnorm = E.discriminant().norm().abs()
+    fac = (modelDnorm/minDnorm).nth_root(12) # will be exact
+    if fac!=1 and verbose:
+        print("Not a global minimal model")
+        print("Scaling factor = {}".format(fac))
+    Edata['omega'] = omega = global_period(E, fac, prec=prec)
+    if verbose:
+        print("omega = {}".format(omega))
+
+    T = E.torsion_subgroup()
+    nt = T.order()
+    if nt != Edata['torsion_order']:
+        print("{}: torsion order is {}, not {} as on file; updating data".format(Edata['label'],nt,Edata['torsion_order']))
+        Edata['torsion_order'] = nt
+        Edata['torsion_structure'] = list(T.invariants())
+        tgens = [P.element() for P in T.gens()]
+        Edata['torsion_gens'] = decode_points_one2many(encode_points(tgens)) # list of strings
+    if verbose:
+        print("Torsion order = {} (checked)".format(nt))
+
+    tamagawa_product = Edata['tamprod']
+    if verbose:
+        print("Tamagawa product = {}".format(tamagawa_product))
+
+    if NTreg:
+        Rsha = lval * nt**2  / (NTreg * tamagawa_product * omega)
+
+        if not K in Kfactors:
+            Kfactors[K] = RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+        if verbose:
+            print("Field factor = {}".format(Kfactors[K]))
+
+        Rsha *= Kfactors[K]
+        Edata['sha'] = sha = Rsha.round()
+        if verbose:
+            print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
+        if sha==0 or (sha-Rsha).abs()>0.0001 or not ZZ(sha).is_square():
+            if not verbose:
+                print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
+            print("****************************Not good! 0 or non-square or not close to a positive integer!")
+
+    else:
+        if verbose:
+            print("Unable to compute regulator or analytic Sha, since analytic rank = {} but we only have {} generators".format(ar, Edata['ngens']))
+        Edata['sha'] = None
+    return Edata
