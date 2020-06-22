@@ -1,9 +1,9 @@
 # Functions for reading and writing data files
 
 import re
-from sage.all import ZZ, QQ, latex, Set, Magma, RealField, RR, Infinity
+from sage.all import ZZ, QQ, latex, Set, RR, Infinity
 from sage.databases.cremona import cremona_to_lmfdb
-from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, parse_point, encode_points
+from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, encode_points
 from fields import nf_lookup
 from os import getenv
 #from sys import stdout
@@ -776,7 +776,8 @@ def make_local_data_file(curves_filename, ld_filename, verbose=False):
             line = " ".join([field_label,N_label,iso_label,c_num,Eld, nonminP, minD])
             ldfile.write(line + "\n")
 
-def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = Infinity, prec=None, verbose=False):
+
+def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, CM_only=False, max_sat_prime = Infinity, prec=None, verbose=False):
     r"""
     Reads curves and local data files.
     Computes analytic rank and L-value using Magma, and omega (global period).
@@ -788,29 +789,25 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
     is 6dp or 20 bits for the L-value and the running time increases
     rapidly.
     """
-    from nfscripts import global_period
+    from nfscripts import extend_mwdata_one
     data = read_all_field_data(base_dir, field_label, check_cols=False)
     classdata = {} # will hold isogeny-invariant values keyed by class label
-
-    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
-        RR = RealField()
-        prec = RR.precision()
-        magma_prec = 16
-    else:
-        RR  = RealField(prec)
-        # log(2)/log(10) =  0.301029995663981
-        magma_prec = (prec*0.301029995663981).round()
-
     Kfactors = {} # BSD factor depending only on the field K
+
+    from sage.interfaces.all import Magma
     nmag = 0 # count the number of times we use a Magma instance, and restart every 100
     magma = Magma()
+
     if one_label:
         mwoutfile = base_dir+'/mwdata.'+suffix+"."+one_label
     else:
         mwoutfile = base_dir+'/mwdata.'+field_label+suffix
     with open(mwoutfile, 'w', 1) as mwdata:
         for label, Edata in data.items():
-            if one_label and one_label!=Edata['class_label']:
+            class_label = Edata['class_label']
+            if one_label and one_label!=class_label:
+                continue
+            if CM_only and not 'CM' in class_label:
                 continue
             N = Edata['conductor_norm']
             if (minN and N<minN) or (maxN and N>maxN):
@@ -818,129 +815,16 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
             if verbose:
                 print("Processing {}".format(label))
                 #print(Edata)
-            K = nf_lookup(Edata['field_label'])
-            # We need to construct every E as a Sage EllipticCurve in
-            # order to compute omega, but we only need construct it as
-            # a Magma curve once per isogeny class.
-            E = curve_from_string(K,Edata['ainvs'])
 
-            # find analytic rank and L-value:
-
-            class_label = Edata['class_label']
-            if not class_label in classdata:
+            if not class_label in classdata: # we'll use magma in extend_mwdata_one
                 nmag += 1
                 if nmag%100==0:
-                    magma.quit(verbose=verbose)
+                    magma.quit()#(verbose=verbose)
                     magma = Magma()
                     nmag = 0
-                mE = magma(E)
-                if verbose:
-                    print("Calling Magma's AnalyticRank()")
-                ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-                lval = RR(lval)
-                ar = int(ar)
-                classdata[class_label] = (ar,lval)
-            else:
-                ar, lval = classdata[class_label]
-            Edata['analytic_rank'] = ar
-            Edata['Lvalue'] = lval
-            if verbose:
-                print("analytic rank = {}\nL-value = {}".format(ar,lval))
 
-            # recompute regulator.  Original heights were computed
-            # before fixing Sage's height function precision issues
-            # properly.
-
-            gens = [E(parse_point(K,P)) for P in Edata['gens']]
-            ngens = len(gens)
-            if verbose:
-                print("gens = {}".format(gens))
-
-            if max_sat_prime and ngens:
-                if max_sat_prime==Infinity:
-                    new_gens, index, new_reg = E.saturation(gens, verbose=verbose)
-                else:
-                    new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime)
-                if index>1:
-                    print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
-                    gens = new_gens
-                    Edata['gens'] = decode_points_one2many(encode_points(gens)) # list of strings
-                else:
-                    if verbose:
-                        print("gens are saturated at primes up to {}".format(max_sat_prime))
-
-            heights = [P.height(precision=prec) for P in gens]
-            Edata['heights'] = str(heights).replace(" ","")
-            if verbose:
-                print("heights = {}".format(heights))
-
-            reg = E.regulator_of_points(gens, precision=prec)
-            Edata['reg'] = str(reg) if ar else '1'
-            if verbose:
-                print("regulator (of known points) = {}".format(reg))
-
-            # allow for the scaling in the Neron-Tate height
-            # pairing: for BSD we need non-normalised heights and
-            # normalization divides every height by K.degree(), so
-            # the regulator we need has to be multiplied by
-            # K.degree()**rank.
-            if len(gens) == ar:
-                NTreg = reg * K.absolute_degree()**ar
-                if verbose:
-                    print("Neron-Tate regulator = {}".format(NTreg))
-            else:
-                NTreg = None
-
-            # compute omega
-
-            # find scaling factor in case we don't have a global minimal model
-            minDnorm = ZZ(Edata['minD'][1:].split(",")[0]).abs()
-            modelDnorm = E.discriminant().norm().abs()
-            fac = (modelDnorm/minDnorm).nth_root(12) # will be exact
-            if fac!=1 and verbose:
-                print("Not a global minimal model")
-                print("Scaling factor = {}".format(fac))
-            Edata['omega'] = omega = global_period(E, fac, prec=prec)
-            if verbose:
-                print("omega = {}".format(omega))
-
-            T = E.torsion_subgroup()
-            nt = T.order()
-            if nt != Edata['torsion_order']:
-                print("{}: torsion order is {}, not {} as on file; updating data".format(label,nt,Edata['torsion_order']))
-                Edata['torsion_order'] = nt
-                Edata['torsion_structure'] = list(T.invariants())
-                tgens = [P.element() for P in T.gens()]
-                Edata['torsion_gens'] = decode_points_one2many(encode_points(tgens)) # list of strings
-            if verbose:
-                print("Torsion order = {} (checked)".format(nt))
-
-            tamagawa_product = Edata['tamprod']
-            if verbose:
-                print("Tamagawa product = {}".format(tamagawa_product))
-
-            if NTreg:
-                Rsha = lval * nt**2  / (NTreg * tamagawa_product * omega)
-
-                if not K in Kfactors:
-                    Kfactors[K] = RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
-                if verbose:
-                    print("Field factor = {}".format(Kfactors[K]))
-
-                Rsha *= Kfactors[K]
-                Edata['sha'] = sha = Rsha.round()
-                if verbose:
-                    print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
-                if sha==0 or (sha-Rsha).abs()>0.0001 or not ZZ(sha).is_square():
-                    if not verbose:
-                        print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
-                    print("****************************Not good! 0 or non-square or not close to a positive integer!")
-
-            else:
-                if verbose:
-                    print("Unable to compute regulator or analytic Sha, since analytic rank = {} but we only have {} generators".format(ar, Edata['ngens']))
-                Edata['sha'] = None
-
+            Edata = extend_mwdata_one(Edata, classdata, Kfactors, magma,
+                                      max_sat_prime = max_sat_prime, prec=prec, verbose=verbose)
             line = make_mwdata_line(Edata)
             if verbose:
                 print("New mwdata line: {}".format(line))
