@@ -103,8 +103,7 @@ def parse_curves_line(L):
     record['cm'] = ZZ(data[9]) if data[9]!='?' else '?'
     bc = data[10][1:-1]
     record['base_change'] = [str(lab) for lab in bc.split(",")] if bc else []
-    record['q_curve'] = (data[1]==1)
-
+    record['q_curve'] = (data[11]=='1')
     return label, record
 
 def parse_isoclass_line(L):
