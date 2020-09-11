@@ -1153,7 +1153,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 ECNF_DIR = "/home/john/ecnf-data"
 all_ftypes = ['IQF', 'RQF', 'cubics', 'gunnells', 'quartics', 'quintics', 'sextics']
 
-def Q_curve_check(ftypes=all_ftypes, fields=None, Detail=1):
+def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
     for ftype in ftypes:
         if Detail:
             print("Checking curves over fields in {}".format(ftype))
@@ -1176,6 +1176,8 @@ def Q_curve_check(ftypes=all_ftypes, fields=None, Detail=1):
                         data[label] = record
             if Detail:
                 print("Read {} curves from {}".format(n,curves_filename))
+            fcerts = {}
+            levels = []
             bads = []
             ngood = 0
             n1 = 0
@@ -1188,14 +1190,22 @@ def Q_curve_check(ftypes=all_ftypes, fields=None, Detail=1):
                 lab = Edata['label']
                 if Detail>1:
                     print("Running Q-curve test on {}".format(lab))
-                res = is_Q_curve(E, verbose=(Detail>1))
+                res, cert = is_Q_curve(E, certificate=certs, verbose=(Detail>2))
                 if res != Edata['q_curve']:
                     print("**********bad result for {}".format(lab))
                     return E, Edata
                     bads.append(lab)
                 else:
-                    if Detail>2:
-                        print("{} OK".format(lab))
+                    if res:
+                        fcerts[lab] = cert
+                        if Detail>1:
+                            print("yes: certificate = {}".format(cert))
+                        if not cert['CM']:
+                            N = cert['N']
+                            if not N in levels:
+                                levels.append(N)
+                        if Detail>2:
+                            print("{} OK".format(lab))
                     ngood += 1
                 if Detail>1 and ngood%100==0:
                     print("{} curves checked OK".format(ngood))
@@ -1203,4 +1213,11 @@ def Q_curve_check(ftypes=all_ftypes, fields=None, Detail=1):
                 print("!!!!!!!!! {} discrepancies over {}: {}".format(len(bads), fname, bads))
             if Detail:
                 print("Field {}: {} agreements out of {} classes".format(fname, ngood, n1))
-
+                if certs:
+                    if fcerts:
+                        print("Levels of non-CM Q-curves: {}".format(levels))
+                        print("Certificates of Q-curves:")
+                        for lab in fcerts:
+                            print("{}: {}".format(lab,fcerts[lab]))
+                    else:
+                        print("No Q-curves")
