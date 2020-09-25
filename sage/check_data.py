@@ -8,6 +8,9 @@ from lmfdb import db
 nfcurves = db.ec_nfcurves
 forms = db.bmf_forms
 
+from nfscripts import field_from_label
+from psort import primes_iter
+
 def set_fields(degree=2):
     global fields, dirs
     if degree in fields:
@@ -81,3 +84,4 @@ def check_data2(fld):
     """
     print("Field %s" % fld)
     find_curve_labels(fld)
+
