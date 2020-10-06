@@ -1,12 +1,18 @@
 # Functions for reading and writing data files
 
 import re
+import os
 from sage.all import ZZ, QQ, latex, Set, RR, Infinity
 from sage.databases.cremona import cremona_to_lmfdb
 from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, encode_points
 from fields import nf_lookup
-from os import getenv
-#from sys import stdout
+
+HOME = os.getenv("HOME")
+BIANCHI_DATA_DIR = os.path.join(HOME, "bianchi-data")
+ECNF_DIR = os.path.join(HOME, "ecnf-data")
+
+with open(os.path.join(ECNF_DIR, "field_types")) as ftypes:
+    all_ftypes = [ft.replace("\n","") for ft in ftypes.readlines()]
 
 # Functions to parse a single line from one of the files curves.*, isoclass.*, mwdata.*, local_data.*, galdata.*
 #
@@ -144,7 +150,7 @@ def parse_local_data_line(L):
     ldstring = "" if (ncols==6) else data[4]
     ld, ldx = local_data_from_string(ldstring)
     record['local_data'] = ld
-    record.update(ldx) # fields 'badp', 'nbadp', 'ss', 'tamprod'
+    record.update(ldx) # fields 'bad_primes', 'n_bad_primes', 'supersingular', 'potentially_good_reduction', 'tamagawa_product'
 
     # The non_min_p column is a list of strings
     # e.g. ['[N1,a1,alpha1]', '[N2,a2,alpha2]'] while the string in
@@ -309,6 +315,7 @@ keys_and_types = {'field_label':  str_type,
                   'torsion_gens': list_type, # of strings
                   'isogeny_matrix': list_type, # of lists of ints
                   'isogeny_degrees': list_type, # of ints
+                  'isodeg': list_type, # of ints
                   'class_deg': int_type,
                   'non-surjective_primes': list_type, # of ints
                   'galois_images': list_type, # of strings
@@ -323,36 +330,44 @@ keys_and_types = {'field_label':  str_type,
                   'trace_hash': hash_type
 }
 
-ec_nfcurves_columns = Set(['field_label', 'degree', 'signature',
-                           'abs_disc', 'label', 'short_label',
-                           'class_label', 'short_class_label',
-                           'conductor_label', 'iso_label',
-                           'iso_nlabel', 'conductor_ideal',
-                           'conductor_norm', 'number', 'ainvs',
-                           'jinv', 'equation', 'cm', 'base_change',
-                           'q_curve', 'class_size', 'isogeny_matrix',
-                           'class_deg', 'isogeny_degrees',
-                           'trace_hash', 'local_data', 'non_min_p',
-                           'minD', 'rank', 'rank_bounds',
-                           'analytic_rank', 'ngens', 'gens',
-                           'heights', 'reg', 'torsion_order',
-                           'torsion_structure', 'torsion_gens',
-                           'galois_images', 'non-surjective_primes'])
+def get_db():
+    sys.path.append(os.path.join(HOME, 'lmfdb'))
+    from lmfdb import db
+    return db
 
-assert ec_nfcurves_columns==Set(keys_and_types.keys())
+def get_column_names_and_types():
+    t = get_db().ec_nfcurves.col_type
+    return {k: t[k] for k in sorted(t)}
 
-ec_nfcurves_extra_columns = Set(['omega', 'ss', 'tamprod', 'badp', 'Lvalue', 'sha', 'torsion_primes', 'nbadp'])
+ec_nfcurves_column_names_and_types = get_column_names_and_types()
+ec_nfcurves_columns = Set(ec_nfcurves_column_names_and_types.keys())
+
+assert ec_nfcurves_columns == Set(keys_and_types.keys()) + Set(['id'])
+
+ec_nfcurves_extra_columns = ['omega', 'potentially_good_reduction', 'supersingular', 'tamagawa_product', 'bad_primes', 'Lvalue', 'sha', 'torsion_primes', 'n_bad_primes']
 
 extra_keys_and_types = {'omega': float_type,
-                        'ss': bool_type,
-                        'tamprod': int_type,
-                        'badp': list_type,
+                        'potentially_good_reduction': bool_type,
+                        'supersingular': bool_type,
+                        'tamagawa_product': int_type,
+                        'bad_primes': list_type,
                         'Lvalue': float_type,
                         'sha': int_type,
                         'torsion_primes': list_type,
-                        'nbadp': int_type}
-assert ec_nfcurves_extra_columns==Set(extra_keys_and_types.keys())
-ec_nfcurves_all_columns = ec_nfcurves_columns + ec_nfcurves_extra_columns
+                        'n_bad_primes': int_type}
+
+extra_keys_and_postgres_types = {'omega': 'numeric',
+                        'potentially_good_reduction': 'boolean',
+                        'supersingular': 'boolean',
+                        'tamagawa_product': 'integer',
+                        'bad_primes': 'jsonb',
+                        'Lvalue': 'numeric',
+                        'sha': 'integer',
+                        'torsion_primes': 'integer[]',
+                        'n_bad_primes': 'integer'}
+
+assert Set(ec_nfcurves_extra_columns)==Set(extra_keys_and_types.keys())
+ec_nfcurves_all_columns = ec_nfcurves_columns + Set(ec_nfcurves_extra_columns)
 
 def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='old'):
     r"""Given a field label, read all the data in files curves.field_label,
@@ -373,17 +388,17 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     (omitting the 'id' column).
 
     """
-    curves_filename = '{}/curves.{}'.format(base_dir,field_label)
-    isoclass_filename = '{}/isoclass.{}'.format(base_dir,field_label)
-    local_data_filename = '{}/local_data.{}'.format(base_dir,field_label)
-    mwdata_filename = '{}/mwdata.{}'.format(base_dir,field_label)
-    galrep_filename = '{}/galrep.{}'.format(base_dir,field_label)
+    curves_filename = os.path.join(base_dir, 'curves.{}'.format(field_label))
+    isoclass_filename = os.path.join(base_dir, 'isoclass.{}'.format(field_label))
+    local_data_filename = os.path.join(base_dir, 'local_data.{}'.format(field_label))
+    mwdata_filename = os.path.join(base_dir, 'mwdata.{}'.format(field_label))
+    galrep_filename = os.path.join(base_dir, 'galrep.{}'.format(field_label))
 
     all_data = {}
     n = 0
 
     with open(curves_filename) as curves:
-        for L in curves.readlines():
+        for L in curves:
             label, record = parse_curves_line(L)
             if label:
                 n += 1
@@ -392,7 +407,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     n = 0
 
     with open(isoclass_filename) as isoclass:
-        for L in isoclass.readlines():
+        for L in isoclass:
             label, record = parse_isoclass_line(L)
             if label:
                 n += 1
@@ -400,13 +415,13 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
                 all_iso_degs = record.pop('all_iso_degs')
                 label = label[:-1] # delete final '1'
                 for ic in range(1,nc+1):
-                    record['isogeny_degrees'] = all_iso_degs[ic]
+                    record['isogeny_degrees'] = record['isodeg'] = all_iso_degs[ic]
                     all_data[label+str(ic)].update(record)
     print("Read {} classes from {}".format(n,isoclass_filename))
     n = 0
 
     with open(local_data_filename) as local_data:
-        for L in local_data.readlines():
+        for L in local_data:
             label, record = parse_local_data_line(L)
             if label:
                 n += 1
@@ -415,7 +430,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     n = 0
 
     with open(mwdata_filename) as mwdata:
-        for L in mwdata.readlines():
+        for L in mwdata:
             if mwdata_format=='old':
                 label, record = parse_mwdata_line(L)
             else:
@@ -427,7 +442,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     n = 0
 
     with open(galrep_filename) as galrep:
-        for L in galrep.readlines():
+        for L in galrep:
             label, record = parse_galrep_line(L)
             if label:
                 n += 1
@@ -436,13 +451,13 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
 
     if check_cols:
         for label in all_data:
-            cols = Set(all_data[label])
+            cols = Set(all_data[label]) + Set(['id'])
             if cols != ec_nfcurves_all_columns:
                 print("Wrong key set for {}".format(label))
-                diff = cols - ec_nfcurves_columns
+                diff = cols - ec_nfcurves_all_columns
                 if diff:
                     print("data has extra keys {}".format(diff))
-                diff = ec_nfcurves_columns - cols
+                diff = ec_nfcurves_all_columns - cols
                 if diff:
                     print("data is missing keys {}".format(diff))
     return all_data
@@ -680,9 +695,6 @@ def read_classes_new(infile):
     # final class:
     yield this_class
 
-HOME = getenv("HOME")
-bianchi_data_dir = HOME + "/bianchi-data"
-
 def bmf_filename_from_D(absD):
     d=absD if absD%4 else absD//4
     return HOME + "/bianchi-data/nflist/nflist.{}.1-20000".format(d)
@@ -751,12 +763,11 @@ def read_missing_levels(infile):
             yield level
 
 def label_conversion_table(infile, outfile):
-    out = open(outfile, mode='w')
-    for L in open(bianchi_data_dir + "/ideals/" + infile).readlines():
-        field, ideal = L.split()
-        label = convert_ideal_label(nf_lookup(field),ideal)
-        out.write(' '.join([field, ideal, label])+'\n')
-    out.close()
+    with open(outfile, mode='w') as OF, open(os.path.join(BIANCHI_DATA_DIR, "ideals", infile)) as IF:
+        for L in IF:
+            field, ideal = L.split()
+            label = convert_ideal_label(nf_lookup(field),ideal)
+            OF.write(' '.join([field, ideal, label])+'\n')
 
 def make_local_data_file(curves_filename, ld_filename, verbose=False):
     r"""Create a local_data file from a curves file.  This will not be
@@ -1036,3 +1047,46 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
             coeffs = ";".join(data[6:11])
             outfile.write(":".join([label,coeffs,pol])+"\n")
 
+def data_to_string(n, record):
+    record['id'] = n
+    keys = list(ec_nfcurves_column_names_and_types.keys())
+    keys.remove('id')
+    keys = ['id'] + keys + list(ec_nfcurves_extra_columns)
+    return "|".join([str(record[k]).replace(" ","") for k in keys])
+            
+def make_upload_file(ftypes=all_ftypes, fields=None, outfilename=None):
+    alldata = {}
+    for ftype in ftypes:
+        print("reading data from {}".format(ftype))
+        if not fields:
+            with open("{}/{}/fields.txt".format(ECNF_DIR,ftype)) as field_file:
+                flds = [f[:-1] for f in field_file.readlines()]
+        else:
+            flds = fields
+        for fname in flds:
+            print("reading data for {}".format(fname))
+            data = read_all_field_data(os.path.join(ECNF_DIR,ftype), fname, check_cols=True, mwdata_format="new")
+            alldata.update(data)
+    #return alldata
+    if outfilename:
+        outfile = open(outfilename, 'w')
+    else:
+        outfile = sys.stdout
+    keys = list(ec_nfcurves_column_names_and_types.keys())
+    keys.remove('id')
+    keys = ['id'] + keys
+    vals = [ec_nfcurves_column_names_and_types[k] for k in keys]
+    keys += ec_nfcurves_extra_columns
+    vals += [extra_keys_and_postgres_types[k] for k in ec_nfcurves_extra_columns]
+    outfile.write("|".join(keys))
+    outfile.write("\n")
+    outfile.write("|".join(vals))
+    outfile.write("\n\n")
+    id = 0
+    for label in sorted(alldata):
+        id += 1
+        outfile.write(data_to_string(id, alldata[label]))
+        outfile.write("\n")
+    if outfilename:
+        outfile.close()
+    print("{} data lines + 3 header lines written to {}".format(id,outfilename if outfilename else "stdout"))
