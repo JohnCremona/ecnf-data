@@ -283,8 +283,8 @@ def local_data_from_string(s):
     ld_extra = {}
     ld_extra['bad_primes'] = bad_primes = [ldp['p'] for ldp in ld if ldp['ord_cond']]
     ld_extra['n_bad_primes'] = len(bad_primes)
-    ld_extra['supersingular'] = all(ldp['ord_cond']<2 for ldp in ld)
-    ld_extra['potentially_good_reduction'] = all(ldp['ord_den_j']==0 for ldp in ld)
+    ld_extra['semistable'] = all(ldp['ord_cond']<2 for ldp in ld)
+    ld_extra['potential_good_reduction'] = all(ldp['ord_den_j']==0 for ldp in ld)
     ld_extra['tamagawa_product'] = prod([ldp['cp'] for ldp in ld], 1)
     return ld, ld_extra
 

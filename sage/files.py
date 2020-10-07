@@ -2,7 +2,8 @@
 
 import re
 import os
-from sage.all import ZZ, QQ, latex, Set, RR, Infinity
+import sys
+from sage.all import ZZ, QQ, latex, Set, RR, Infinity, is_prime
 from sage.databases.cremona import cremona_to_lmfdb
 from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, encode_points
 from fields import nf_lookup
@@ -43,7 +44,7 @@ def numerify_iso_label(lab):
     -n-1. (Not -n as then 0 would be ambiguous).  This variant is only
     relevant (currently) over imaginary quadratic fields.  The label
     may be in upper case (currently only over 3.1.23.1), but that
-    should not be used over any field for whcih a CM label is
+    should not be used over any field for which a CM label is
     possible.
     """
     from sage.databases.cremona import class_to_int
@@ -106,7 +107,11 @@ def parse_curves_line(L):
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
     record['equation'] = data[8]
-    record['cm'] = ZZ(data[9]) if data[9]!='?' else '?'
+    record['cm'] = cm = ZZ(data[9]) if data[9]!='?' else '?'
+    # The 'cm' column for a curve with rational (as opposed to only
+    # potential) CM holds |D| where D<0 is the CM discriminant:
+    if 'CM' in label:
+        record['cm'] = cm.abs()
     bc = data[10][1:-1]
     record['base_change'] = [str(lab) for lab in bc.split(",")] if bc else []
     record['q_curve'] = (data[11]=='1')
@@ -126,7 +131,7 @@ def parse_isoclass_line(L):
                                       for r in data[4][2:-2].split("],[")]
     record['class_size'] = len(mat)
     record['class_deg'] = max(max(r) for r in mat)
-    record['all_iso_degs'] = dict([[n+1,sorted(list(set(row)))] for n,row in enumerate(mat)])
+    record['all_iso_degs'] = dict([[n+1,sorted(list(set(row)))] for n,row in enumerate(mat)]) 
     record['trace_hash'] = ZZ(data[5])
 
     # NB Every curve in the class has the same 'isogeny_matrix',
@@ -150,7 +155,7 @@ def parse_local_data_line(L):
     ldstring = "" if (ncols==6) else data[4]
     ld, ldx = local_data_from_string(ldstring)
     record['local_data'] = ld
-    record.update(ldx) # fields 'bad_primes', 'n_bad_primes', 'supersingular', 'potentially_good_reduction', 'tamagawa_product'
+    record.update(ldx) # fields 'bad_primes', 'n_bad_primes', 'semistable', 'potential_good_reduction', 'tamagawa_product'
 
     # The non_min_p column is a list of strings
     # e.g. ['[N1,a1,alpha1]', '[N2,a2,alpha2]'] while the string in
@@ -158,7 +163,8 @@ def parse_local_data_line(L):
     # Currently the list has 0 or 1 entries but we do not want to rely
     # on this.
     nmp = data[-2]
-    record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
+    #record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
+    record['non_min_p'] = [] if nmp == '[]' else nmp[2:-2].split("],[")
     record['minD'] = data[-1]
 
     return label, record
@@ -190,6 +196,10 @@ def parse_mwdata_line(L):
     record['torsion_primes'] = ZZ(nt).prime_divisors()
     record['torsion_gens'] = decode_points_one2many(data[13])
 
+    record['omega']             = None
+    record['Lvalue']            = None
+    record['sha']               = None
+
     return label, record
 
 def parse_new_mwdata_line(L):
@@ -197,9 +207,8 @@ def parse_new_mwdata_line(L):
     Parse one line from an mwdata file (with extra columns omega, lvalue, sha)
     """
     data = L.split()
-    if len(data)!=17:
-        print("mwdata line {} does not have 14 fields, skipping".format(L))
-        return
+    # if len(data)!=17:
+    #     print("mwdata line {} has only {} fields".format(L, len(data)))
     label, record = parse_line_label_cols(L)
 
     def decode_col(col, decoder): # use for columns which may have '?'
@@ -216,10 +225,14 @@ def parse_new_mwdata_line(L):
     record['torsion_primes']    = ZZ(nt).prime_divisors()
     record['torsion_structure'] = decode_int_list(data[12])
     record['torsion_gens']      = decode_points_one2many(data[13])
-    record['omega']             = RR(data[14])
-    record['Lvalue']            = RR(data[15])
-    record['sha']               = decode_col(data[16], int)
-
+    if len(data)==17:
+        record['omega']             = RR(data[14])
+        record['Lvalue']            = RR(data[15])
+        record['sha']               = decode_col(data[16], int)
+    else:
+        record['omega']             = None
+        record['Lvalue']            = None
+        record['sha']               = None
     return label, record
 
 def make_line_label_cols(Edata):
@@ -314,7 +327,7 @@ keys_and_types = {'field_label':  str_type,
                   'gens': list_type, # of strings
                   'torsion_gens': list_type, # of strings
                   'isogeny_matrix': list_type, # of lists of ints
-                  'isogeny_degrees': list_type, # of ints
+                  #'isogeny_degrees': list_type, # of ints
                   'isodeg': list_type, # of ints
                   'class_deg': int_type,
                   'non-surjective_primes': list_type, # of ints
@@ -337,37 +350,41 @@ def get_db():
 
 def get_column_names_and_types():
     t = get_db().ec_nfcurves.col_type
-    return {k: t[k] for k in sorted(t)}
+    return {k: t[k] for k in sorted(t) if k!='isogeny_degrees'}
 
 ec_nfcurves_column_names_and_types = get_column_names_and_types()
 ec_nfcurves_columns = Set(ec_nfcurves_column_names_and_types.keys())
 
 assert ec_nfcurves_columns == Set(keys_and_types.keys()) + Set(['id'])
 
-ec_nfcurves_extra_columns = ['omega', 'potentially_good_reduction', 'supersingular', 'tamagawa_product', 'bad_primes', 'Lvalue', 'sha', 'torsion_primes', 'n_bad_primes']
+ec_nfcurves_extra_columns = ['omega', 'potential_good_reduction', 'semistable', 'tamagawa_product', 'bad_primes', 'Lvalue', 'sha', 'torsion_primes', 'n_bad_primes', 'reducible_primes']
 
 extra_keys_and_types = {'omega': float_type,
-                        'potentially_good_reduction': bool_type,
-                        'supersingular': bool_type,
+                        'potential_good_reduction': bool_type,
+                        'semistable': bool_type,
                         'tamagawa_product': int_type,
                         'bad_primes': list_type,
                         'Lvalue': float_type,
                         'sha': int_type,
                         'torsion_primes': list_type,
-                        'n_bad_primes': int_type}
+                        'n_bad_primes': int_type,
+                        'reducible_primes': list_type}
 
 extra_keys_and_postgres_types = {'omega': 'numeric',
-                        'potentially_good_reduction': 'boolean',
-                        'supersingular': 'boolean',
+                        'potential_good_reduction': 'boolean',
+                        'semistable': 'boolean',
                         'tamagawa_product': 'integer',
                         'bad_primes': 'jsonb',
                         'Lvalue': 'numeric',
                         'sha': 'integer',
                         'torsion_primes': 'integer[]',
-                        'n_bad_primes': 'integer'}
+                        'n_bad_primes': 'integer',
+                        'reducible_primes': 'integer[]'}
 
 assert Set(ec_nfcurves_extra_columns)==Set(extra_keys_and_types.keys())
 ec_nfcurves_all_columns = ec_nfcurves_columns + Set(ec_nfcurves_extra_columns)
+
+postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes']
 
 def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='old'):
     r"""Given a field label, read all the data in files curves.field_label,
@@ -413,9 +430,12 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
                 n += 1
                 nc = record['class_size']
                 all_iso_degs = record.pop('all_iso_degs')
+                # reducible_primes is the same for all curves in the class
+                reducible_primes = [ d for d in all_iso_degs[1] if is_prime(d)]
                 label = label[:-1] # delete final '1'
                 for ic in range(1,nc+1):
-                    record['isogeny_degrees'] = record['isodeg'] = all_iso_degs[ic]
+                    record['reducible_primes'] = reducible_primes
+                    record['isodeg'] = all_iso_degs[ic]
                     all_data[label+str(ic)].update(record)
     print("Read {} classes from {}".format(n,isoclass_filename))
     n = 0
@@ -1047,14 +1067,43 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
             coeffs = ";".join(data[6:11])
             outfile.write(":".join([label,coeffs,pol])+"\n")
 
-def data_to_string(n, record):
+def column_to_string(colname, col):
+        if col is None:
+            return "\\N"
+        col = str(col).replace(" ","")
+        col = col.replace("'",'"')
+        if col == "True":
+            return "t"
+        if col == "False":
+            return "f"
+        if colname in postgres_array_cols:
+            col = col.replace("[","{").replace("]","}")
+        if colname == 'equation':
+            col = col.replace("\\","\\\\")
+            col = ''.join(['"', col, '"'])
+        if colname == 'local_data':
+            col = col.replace("None", "null")
+        return col
+            
+def data_to_string(n, record, extra_cols=True):
+    """NB A list stored in the database as a postgres array (e.g. int[]
+    or numeric[]) must appear as (e.g.) {1,2,3} not [1,2,3].
+
+    The relevant columns are in the global array postgres_array_cols
+    """
     record['id'] = n
     keys = list(ec_nfcurves_column_names_and_types.keys())
     keys.remove('id')
-    keys = ['id'] + keys + list(ec_nfcurves_extra_columns)
-    return "|".join([str(record[k]).replace(" ","") for k in keys])
+    keys.remove('label')
+    keys = ['label'] + keys
+    if extra_cols:
+        keys += list(ec_nfcurves_extra_columns)
+    return "|".join([column_to_string(k, record[k]) for k in keys])
             
-def make_upload_file(ftypes=all_ftypes, fields=None, outfilename=None):
+def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=None, extra_cols=True):
+    """
+    
+    """
     alldata = {}
     for ftype in ftypes:
         print("reading data from {}".format(ftype))
@@ -1063,6 +1112,10 @@ def make_upload_file(ftypes=all_ftypes, fields=None, outfilename=None):
                 flds = [f[:-1] for f in field_file.readlines()]
         else:
             flds = fields
+        if xfields:
+            for f in xfields:
+                print("excluding field {}".format(f))
+                flds.remove(f)
         for fname in flds:
             print("reading data for {}".format(fname))
             data = read_all_field_data(os.path.join(ECNF_DIR,ftype), fname, check_cols=True, mwdata_format="new")
@@ -1074,10 +1127,12 @@ def make_upload_file(ftypes=all_ftypes, fields=None, outfilename=None):
         outfile = sys.stdout
     keys = list(ec_nfcurves_column_names_and_types.keys())
     keys.remove('id')
-    keys = ['id'] + keys
+    keys.remove('label')
+    keys = ['label'] + keys
     vals = [ec_nfcurves_column_names_and_types[k] for k in keys]
-    keys += ec_nfcurves_extra_columns
-    vals += [extra_keys_and_postgres_types[k] for k in ec_nfcurves_extra_columns]
+    if extra_cols:
+        keys += ec_nfcurves_extra_columns
+        vals += [extra_keys_and_postgres_types[k] for k in ec_nfcurves_extra_columns]
     outfile.write("|".join(keys))
     outfile.write("\n")
     outfile.write("|".join(vals))
@@ -1085,8 +1140,10 @@ def make_upload_file(ftypes=all_ftypes, fields=None, outfilename=None):
     id = 0
     for label in sorted(alldata):
         id += 1
-        outfile.write(data_to_string(id, alldata[label]))
+        outfile.write(data_to_string(id, alldata[label], extra_cols))
         outfile.write("\n")
     if outfilename:
         outfile.close()
-    print("{} data lines + 3 header lines written to {}".format(id,outfilename if outfilename else "stdout"))
+    print("{} data lines + 3 header lines with {} columns written to {}".format(id,len(keys),outfilename if outfilename else "stdout"))
+    print("Columns:\n{}".format(keys))
+    
