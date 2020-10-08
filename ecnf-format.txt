@@ -34,6 +34,9 @@ properly.  Some columns are isogeny invariant, but are still stored
 with every curve in the isogeny class. [Except for isogeny_matrix,
 currently only stored with the first curve each class.]
 
+All columns:  1 id + 4 field + 36 curve = 41 (before Oct 2020)
+              1 id + 4 field + 46 curve = 51 (from   Oct 2020)
+
 Every data text file contains the label components (field_label,
 conductor_label, iso_label, number).
 
@@ -52,7 +55,8 @@ uniquely identify the field).
 On upload the last 3 of these columns are extracted from the field
 label.
 
-CURVE COLUMNS (36 = 16+5+3+10+2 columns)
+CURVE COLUMNS (36 = 16+5+3+10+2 old columns) (+ 'id' column)
+              (46 = 16+6+8+14+2 new columns) (+ 'id' column)
 
 We subdivide these according to which data text file they are in but
 there is no such distinction in the table.
@@ -125,13 +129,16 @@ Here,
  The a-invariants are stored as a single string, being the
  concatenation of the 5 individual NFelt-strings separated by ";".
 
-(2) 5 Columns from isoclass.* files
+(2) 5+1=6 Columns from isoclass.* files
 
 class_size          smallint (size of the isogeny class)
-isogeny_matrix      integer  (largest isogeny degree for this class)
-class_deg           smallint (size of the isogeny class)
-isogeny_degrees     jsonb    (degrees of isogenies from this curve to all in the class)
+isogeny_matrix      jsonb    (matrix of isogeny degrees)
+class_deg           integer  (largest isogeny degree for this class)
+isodegs             integer[] (list of degrees of isogenies from this curve to all in the class)
+                              NB this was isogeny_degrees of type jsonb
 trace_hash          bigint   (hash of a_p for the class)
+---- 1 new col Oct 2020 ----
+reducible_primes    integer[] (list of prime isogeny degrees)
 
 Here, class_size is the size n of the isogeny class of this curve;
       isogeny_matrix is a list of n lists of n integers, the (i,j)
@@ -147,11 +154,17 @@ Here, class_size is the size n of the isogeny class of this curve;
 Note that for isogeny classes with rational CM, the degree of a cyclic
 isogeny between two isogenous curves is not uniquely determined.
 
-(3) 3 Columns from the local_data.* files
+(3) 3+5=8 Columns from the local_data.* files
 
 local_data   jsonb   (list of local data entries, one per prime)
 non_min_p    jsonb   (list of primes at which the stored model is non-minimal)
 minD         text    (minimal discriminant ideal)
+---- 5 new cols Oct 2020 ----
+n_bad_primes        integer (number of primes of bad reduction)
+bad_primes          jsonb   (list of primes of bad reduction)
+semistable          boolean (global semistable flag)
+tamagawa_product    bigint  (product of Tamagawa numbers)
+potential_good_reduction boolean (integral j-invariant)
 
 The local_data list contains an entry for each prime of bad reduction
 for the model of the curve stored, which is a global minimal model
@@ -187,18 +200,27 @@ containing substrings for each prime, delimited by ";".  Each
 substring is delimited by ":" and contains the fields in the above
 order.
 
-(4) 10 Columns from the mwdata.* files
+NB If the model is a minimal model of a curve with everywhere good
+reduction, the ld string will be empty and this line in the local_data
+file will have fewer columns.
+
+(4) 10+4=14 Columns from the mwdata.* files
 
 rank                smallint
 rank_bounds         jsonb    list of 2 ints
 analytic_rank       smallint
 ngens               smallint
 gens                jsonb    list of ngens strings representing points
-heights             jsonb    list of ngens reals
+heights             numeric[] list of ngens reals
 reg                 numeric  real
 torsion_order       smallint
 torsion_structure   jsonb    list of 0,1,2 ints
 torsion_gens        jsonb    list of 0,1,2 strings representing points
+---- 4 new cols Sept 2020 ----
+torsion_primes integer[] list of >=0 ints
+omega numeric real
+Lvalue numeric real
+sha integer
 
 Each point is stored as a string representing a list of 3 lists of d
 rationals.  These are projective coordinates, though the z-coordinate
@@ -249,17 +271,18 @@ In curves.* there are 8 further columns, 12 in all:
 11. base_change
 12. q_curve
 
-In isoclass.* there is 1 further columns, 5 in all:
+In isoclass.* there are 2 further columns, 6 in all:
 
 5. isogeny_matrix
+6. trace_hash
 
-In local_data.* there are 3 further columns, 7 in all:
+In local_data.* there are 2 or 3 further columns, 6 or 7 in all:
 
-5. local_data
+5. local_data (empty=missing if the curve has egr and a global minimal model)
 6. non_min_p
 7. minD
 
-In mwdata.* there are 10 further columns, 14 in all:
+In mwdata.* there are 13 further columns, 17 in all:
 
 5. rank
 6. rank_bounds
@@ -271,6 +294,9 @@ In mwdata.* there are 10 further columns, 14 in all:
 12. torsion_order
 13. torsion_structure
 14. torsion_gens
+15. omega
+16. lvalue
+17. sha
 
 In galdata.* the number of extra columns is 0 or more, one per
 non-maximal prime (5) above
