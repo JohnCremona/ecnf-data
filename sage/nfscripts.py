@@ -5,17 +5,15 @@
 # scripts.
 #
 from sys import stdout
-from os import getenv
+import os
 from sage.all import (polygen, ZZ, QQ, Magma, magma, latex, EllipticCurve, primes, Infinity,
                       flatten, Primes, legendre_symbol, prod, RR, RealField,
                       PowerSeriesRing, O, Integer, srange, sign)
-from fields import add_field, field_data, field_label, cm_j_dict, get_IQF_info, get_field_name
-from files import read_newform_data, read_missing_levels
+from fields import add_field, field_data, field_label, get_IQF_info, get_field_name, nf_lookup
+from files import read_newform_data, read_missing_levels, parse_curves_line, ECNF_DIR, all_ftypes, BIANCHI_DATA_DIR
 from psort import nf_key, primes_of_degree_iter, ideal_from_label
 from codec import curve_from_string, curve_from_strings, ideal_to_string, old_ideal_label, parse_point, encode_points, decode_points_one2many
-
-HOME = getenv("HOME")
-bianchi_data_dir = HOME + "/bianchi-data"
+from Qcurves import is_Q_curve
 
 # copy of function in lmfdb/scripts/ecnf/hmf_check_find.py
 #
@@ -129,11 +127,11 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if verbose:
             stdout.write(L)
     if field_info_filename==None:
-        field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+        field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
         if verbose:
             print("Using {} for field info".format(field_info_filename))
     if bmf_filename==None:
-        print("Must supply name of a file containing BMFs over {} in {}".format(field, bianchi_data_dir))
+        print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
     else:
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
@@ -338,9 +336,9 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         if verbose:
             stdout.write(L)
     if field_info_filename==None:
-        field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+        field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
     if bmf_filename==None:
-        print("Must supply name of a file containing BMFs over {} in {}".format(field, bianchi_data_dir))
+        print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
     else:
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
@@ -662,175 +660,6 @@ def conj_curve(E,sigma):
     Return the Galois conjugate elliptic curve under sigma.
     """
     return EllipticCurve([sigma(a) for a in E.ainvs()])
-
-def is_Q_curve(E, field_label=None, verbose=False):
-    r"""
-    Return True if this elliptic curve is isogenous to all its
-    Galois conjugates.
-
-    Note: if the base field K is not Galois we compute the Galois
-    group of its Galois closure L, and test for isogeny over L.
-    Is this right?  Following Elkies ('On elliptic K-curves',
-    2004) this is the correct set of Galois conjugates but we
-    should be looking for isogeny over the algebraic closure.
-
-    If E does not have CM (defined over L) and there is an isogeny
-    phi from E to E' where E' is defined over L but phi need not
-    be, then considering the composite of phi with the dual of its
-    Galois conjugates shows that each of these conjugates is equal
-    to phi up to sign.  If the signs are all +1 then phi is also
-    defined over L, but otherwise it is only defined over a
-    quadratic extension M of L.  In that case, replacing E' by its
-    quadratic twist and phi by its composite with the isomorphism
-    (defined over M) from E' to its twist gives a new curve
-    defined over L and isogenous to E via an L-rational isogeny of
-    the same degree as the original phi.  For our test for being a
-    Q-curve to be correct (in this non-CM case) -- i.e., agree
-    with Elkies' definition -- we require that no quadratic twist
-    of a curve L-isogenous to E is a Galois conjugate of E.
-    """
-    if verbose:
-        print("Checking whether {} is a Q-curve".format(E))
-
-    # all curves with rational j-invariant are Q-curves:
-    jE = E.j_invariant()
-    if jE in QQ:
-        if verbose:
-            print("Yes: j(E) is in QQ")
-        return True
-
-    K = E.base_field()
-    jpoly = jE.minpoly()
-    if jpoly.degree()<K.degree():
-        print("switching to smaller base field: j's minpoly is {}".format(jpoly))
-        K1, _ = K.subfield(jE, 'j')
-        #print("K1 = {}".format(K1))
-        K2, iso, inv = K1.optimized_representation()
-        #print("K2 = {}".format(K2))
-        jE = inv(K1.gen())
-        print("New j is {} with minpoly {}".format(jE, jE.minpoly()))
-        assert jE.minpoly()==jpoly
-        E = EllipticCurve(j=jE)
-        K = K2
-        field_label=None
-        print("New test curve is {}".format(E))
-
-    add_field(K, field_label=field_label)
-    Kdata = field_data[K]
-
-    # CM curves are Q-curves:
-    if cm_j_dict[jE]:
-        if verbose:
-            print("Yes: E is CM")
-        return True
-
-    # Simple test should catch many non-Q-curves: find primes of
-    # good reduction and of the same norm and test if the
-    # traces of Frobenius are equal *up to sign*
-
-    pmax = 1000
-    NN = E.conductor().norm()
-    for p in primes(pmax):
-        if p.divides(NN):
-            continue
-        Plist = [P for P in K.primes_above(p)
-                 if P.residue_class_degree() == 1]
-        if len(Plist)<2:
-            continue
-        aP0 = ap(E,Plist[0])
-        for P in Plist[1:]:
-            aP = ap(E,P)
-            if aP.abs() != aP0.abs():
-                if verbose:
-                    print("No: incompatible traces of Frobenius at primes above {}: {} and {}".format(p,aP0,aP))
-                return False
-
-    if verbose:
-        print("...all aP test pass for p<{}".format(pmax))
-
-    C = E.isogeny_class()
-    jC = [E2.j_invariant() for E2 in C]
-    if any(j in QQ for j in jC):
-        if verbose:
-            print("j-invariants in class: {}".format(jC))
-            print("Yes: an isogenous curve has j in QQ")
-        return True
-
-    # Galois case:
-    if Kdata['is_galois']:
-        autos = Kdata['autos']
-        t = all(sigma(jE) in jC for sigma in autos)
-        if verbose:
-            print("j-invariants in class: {}".format(jC))
-            if t:
-                print("Yes: class contains all conjugate j-invariants")
-            else:
-                print("No: class does not contain all conjugate j-invariants")
-        return t
-
-    if verbose:
-        print("K not Galois, E might be a Q-curve but not yet proved")
-
-    if K.degree() in [3,4]:
-        L = K.galois_closure('b')
-        emb = K.embeddings(L)[0]
-        EL = E.change_ring(emb)
-        if verbose:
-            print("Base changing to the Galois closure {}".format(L))
-            # Don't do this as it will cause an infinite loop
-            # return is_Q_curve(EL, verbose=verbose)
-        autos = L.automorphisms()
-        jE = emb(jE)
-        nC = len(C)
-        from sage.schemes.elliptic_curves.gal_reps_number_field import reducible_primes_naive
-        red_pr = reducible_primes_naive(EL, 31, 100)
-        # Compute partial isogeny class only using p-iogenies
-        # for the primes p in red_pr.  This is much faster since
-        # the slow part of computing isgeny classes is finding
-        # the reducible primes.
-        if verbose:
-            print("Computing isogeny class using only the primes in {}".format(red_pr))
-            CL = EL.isogeny_class(red_pr)
-        if len(CL)==nC:
-            if verbose:
-                print(" -- no more curves in the class")
-        else:
-            nC=len(CL)
-            if verbose:
-                print(" -- class now contains {} curves".format(nC))
-                jCL = [E2.j_invariant() for E2 in CL]
-                t = all(sigma(jE) in jCL for sigma in autos)
-            if verbose:
-                print("j-invariants in class: {}".format(jCL))
-                if t:
-                    print("Yes: class contains all conjugate j-invariants")
-                else:
-                    print("No: class does not contain all conjugate j-invariants")
-            if t:
-                return t
-
-        if verbose:
-            print("%%%%%%%%%%")
-            print("No conclusion after computing the isogeny class over the Galois closure using these primes")
-            print("%%%%%%%%%%")
-            print("Computing full isogeny class...")
-            CL = EL.isogeny_class()
-        if len(CL)==nC:
-            if verbose:
-                print("No more isogenies, so not a Q-curve")
-            return False
-        print("Full isogeny class has {} curves".format(len(CL)))
-        jCL = [E2.j_invariant() for E2 in CL]
-        t = all(sigma(jE) in jC for sigma in autos)
-        if verbose:
-            print("j-invariants in class: {}".format(jC))
-            if t:
-                print("Yes: class contains all conjugate j-invariants")
-            else:
-                print("No: class does not contain all conjugate j-invariants")
-            return t
-
-    return '?'
 
 
 # Comparison of curves in one isogeny class using j-invariants, based
@@ -1317,3 +1146,72 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             print("Unable to compute regulator or analytic Sha, since analytic rank = {} but we only have {} generators".format(ar, Edata['ngens']))
         Edata['sha'] = None
     return Edata
+
+def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
+    for ftype in ftypes:
+        if Detail:
+            print("Checking curves over fields in {}".format(ftype))
+        if not fields:
+            with open("{}/{}/fields.txt".format(ECNF_DIR,ftype)) as field_file:
+                fields = [f[:-1] for f in field_file.readlines()]
+        for fname in fields:
+            if Detail>1:
+                print("Checking curves over field {}".format(fname))
+            K = nf_lookup(fname)
+            data = {}
+            n = 0
+            curves_filename = "{}/{}/curves.{}".format(ECNF_DIR,ftype,fname)
+
+            with open(curves_filename) as curves:
+                for L in curves.readlines():
+                    label, record = parse_curves_line(L)
+                    if label:
+                        n += 1
+                        data[label] = record
+            if Detail:
+                print("Read {} curves from {}".format(n,curves_filename))
+            fcerts = {}
+            levels = []
+            bads = []
+            ngood = 0
+            n1 = 0
+            for c in data:
+                Edata = data[c]
+                if Edata['number']!=1:
+                    continue
+                n1 += 1
+                E = curve_from_string(K,Edata['ainvs'])
+                lab = Edata['label']
+                if Detail>1:
+                    print("Running Q-curve test on {}".format(lab))
+                res, cert = is_Q_curve(E, certificate=certs, verbose=(Detail>2))
+                if res != Edata['q_curve']:
+                    print("**********bad result for {}".format(lab))
+                    return E, Edata
+                    bads.append(lab)
+                else:
+                    if res:
+                        fcerts[lab] = cert
+                        if Detail>1:
+                            print("yes: certificate = {}".format(cert))
+                        if not cert['CM']:
+                            N = cert['N']
+                            if not N in levels:
+                                levels.append(N)
+                        if Detail>2:
+                            print("{} OK".format(lab))
+                    ngood += 1
+                if Detail>1 and ngood%100==0:
+                    print("{} curves checked OK".format(ngood))
+            if bads:
+                print("!!!!!!!!! {} discrepancies over {}: {}".format(len(bads), fname, bads))
+            if Detail:
+                print("Field {}: {} agreements out of {} classes".format(fname, ngood, n1))
+                if certs:
+                    if fcerts:
+                        print("Levels of non-CM Q-curves: {}".format(levels))
+                        print("Certificates of Q-curves:")
+                        for lab in fcerts:
+                            print("{}: {}".format(lab,fcerts[lab]))
+                    else:
+                        print("No Q-curves")

@@ -281,15 +281,16 @@ def local_data_from_string(s):
         ld = []
     # ld_extra holds anything else which is per curve not per prime
     ld_extra = {}
-    ld_extra['badp'] = badp = [ldp['p'] for ldp in ld if ldp['ord_cond']]
-    ld_extra['nbadp'] = len(badp)
-    ld_extra['ss'] = all(ldp['ord_cond']<2 for ldp in ld)
-    ld_extra['tamprod'] = prod([ldp['cp'] for ldp in ld], 1)
+    ld_extra['bad_primes'] = bad_primes = [ldp['p'] for ldp in ld if ldp['ord_cond']]
+    ld_extra['n_bad_primes'] = len(bad_primes)
+    ld_extra['semistable'] = all(ldp['ord_cond']<2 for ldp in ld)
+    ld_extra['potential_good_reduction'] = all(ldp['ord_den_j']==0 for ldp in ld)
+    ld_extra['tamagawa_product'] = prod([ldp['cp'] for ldp in ld], 1)
     return ld, ld_extra
 
 def curves_data_to_string(c, old_style=False):
     r"""Given a dict containing the data for one line of a curves file,
-    return the strong for one line of the file.
+    return the string for one line of the file.
     """
     if old_style:
         return " ".join([c['field_label'],
