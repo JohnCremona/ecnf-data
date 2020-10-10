@@ -343,20 +343,6 @@ keys_and_types = {'field_label':  str_type,
                   'trace_hash': hash_type
 }
 
-def get_db():
-    sys.path.append(os.path.join(HOME, 'lmfdb'))
-    from lmfdb import db
-    return db
-
-def get_column_names_and_types():
-    t = get_db().ec_nfcurves.col_type
-    return {k: t[k] for k in sorted(t) if k!='isogeny_degrees'}
-
-ec_nfcurves_column_names_and_types = get_column_names_and_types()
-ec_nfcurves_columns = Set(ec_nfcurves_column_names_and_types.keys())
-
-assert ec_nfcurves_columns == Set(keys_and_types.keys()) + Set(['id'])
-
 ec_nfcurves_extra_columns = ['omega', 'potential_good_reduction', 'semistable', 'tamagawa_product', 'bad_primes', 'Lvalue', 'sha', 'torsion_primes', 'n_bad_primes', 'reducible_primes']
 
 extra_keys_and_types = {'omega': float_type,
@@ -370,6 +356,8 @@ extra_keys_and_types = {'omega': float_type,
                         'n_bad_primes': int_type,
                         'reducible_primes': list_type}
 
+keys_and_types.update(extra_keys_and_types)
+
 extra_keys_and_postgres_types = {'omega': 'numeric',
                         'potential_good_reduction': 'boolean',
                         'semistable': 'boolean',
@@ -381,8 +369,22 @@ extra_keys_and_postgres_types = {'omega': 'numeric',
                         'n_bad_primes': 'integer',
                         'reducible_primes': 'integer[]'}
 
+
+def get_db():
+    sys.path.append(os.path.join(HOME, 'lmfdb'))
+    from lmfdb import db
+    return db
+
+def get_column_names_and_types():
+    t = get_db().ec_nfcurves.col_type
+    return {k: t[k] for k in sorted(t) if k!='isogeny_degrees'}
+
+ec_nfcurves_column_names_and_types = get_column_names_and_types()
+ec_nfcurves_columns = Set(ec_nfcurves_column_names_and_types.keys())
+
+assert ec_nfcurves_columns == Set(keys_and_types.keys()) + Set(['id'])
 assert Set(ec_nfcurves_extra_columns)==Set(extra_keys_and_types.keys())
-ec_nfcurves_all_columns = ec_nfcurves_columns + Set(ec_nfcurves_extra_columns)
+ec_nfcurves_all_columns = ec_nfcurves_columns
 
 postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes']
 
@@ -1085,7 +1087,7 @@ def column_to_string(colname, col):
             col = col.replace("None", "null")
         return col
             
-def data_to_string(n, record, extra_cols=True):
+def data_to_string(n, record):
     """NB A list stored in the database as a postgres array (e.g. int[]
     or numeric[]) must appear as (e.g.) {1,2,3} not [1,2,3].
 
@@ -1096,11 +1098,9 @@ def data_to_string(n, record, extra_cols=True):
     keys.remove('id')
     keys.remove('label')
     keys = ['label'] + keys
-    if extra_cols:
-        keys += list(ec_nfcurves_extra_columns)
     return "|".join([column_to_string(k, record[k]) for k in keys])
             
-def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=None, extra_cols=True):
+def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=None):
     """
     
     """
@@ -1130,9 +1130,6 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=N
     keys.remove('label')
     keys = ['label'] + keys
     vals = [ec_nfcurves_column_names_and_types[k] for k in keys]
-    if extra_cols:
-        keys += ec_nfcurves_extra_columns
-        vals += [extra_keys_and_postgres_types[k] for k in ec_nfcurves_extra_columns]
     outfile.write("|".join(keys))
     outfile.write("\n")
     outfile.write("|".join(vals))
@@ -1140,7 +1137,7 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=N
     id = 0
     for label in sorted(alldata):
         id += 1
-        outfile.write(data_to_string(id, alldata[label], extra_cols))
+        outfile.write(data_to_string(id, alldata[label]))
         outfile.write("\n")
     if outfilename:
         outfile.close()
