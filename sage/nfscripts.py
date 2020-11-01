@@ -1120,7 +1120,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     if verbose:
         print("Torsion order = {} (checked)".format(nt))
 
-    tamagawa_product = Edata['tamprod']
+    tamagawa_product = Edata['tamagawa_product']
     if verbose:
         print("Tamagawa product = {}".format(tamagawa_product))
 
