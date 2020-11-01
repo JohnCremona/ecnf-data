@@ -5,18 +5,15 @@
 # scripts.
 #
 from sys import stdout
-from os import getenv
+import os
 from sage.all import (polygen, ZZ, QQ, Magma, magma, latex, EllipticCurve, primes, Infinity,
                       flatten, Primes, legendre_symbol, prod, RR, RealField,
                       PowerSeriesRing, O, Integer, srange, sign)
 from fields import add_field, field_data, field_label, get_IQF_info, get_field_name, nf_lookup
-from files import read_newform_data, read_missing_levels, parse_curves_line
+from files import read_newform_data, read_missing_levels, parse_curves_line, ECNF_DIR, all_ftypes, BIANCHI_DATA_DIR
 from psort import nf_key, primes_of_degree_iter, ideal_from_label
 from codec import curve_from_string, curve_from_strings, ideal_to_string, old_ideal_label, parse_point, encode_points, decode_points_one2many
 from Qcurves import is_Q_curve
-
-HOME = getenv("HOME")
-bianchi_data_dir = HOME + "/bianchi-data"
 
 # copy of function in lmfdb/scripts/ecnf/hmf_check_find.py
 #
@@ -130,11 +127,11 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if verbose:
             stdout.write(L)
     if field_info_filename==None:
-        field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+        field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
         if verbose:
             print("Using {} for field info".format(field_info_filename))
     if bmf_filename==None:
-        print("Must supply name of a file containing BMFs over {} in {}".format(field, bianchi_data_dir))
+        print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
     else:
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
@@ -339,9 +336,9 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         if verbose:
             stdout.write(L)
     if field_info_filename==None:
-        field_info_filename = "%s/fieldinfo/fieldinfo-%s" % (bianchi_data_dir,str(field))
+        field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
     if bmf_filename==None:
-        print("Must supply name of a file containing BMFs over {} in {}".format(field, bianchi_data_dir))
+        print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
     else:
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
@@ -1149,9 +1146,6 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             print("Unable to compute regulator or analytic Sha, since analytic rank = {} but we only have {} generators".format(ar, Edata['ngens']))
         Edata['sha'] = None
     return Edata
-
-ECNF_DIR = "/home/john/ecnf-data"
-all_ftypes = ['IQF', 'RQF', 'cubics', 'gunnells', 'quartics', 'quintics', 'sextics']
 
 def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
     for ftype in ftypes:
