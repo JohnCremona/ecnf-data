@@ -106,7 +106,11 @@ def parse_curves_line(L):
 
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
-    record['equation'] = data[8]
+    eqn = data[8]
+    if not "{x}" in eqn:
+        eqn = eqn.replace('x','{x}').replace('y','{y}')
+    record['equation'] = eqn
+
     record['cm'] = cm = ZZ(data[9]) if data[9]!='?' else '?'
     # The 'cm' column for a curve with rational (as opposed to only
     # potential) CM holds |D| where D<0 is the CM discriminant:
@@ -922,7 +926,7 @@ def extend_curves_file(infilename, outfilename, verbose=False):
             E = curve_from_data(curve)
             curve['ainvs'] = ";".join(curve['ainvs'])
             curve['jinv'] = NFelt(E.j_invariant())
-            curve['equation'] = str(latex(E)).replace(" ","") # no "\(", "\)"
+            curve['equation'] = str(latex(E)).replace('x','{x}').replace('y','{y}').replace(" ","") # no "\(", "\)"
             if curve['q_curve_flag'] == '?':
                 from nfscripts import is_Q_curve
                 qc = is_Q_curve(E)
@@ -1087,22 +1091,40 @@ def column_to_string(colname, col):
             col = col.replace("None", "null")
         return col
             
-def data_to_string(n, record):
+def data_to_string(n, record, columns=None):
     """NB A list stored in the database as a postgres array (e.g. int[]
     or numeric[]) must appear as (e.g.) {1,2,3} not [1,2,3].
 
     The relevant columns are in the global array postgres_array_cols
+
+    If columns is not None, then only these columns are output.
     """
     record['id'] = n
-    keys = list(ec_nfcurves_column_names_and_types.keys())
-    keys.remove('id')
-    keys.remove('label')
+    if columns:
+        keys = columns
+        if 'label' in keys:
+            keys.remove('label')
+    else:
+        keys = list(ec_nfcurves_column_names_and_types.keys())
+        keys.remove('id')
+        keys.remove('label')
     keys = ['label'] + keys
     return "|".join([column_to_string(k, record[k]) for k in keys])
             
-def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=None):
+def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, columns=None, outfilename=None):
     """
-    
+    ftypes: list of one or more from 'IQF', 'RQF', 'cubics', 'gunnells', 'quartics', 'quintics', 'sextics'
+            (default: all of these field types are processed)
+
+    fields: list of one or more field labels; only makes sense if ftypes has one entry.
+            (default: all fields of the field types requested are processed)
+
+    xfields: list of one or more field labels to moit; only makes sense if ftypes has one entry.
+            (default: all fields of the field types requested are processed)
+
+    columns: if None (default), output files contains all columns.  Otherwise just output these columns.
+
+    outfilesname: if None (default) output to stdout, else output to this file (which will be overwritten if it exists)
     """
     alldata = {}
     for ftype in ftypes:
@@ -1125,9 +1147,14 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=N
         outfile = open(outfilename, 'w')
     else:
         outfile = sys.stdout
-    keys = list(ec_nfcurves_column_names_and_types.keys())
-    keys.remove('id')
-    keys.remove('label')
+    if columns:
+        keys = columns
+        if 'label' in keys:
+            keys.remove('label')
+    else:
+        keys = list(ec_nfcurves_column_names_and_types.keys())
+        keys.remove('id')
+        keys.remove('label')
     keys = ['label'] + keys
     vals = [ec_nfcurves_column_names_and_types[k] for k in keys]
     outfile.write("|".join(keys))
@@ -1137,7 +1164,7 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, outfilename=N
     id = 0
     for label in sorted(alldata):
         id += 1
-        outfile.write(data_to_string(id, alldata[label]))
+        outfile.write(data_to_string(id, alldata[label], columns=columns))
         outfile.write("\n")
     if outfilename:
         outfile.close()
