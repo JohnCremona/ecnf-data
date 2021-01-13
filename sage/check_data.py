@@ -9,9 +9,6 @@ from lmfdb import db
 nfcurves = db.ec_nfcurves
 forms = db.bmf_forms
 
-from nfscripts import field_from_label
-from psort import primes_iter
-
 def set_fields(degree=2):
     global fields, dirs
     if degree in fields:
@@ -78,10 +75,3 @@ def check_data1(fld, pre, verbose=True):
     else:
         print("Field {}: file and database both have {} curves".format(fld,ncu))
 
-def check_data2(fld):
-    """Wrapper round the find_curve_labels() function from
-    hmf_check_find, which will check that for each rational newform
-    there is a curve with the correct label, conductor and ap.
-    """
-    print("Field %s" % fld)
-    find_curve_labels(fld)

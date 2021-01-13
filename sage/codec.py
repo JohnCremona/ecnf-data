@@ -1,7 +1,8 @@
 # Functions for coding/decoding data to/from strings
 
-from sage.all import ZZ, QQ, EllipticCurve, prod
+from sage.all import ZZ, QQ, EllipticCurve, prod, KodairaSymbol, latex
 from fields import nf_lookup
+from schemas import column_names
 
 def NFelt(a):
     r""" Returns an NFelt string encoding the element a (in a number field
@@ -13,8 +14,6 @@ def NFelt(a):
     """
     return ",".join([str(c) for c in list(a)])
 
-# The next 2 functions are copied from lmfdb/ecnf/WebEllipticCurve.py
-
 def ideal_from_string(K,s, IQF_format=False):
     r"""Returns the ideal of K defined by the string s.  If IQF_format is
     True, this is "[N,c,d]" with N,c,d as in a label, while otherwise
@@ -22,9 +21,10 @@ def ideal_from_string(K,s, IQF_format=False):
     positive integer in the ideal and alpha a second generator so that
     the ideal is (a,alpha).  alpha is a polynomial in the variable w
     which represents the generator of K (but may actially be an
-    integer).  """
-    #print("ideal_from_string({}) over {}".format(s,K))
-    N, a, alpha = s.split(".")
+    integer).
+    """
+    #print("s = {}".format(s))
+    N, a, alpha = s[1:-1].split(",")
     N = ZZ(N)
     a = ZZ(a)
     if IQF_format:
@@ -33,8 +33,8 @@ def ideal_from_string(K,s, IQF_format=False):
     else:
         # 'w' is used for the generator name for all fields for
         # numbers stored in the database
-        alpha = alpha.encode().replace('w',str(K.gen()))
-        I = K.ideal(a,K(alpha.encode()))
+        alpha = alpha.replace('w',str(K.gen()))
+        I = K.ideal(a,K(alpha))
     if I.norm()==N:
         return I
     else:
@@ -262,8 +262,23 @@ def local_data_to_string_one_prime(ldp):
 def local_data_to_string(ld):
     return ";".join([local_data_to_string_one_prime(ldp) for ldp in ld])
 
+def numerify_kodaira(kod):
+    kod1 = kod
+    kod = kod.replace("_","")
+    kod = kod.replace("{","")
+    kod = kod.replace("}","")
+    kod = kod.replace("^","")
+    nkod = KodairaSymbol(kod)._pari_code()
+    # kod2 = latex(KodairaSymbol(nkod))
+    # if not kod1.replace("{","").replace("}","")==kod2.replace("{","").replace("}",""):
+    #     print("{} --> {} --> {} --> {}".format(kod1, kod, nkod, kod2))
+    return nkod
+
 def local_data_from_string_one_prime(s):
     dat = s.split(":")
+    kod = dat[7]
+    if isinstance(kod, str):
+        kod = numerify_kodaira(kod)
     return {'p': dat[0], # string
             'normp': int(dat[1]),
             'ord_cond': int(dat[2]),
@@ -271,7 +286,7 @@ def local_data_from_string_one_prime(s):
             'ord_den_j': int(dat[4]),
             'red': None if dat[5]=='None' else int(dat[5]),
             'rootno': '?' if dat[6]=='?' else int(dat[6]),
-            'kod': dat[7], # string
+            'kod': kod, # int
             'cp': int(dat[8])}
 
 def local_data_from_string(s):
@@ -288,29 +303,53 @@ def local_data_from_string(s):
     ld_extra['tamagawa_product'] = prod([ldp['cp'] for ldp in ld], 1)
     return ld, ld_extra
 
-def curves_data_to_string(c, old_style=False):
-    r"""Given a dict containing the data for one line of a curves file,
-    return the string for one line of the file.
+##########################################################
+
+num_encoder = lambda n:str(n)
+bool_encoder = lambda b: str(int(b))
+string_list_encoder = lambda L: "[" + ",".join(L) + "]"
+rank_encoder =  lambda r: str(r) if r!=None else '?'
+gal_im_encoder = lambda L: " ".join(L)
+
+encoders = {'number': num_encoder,
+            'conductor_norm': num_encoder,
+            'cm': num_encoder,
+            'q_curve': bool_encoder,
+            'local_data': local_data_to_string,
+            'bad_primes': string_list_encoder,
+            'non_min_p': string_list_encoder,
+            'base_change': string_list_encoder,
+            'isogeny_matrix': encode_int_list,
+            'trace_hash': num_encoder,
+            'rank': rank_encoder,
+            'analytic_rank': rank_encoder,
+            'sha': rank_encoder,
+            'rank_bounds': encode_int_list,
+            'gens': encode_points_many2one,
+            'ngens': num_encoder,
+            'torsion_structure': encode_int_list,
+            'torsion_gens': encode_points_many2one,
+            'torsion_order': num_encoder,
+            'omega': num_encoder,
+            'Lvalue': num_encoder,
+            'galois_images': gal_im_encoder,
+            'Dnorm': num_encoder,
+}
+
+def get_encoder(col):
+    return encoders.get(col, lambda x:x)
+
+def file_line(ftype, c):
+    r"""Given a dict containing the data for one curve,
+    return the string for one line of a <ftype>.* file.
     """
-    if old_style:
-        return " ".join([c['field_label'],
-                         c['N_label'],
-                         c['iso_label'],
-                         c['c_num'],
-                         c['N_def'],
-                         c['N_norm']]
-                        + c['ainvs']
-                        + [c['cm_flag'], c['q_curve_flag']])
+    if ftype in column_names:
+        if ftype == 'mwdata':
+            # We want the regulator of 0 points to store as 1 exactly, not 1.00000
+            c['reg']  = (str(c['reg'])  if c['reg']  else '?') if c['ngens'] else '1'
+        return " ".join([get_encoder(k)(c[k]) for k in column_names[ftype]])
     else:
-        return " ".join([c['field_label'],
-                         c['N_label'],
-                         c['iso_label'],
-                         c['c_num'],
-                         c['N_def'],
-                         c['N_norm'],
-                         c['ainvs'],
-                         c['jinv'],
-                         c['equation'],
-                         c['cm_flag'],
-                         c['base_change'],
-                         c['q_curve_flag']])
+        raise ValueError("{} is not a valid file type".format(ftype))
+
+
+

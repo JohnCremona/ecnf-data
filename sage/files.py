@@ -3,9 +3,8 @@
 import re
 import os
 import sys
-from sage.all import ZZ, QQ, latex, Set, RR, Infinity, is_prime
-from sage.databases.cremona import cremona_to_lmfdb
-from codec import convert_conductor_label, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_to_string, ideal_to_string, NFelt, curves_data_to_string, curve_from_data, local_data_from_string, encode_int_list, decode_int_list, decode_points_one2many, encode_points_many2one, encode_points
+from sage.all import ZZ, Set, RR, Infinity, is_prime
+from codec import ainvs_from_string, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, ideal_from_string, local_data_from_string, decode_int_list, decode_points_one2many, encode_points, file_line
 from fields import nf_lookup
 
 HOME = os.getenv("HOME")
@@ -169,6 +168,7 @@ def parse_local_data_line(L):
     nmp = data[-2]
     #record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
     record['non_min_p'] = [] if nmp == '[]' else nmp[2:-2].split("],[")
+    #print("{}: non_min_p = {}, decodes to {}".format(label, nmp, record['non_min_p']))
     record['minD'] = data[-1]
 
     return label, record
@@ -238,45 +238,6 @@ def parse_new_mwdata_line(L):
         record['Lvalue']            = None
         record['sha']               = None
     return label, record
-
-def make_line_label_cols(Edata):
-    r"""
-    Form string containing the 4 label columns from a curve record
-    """
-    return " ".join([Edata['field_label'], Edata['conductor_label'], Edata['iso_label'], str(Edata['number'])])
-
-def make_mwdata_line(Edata):
-    r"""
-    Form one line of an mwdata file from a curve record
-    """
-    label_cols = make_line_label_cols(Edata)
-
-    rank = str(Edata['rank']) if Edata['rank']!=None else '?'
-    ngens = Edata['ngens']
-    # We want the regulator of 0 points to store as 1 exactly, not 1.00000
-    reg  = (str(Edata['reg'])  if Edata['reg']  else '?') if ngens else '1'
-    sha  = str(Edata['sha'])  if Edata['sha']  else '?'
-    rbds = str(Edata['rank_bounds']).replace(" ","")
-    gens = encode_points_many2one(Edata['gens'])
-    tors = encode_int_list(Edata['torsion_structure'])
-    torgens = encode_points_many2one(Edata['torsion_gens'])
-
-    fields = [label_cols,
-              rank,
-              rbds,
-              str(Edata['analytic_rank']),
-              str(ngens),
-              gens,
-              Edata['heights'],
-              reg,
-              str(Edata['torsion_order']),
-              tors,
-              torgens,
-              str(Edata['omega']),
-              str(Edata['Lvalue']),
-              sha]
-
-    return " ".join(fields)
 
 def parse_galrep_line(L):
     r"""
@@ -374,23 +335,7 @@ extra_keys_and_postgres_types = {'omega': 'numeric',
                         'reducible_primes': 'integer[]'}
 
 
-def get_db():
-    sys.path.append(os.path.join(HOME, 'lmfdb'))
-    from lmfdb import db
-    return db
-
-def get_column_names_and_types():
-    t = get_db().ec_nfcurves.col_type
-    return {k: t[k] for k in sorted(t) if k!='isogeny_degrees'}
-
-ec_nfcurves_column_names_and_types = get_column_names_and_types()
-ec_nfcurves_columns = Set(ec_nfcurves_column_names_and_types.keys())
-
-assert ec_nfcurves_columns == Set(keys_and_types.keys()) + Set(['id'])
-assert Set(ec_nfcurves_extra_columns)==Set(extra_keys_and_types.keys())
-ec_nfcurves_all_columns = ec_nfcurves_columns
-
-postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes']
+ec_nfcurves_columns = ec_nfcurves_all_columns = Set(keys_and_types.keys()) + Set(['id'])
 
 def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='old'):
     r"""Given a field label, read all the data in files curves.field_label,
@@ -542,36 +487,6 @@ def read_isoclass_file(infile):
             }
             yield curve
     return
-
-def write_curve_file(curves, outfile):
-    r"""
-    Write a curves file, each line containing 13 data fields as defined
-    the in the ecnf-format.txt file. Input is a list of dicts.
-    """
-    with open(outfile, 'w') as out:
-        for c in curves:
-            line = " ".join([c['field_label'],
-                             c['N_label'],
-                             c['iso_label'],
-                             c['c_num'],
-                             c['N_def'],
-                             c['N_norm']] + c['ainvs'] + [c['cm_flag'],
-                                                          c['q_curve_flag']])
-            out.write(line+"\n")
-
-def write_isoclass_file(curves, outfile):
-    r"""
-    Write an isoclass file, each line containing 5 data fields as defined
-    the in the ecnf-format.txt file. Input is a list of dicts.
-    """
-    with open(outfile, 'w') as out:
-        for c in curves:
-            line = " ".join([c['field_label'],
-                             c['N_label'],
-                             c['iso_label'],
-                             c['c_num'],
-            c['isomat']])
-            out.write(line+"\n")
 
 def read_curves(infile, only_one=False, ncurves=0):
     r"""
@@ -795,24 +710,6 @@ def label_conversion_table(infile, outfile):
             label = convert_ideal_label(nf_lookup(field),ideal)
             OF.write(' '.join([field, ideal, label])+'\n')
 
-def make_local_data_file(curves_filename, ld_filename, verbose=False):
-    r"""Create a local_data file from a curves file.  This will not be
-    needed once we create the local_data file at the same time as the
-    curves files.
-    """
-    from nfscripts import local_data
-    with open(ld_filename, 'w', 1) as ldfile:
-        for  (field_label,N_label,N_def,iso_label,c_num,E) in read_curves_new(curves_filename):
-            if verbose:
-                print("Processing {}".format("-".join([field_label,N_label,iso_label])+c_num))
-            Eld, nonminP, minD = local_data(E)
-            Eld = local_data_to_string(Eld)
-            nonminP = str([ideal_to_string(P) for P in nonminP]).replace(" ","")
-            minD = ideal_to_string(minD)
-            line = " ".join([field_label,N_label,iso_label,c_num,Eld, nonminP, minD])
-            ldfile.write(line + "\n")
-
-
 def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, CM_only=False, max_sat_prime = Infinity, prec=None, verbose=False):
     r"""
     Reads curves and local data files.
@@ -861,7 +758,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
 
             Edata = extend_mwdata_one(Edata, classdata, Kfactors, magma,
                                       max_sat_prime = max_sat_prime, prec=prec, verbose=verbose)
-            line = make_mwdata_line(Edata)
+            line = file_line('mwdata', Edata)
             if verbose:
                 print("New mwdata line: {}".format(line))
             mwdata.write(line + "\n")
@@ -899,57 +796,10 @@ def fix_torsion(base_dir, field_label, suffix='x', minN=None, maxN=None, one_lab
                 print("Torsion order = {}".format(nt))
                 print("Torsion gens = {}".format(Edata['torsion_gens']))
 
-            line = make_mwdata_line(Edata)
+            line = file_line('mwdata', Edata)
             if verbose:
                 print("New mwdata line: {}".format(line))
             mwdata.write(line + "\n")
-
-def extend_curves_file(infilename, outfilename, verbose=False):
-    r"""One-off function to extend a curves file from the old format (13
-    columns, with the ai taking 5 columns) to the new (12 columns,
-    just one for the ai and three extras), the extra ones being
-    'jinv', 'equation', 'base_change'
-
-    In addition to adding the three columns we ensure that the
-    is_Q_curve column is not '?'.
-    """
-    nmax = -1 # make this positive for a test run which stops after this many lines
-    n = 0
-    with open(outfilename, 'w', 1) as out:
-        for curve in read_curve_file(infilename):
-            n += 1
-            label = "-".join([curve['field_label'], curve['N_label'], curve['iso_label']]) + curve['c_num']
-            if verbose:
-                print("Processing {}".format(label))
-                line = curves_data_to_string(curve, old_style=True)
-                print("Old line:\n{}".format(line))
-            E = curve_from_data(curve)
-            curve['ainvs'] = ";".join(curve['ainvs'])
-            curve['jinv'] = NFelt(E.j_invariant())
-            curve['equation'] = str(latex(E)).replace('x','{x}').replace('y','{y}').replace(" ","") # no "\(", "\)"
-            if curve['q_curve_flag'] == '?':
-                from nfscripts import is_Q_curve
-                qc = is_Q_curve(E)
-                print("Filling in Q-curve flag for curve {} to {}".format(label, qc))
-                curve['q_curve_flag'] = int(qc)
-            EQlist = E.descend_to(QQ)
-            if EQlist:
-                bc = [cremona_to_lmfdb(EQ.label()) for EQ in EQlist]
-                if verbose:
-                    print("{} is base change of {}".format(label, bc))
-            else:
-                bc = []
-            curve['base_change'] = "[" + ",".join(bc) + "]"
-            if False:
-                print("New curve struct: {}".format(curve))
-            line = curves_data_to_string(curve)
-            if verbose:
-                print("New line:\n{}".format(line))
-            out.write(line+"\n")
-            if n==nmax:
-                break
-            if n%1000==0:
-                print("{} curves processed".format(n))
 
 def read_ai(curvefile, only_one=False, ncurves=0):
     r"""Iterator to loop through lines of a curves.* file each containing
@@ -1010,40 +860,121 @@ def add_trace_hashes(curves_file, isoclass_file, suffix='x', verbose=False):
             n+=1
     print("Finished rewriting {} lines to new isoclass file {}".format(n, isoclass_file+"x"))
 
-def rewrite_curve_file(infile, outfile, verbose=True):
+def simplify_one_ideal_string(K, Istring):
+    """Given an ideal string in the form "[N,a,alpha]" representing an
+    ideal of K with norm N, return a string of the form "(g)" or "(g1,
+    g2)" defining the same ideal with the minimal number of
+    generators.
     """
-    Convert ideal labels for IQFs fro old-atyle N.c.d to new N.i LMFDB
-    standard.  Could also be used over other fields to standardise
-    labels into the canonical LMFDB ordering of ideals of the same
-    norm.
+    return str(ideal_from_string(K, Istring).gens_reduced()).replace(",)",")").replace(" ","")
 
-    Can be used for curves* files,  curve_data* and isoclass* files.
+def ec_disc(ainvs):
     """
-    if 'curves' in infile:
-        read_file = read_curve_file
-        write_file = write_curve_file
-    elif 'isoclass' in infile:
-        read_file = read_isoclass_file
-        write_file = write_isoclass_file
-    else:
-        print("Invalid filename {}: should be a curves or curve_data or isoclass file")
-        return
+    Return disciminant of a Weierstrass equation from its list of a-invariants.
+    Avoids constructing the EllipticCurve.
+    """
+    a1, a2, a3, a4, a6 = ainvs
+    b2 = a1*a1 + 4*a2
+    b4 = a3*a1 + 2*a4
+    b6 = a3*a3 + 4*a6
+    c4 = b2*b2 - 24*b4
+    c6 = -b2*b2*b2 + 36*b2*b4 - 216*b6
+    return (c4*c4*c4 - c6*c6) / 1728
 
-    def convert(c):
-        field_label = c['field_label']
-        cond_label =  c['N_label']
-        new_cond_label = convert_conductor_label(field_label, cond_label)
-        if verbose:
-            print("Conductor label {} converted to {}".format(cond_label, new_cond_label))
-        c['N_label'] = new_cond_label
-        return c
+def reduce_mod_units(a):
+    """
+    Return u*a for a unit u such that u*a is reduced.
+    """
+    K = a.parent()
+    if a.norm().abs()==1:
+        return K(1)
+    r1, r2 = K.signature()
+    if r1 + r2 == 1:  # unit rank is 0
+        return a
 
-    def converter():
-        for c in read_file(infile):
-            yield convert(c)
-        return
+    prec = 1000  # lower precision works badly!
+    embs = K.places(prec=prec)
+    degs = [1]*r1 + [2]*r2
+    fu = K.units()
+    from sage.matrix.all import Matrix
+    U = Matrix([[e(u).abs().log()*d for d,e in zip(degs,embs)] for u in fu])
+    A = U*U.transpose()
+    Ainv = A.inverse()
 
-    write_file(converter(), outfile)
+    aconjs = [e(a) for e in embs]
+    from sage.modules.all import vector
+    v = vector([aa.abs().log()*d for aa,d in zip(aconjs,degs)])
+    exponents = [e.round() for e in -Ainv*U*v]
+    u = prod([uj**ej for uj,ej in zip(fu,exponents)])
+    return a*u
+
+def simplify_ideal_strings_record(K, record):
+    """Convert ideal strings from long form [N,a,alpha] to 1-generator
+    (gen) or 2-generatorr (gen1,gen2).
+    """
+    record['conductor_ideal'] = simplify_one_ideal_string(K, record['conductor_ideal'])
+    record['minD'] = simplify_one_ideal_string(K, record['minD'])
+    record['bad_primes'] = [simplify_one_ideal_string(K, p) for p in record['bad_primes']]
+    record['non_min_p'] = [simplify_one_ideal_string(K, p) for p in record['non_min_p']]
+    for ld in record['local_data']:
+        ld['p'] = simplify_one_ideal_string(K, ld['p'])
+    # avoid constructing the curve! D is the principal ideal generated
+    # by the discriminant.
+    ainvs = ainvs_from_string(K, record['ainvs'])
+    D = ec_disc(ainvs)
+    Dnorm = D.norm()
+    Dred = reduce_mod_units(D)
+    if D != Dred:
+        if len(str(Dred)) < len(str(D)):
+            D = Dred
+        else:
+            pass
+            # print("Before reducing modulo units, D = {}".format(D))
+            # print("After  reducing modulo units, D = {}".format(Dred))
+    record['D'] = '({})'.format(D)
+    record['Dnorm'] = Dnorm
+    return record
+
+def simplify_ideal_strings_field(field_type, field_label, verbose=True):
+    """Convert ideal strings from long form [N,a,alpha] to 1-generator
+    (gen) or 2-generatorr (gen1,gen2).  This affects conductor_ideal
+    in curves.* and minD, bad_primes in local_data.*.
+
+    At the same time we add the columns 'D', 'Dnorm' and remove the
+    column 'equation' in curves.*.
+
+    """
+    base_dir = os.path.join(ECNF_DIR, field_type)
+    data = read_all_field_data(base_dir, field_label, check_cols=False, mwdata_format='new')
+    K = nf_lookup(field_label).change_names('w')
+    n = 0
+    if verbose:
+        print("processing ideals...")
+    for label, record in data.items():
+        n += 1
+        if verbose and n%1000==0:
+            print("{} done...".format(n), end="")
+            sys.stdout.flush()
+            if n%10000==0:
+                print()
+        record = simplify_ideal_strings_record(K, record)
+    if(verbose):
+        print("done")
+    if verbose:
+        print("Writing new files...")
+
+    for ftype in ['curves', 'local_data']: #, 'isoclass', 'mwdata', 'galrep']:
+        new_file = os.path.join(base_dir, "{}.{}.new".format(ftype, field_label))
+        with open(new_file, 'w') as outfile:
+            n = 0
+            for label, record in data.items():
+                if ftype=='isoclass' and record['number']!=1:
+                    continue
+                line = file_line(ftype, record)
+                outfile.write(line.rstrip()+"\n")
+                n += 1
+                if verbose and n%1000==0:
+                    print("{} lines output to {}...".format(n, new_file))
 
 def convert_curve_file(infilename, outfilename, ncurves=0):
     r"""
@@ -1073,101 +1004,3 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
             coeffs = ";".join(data[6:11])
             outfile.write(":".join([label,coeffs,pol])+"\n")
 
-def column_to_string(colname, col):
-        if col is None:
-            return "\\N"
-        col = str(col).replace(" ","")
-        col = col.replace("'",'"')
-        if col == "True":
-            return "t"
-        if col == "False":
-            return "f"
-        if colname in postgres_array_cols:
-            col = col.replace("[","{").replace("]","}")
-        if colname == 'equation':
-            col = col.replace("\\","\\\\")
-            col = ''.join(['"', col, '"'])
-        if colname == 'local_data':
-            col = col.replace("None", "null")
-        return col
-            
-def data_to_string(n, record, columns=None):
-    """NB A list stored in the database as a postgres array (e.g. int[]
-    or numeric[]) must appear as (e.g.) {1,2,3} not [1,2,3].
-
-    The relevant columns are in the global array postgres_array_cols
-
-    If columns is not None, then only these columns are output.
-    """
-    record['id'] = n
-    if columns:
-        keys = columns
-        if 'label' in keys:
-            keys.remove('label')
-    else:
-        keys = list(ec_nfcurves_column_names_and_types.keys())
-        keys.remove('id')
-        keys.remove('label')
-    keys = ['label'] + keys
-    return "|".join([column_to_string(k, record[k]) for k in keys])
-            
-def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, columns=None, outfilename=None):
-    """
-    ftypes: list of one or more from 'IQF', 'RQF', 'cubics', 'gunnells', 'quartics', 'quintics', 'sextics'
-            (default: all of these field types are processed)
-
-    fields: list of one or more field labels; only makes sense if ftypes has one entry.
-            (default: all fields of the field types requested are processed)
-
-    xfields: list of one or more field labels to moit; only makes sense if ftypes has one entry.
-            (default: all fields of the field types requested are processed)
-
-    columns: if None (default), output files contains all columns.  Otherwise just output these columns.
-
-    outfilesname: if None (default) output to stdout, else output to this file (which will be overwritten if it exists)
-    """
-    alldata = {}
-    for ftype in ftypes:
-        print("reading data from {}".format(ftype))
-        if not fields:
-            with open("{}/{}/fields.txt".format(ECNF_DIR,ftype)) as field_file:
-                flds = [f[:-1] for f in field_file.readlines()]
-        else:
-            flds = fields
-        if xfields:
-            for f in xfields:
-                print("excluding field {}".format(f))
-                flds.remove(f)
-        for fname in flds:
-            print("reading data for {}".format(fname))
-            data = read_all_field_data(os.path.join(ECNF_DIR,ftype), fname, check_cols=True, mwdata_format="new")
-            alldata.update(data)
-    #return alldata
-    if outfilename:
-        outfile = open(outfilename, 'w')
-    else:
-        outfile = sys.stdout
-    if columns:
-        keys = columns
-        if 'label' in keys:
-            keys.remove('label')
-    else:
-        keys = list(ec_nfcurves_column_names_and_types.keys())
-        keys.remove('id')
-        keys.remove('label')
-    keys = ['label'] + keys
-    vals = [ec_nfcurves_column_names_and_types[k] for k in keys]
-    outfile.write("|".join(keys))
-    outfile.write("\n")
-    outfile.write("|".join(vals))
-    outfile.write("\n\n")
-    id = 0
-    for label in sorted(alldata):
-        id += 1
-        outfile.write(data_to_string(id, alldata[label], columns=columns))
-        outfile.write("\n")
-    if outfilename:
-        outfile.close()
-    print("{} data lines + 3 header lines with {} columns written to {}".format(id,len(keys),outfilename if outfilename else "stdout"))
-    print("Columns:\n{}".format(keys))
-    

@@ -957,7 +957,7 @@ def local_data(E):
                    'ord_den_j': int(max(0,-(E.j_invariant().valuation(ld.prime())))),
                    'red': None if ld.bad_reduction_type() is None else int(ld.bad_reduction_type()),
                    'rootno': local_root_number(ld),
-                   'kod': str(latex(ld.kodaira_symbol())),
+                   'kod': ld.kodaira_symbol()._pari_code(),
                    'cp': int(ld.tamagawa_number())}
                   for ld in Eld]
     return E_local_data, E.non_minimal_primes(), E.minimal_discriminant_ideal()
@@ -1215,3 +1215,38 @@ def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
                             print("{}: {}".format(lab,fcerts[lab]))
                     else:
                         print("No Q-curves")
+
+def latex_equation(ainvs):
+    a1, a2, a3, a4, a6 = ainvs
+
+    def co(coeff):
+        pol = coeff.polynomial()
+        mons = pol.monomials()
+        n = len(mons)
+        if n==0:
+            return ""
+        if n>1:
+            return r"+\left({}\right)".format(latex(coeff))
+        # now we have a numerical coefficient times a power of the generator
+        if coeff == 1:
+            return "+"
+        if coeff == -1:
+            return "-"
+        s = "+" if pol.monomial_coefficient(mons[0]) > 0 else ""
+        return "{}{}".format(s, latex(coeff))
+
+    def term(coeff, mon):
+        if not coeff:
+            return ""
+        if not mon:
+            return "+{}".format(latex(coeff)).replace("+-","-")
+        return "{}{}".format(co(coeff), mon)
+
+    return ''.join([r'y^2',
+                    term(a1,'xy'),
+                    term(a3,'y'),
+                    '=x^3',
+                    term(a2,'x^2'),
+                    term(a4,'x'),
+                    term(a6,''),
+                    r''])

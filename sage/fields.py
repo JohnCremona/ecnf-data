@@ -23,11 +23,9 @@ def get_field_name(disc):
 
     OUTPUT:
 
-    'w', 'i', 't' for discriminants -3.-4.-8, else 'a'.
+    'w', 'i', 't' for discriminants -3,-4,-8, else 'a'.
     """
     return field_names.get(disc,'a')
-
-
 
 def read_all_fields(ffilename='ecnf_fields'):
     ffile = open(ffilename)
