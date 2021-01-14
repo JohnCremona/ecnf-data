@@ -2,12 +2,13 @@
 
 import sys
 from files import read_curves_new
+from sage.all import read_data
 
 def check_curve_model(E):
     """
     E is a curve defined over a number field
     """
-    Emin = E.global_minimal_model()  if E.base_field().class_number()==1 else E.global_minimal_model(semi_global=True)
+    Emin = E.global_minimal_model() if E.base_field().class_number()==1 else E.global_minimal_model(semi_global=True)
     return E.discriminant().norm() == Emin.discriminant().norm()
 
 def check_curves(infile, verbose=False):
@@ -20,13 +21,15 @@ def check_curves(infile, verbose=False):
             nbad += 1
             label = "{}-{}-{}{}".format(field_label, N_label, iso_label, c_num)
             print("{} is bad".format(label))
+            print("E    has discriminant norm {}".format(E.discriminant().norm()))
+            print("Emin has discriminant norm {}".format(E.global_minimal_model(semi_global=True).discriminant().norm()))
             bad_curves[label] = E
         if n%100==0 and verbose:
             print("{}...".format(n), end="")
             sys.stdout.flush()
             if n%1000==0:
                 print()
-    if nbads:
+    if nbad:
         ok = "!!"
     else:
         ok = "OK"
@@ -38,6 +41,6 @@ def check_type(t):
     all_bads = {}
     for f in fields:
         print(f)
-        all_bads[f] = check_curves("../{}/curves.{}".format(t,f))
+        all_bads[f] = check_curves("../{}/curves.{}.fixed".format(t,f))
 
     return all_bads

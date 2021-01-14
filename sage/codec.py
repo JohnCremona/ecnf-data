@@ -1,6 +1,6 @@
 # Functions for coding/decoding data to/from strings
 
-from sage.all import ZZ, QQ, EllipticCurve, prod, KodairaSymbol, latex
+from sage.all import ZZ, QQ, EllipticCurve, prod, KodairaSymbol
 from fields import nf_lookup
 from schemas import column_names
 
@@ -262,8 +262,9 @@ def local_data_to_string_one_prime(ldp):
 def local_data_to_string(ld):
     return ";".join([local_data_to_string_one_prime(ldp) for ldp in ld])
 
+#from sage.all import latex
 def numerify_kodaira(kod):
-    kod1 = kod
+    #kod1 = kod
     kod = kod.replace("_","")
     kod = kod.replace("{","")
     kod = kod.replace("}","")

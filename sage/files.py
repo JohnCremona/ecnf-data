@@ -4,8 +4,10 @@ import re
 import os
 import sys
 from sage.all import ZZ, Set, RR, Infinity, is_prime
-from codec import ainvs_from_string, curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, ideal_from_string, local_data_from_string, decode_int_list, decode_points_one2many, encode_points, file_line
+from codec import curve_from_string, curve_from_strings, ainvs_from_strings, convert_ideal_label, local_data_from_string, decode_int_list, decode_points_one2many, encode_points, file_line
 from fields import nf_lookup
+from nfscripts import fix_model, simplify_ideal_strings
+from Qcurves import is_Q_curve
 
 HOME = os.getenv("HOME")
 BIANCHI_DATA_DIR = os.path.join(HOME, "bianchi-data")
@@ -106,6 +108,10 @@ def parse_curves_line(L):
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
     eqn = data[8]
+    # the reason for doing the following is for the unique field
+    # 2.2.5.1 where the field generator is not a single character such
+    # as 'a' or 'i' but is '\phi', and we don't want to have '\phix'
+    # in a latex string (and also do not want any whitespace).
     if not "{x}" in eqn:
         eqn = eqn.replace('x','{x}').replace('y','{y}')
     record['equation'] = eqn
@@ -166,9 +172,9 @@ def parse_local_data_line(L):
     # Currently the list has 0 or 1 entries but we do not want to rely
     # on this.
     nmp = data[-2]
-    #record['non_min_p'] = [] if nmp == '[]' else ['['+id+']' for id in nmp[2:-2].split("],[")]
-    record['non_min_p'] = [] if nmp == '[]' else nmp[2:-2].split("],[")
-    #print("{}: non_min_p = {}, decodes to {}".format(label, nmp, record['non_min_p']))
+    #print(nmp)
+    record['non_min_p'] = [] if nmp == '[]' else ["["+P+"]" for P in nmp[2:-2].split("],[")]
+    #print(record['non_min_p'])
     record['minD'] = data[-1]
 
     return label, record
@@ -860,93 +866,56 @@ def add_trace_hashes(curves_file, isoclass_file, suffix='x', verbose=False):
             n+=1
     print("Finished rewriting {} lines to new isoclass file {}".format(n, isoclass_file+"x"))
 
-def simplify_one_ideal_string(K, Istring):
-    """Given an ideal string in the form "[N,a,alpha]" representing an
-    ideal of K with norm N, return a string of the form "(g)" or "(g1,
-    g2)" defining the same ideal with the minimal number of
-    generators.
-    """
-    return str(ideal_from_string(K, Istring).gens_reduced()).replace(",)",")").replace(" ","")
+bad_fields = ['2.2.{}.1'.format(d) for d in [204, 205, 220, 221, 232]]
 
-def ec_disc(ainvs):
+def fix_models_field(field_type, field_label, verbose=True):
+    """Apply fix_model to all curves over one field.  Output new versions
+    of curves.<field>, local_data.<field>, mwdata.<field> with ".new"
+    suffix.
     """
-    Return disciminant of a Weierstrass equation from its list of a-invariants.
-    Avoids constructing the EllipticCurve.
-    """
-    a1, a2, a3, a4, a6 = ainvs
-    b2 = a1*a1 + 4*a2
-    b4 = a3*a1 + 2*a4
-    b6 = a3*a3 + 4*a6
-    c4 = b2*b2 - 24*b4
-    c6 = -b2*b2*b2 + 36*b2*b4 - 216*b6
-    return (c4*c4*c4 - c6*c6) / 1728
+    base_dir = os.path.join(ECNF_DIR, field_type)
+    data = read_all_field_data(base_dir, field_label, check_cols=False, mwdata_format='new')
+    K = nf_lookup(field_label).change_names('w')
+    n = 0
+    if verbose:
+        print("processing curves...")
+    for label, record in data.items():
+        n += 1
+        if verbose and n%1000==0:
+            print("{} done...".format(n), end="")
+            sys.stdout.flush()
+            if n%10000==0:
+                print()
+        record = fix_model(K, record)
+    if(verbose):
+        print("...done, writing new files...")
 
-def reduce_mod_units(a):
-    """
-    Return u*a for a unit u such that u*a is reduced.
-    """
-    K = a.parent()
-    if a.norm().abs()==1:
-        return K(1)
-    r1, r2 = K.signature()
-    if r1 + r2 == 1:  # unit rank is 0
-        return a
-
-    prec = 1000  # lower precision works badly!
-    embs = K.places(prec=prec)
-    degs = [1]*r1 + [2]*r2
-    fu = K.units()
-    from sage.matrix.all import Matrix
-    U = Matrix([[e(u).abs().log()*d for d,e in zip(degs,embs)] for u in fu])
-    A = U*U.transpose()
-    Ainv = A.inverse()
-
-    aconjs = [e(a) for e in embs]
-    from sage.modules.all import vector
-    v = vector([aa.abs().log()*d for aa,d in zip(aconjs,degs)])
-    exponents = [e.round() for e in -Ainv*U*v]
-    u = prod([uj**ej for uj,ej in zip(fu,exponents)])
-    return a*u
-
-def simplify_ideal_strings_record(K, record):
-    """Convert ideal strings from long form [N,a,alpha] to 1-generator
-    (gen) or 2-generatorr (gen1,gen2).
-    """
-    record['conductor_ideal'] = simplify_one_ideal_string(K, record['conductor_ideal'])
-    record['minD'] = simplify_one_ideal_string(K, record['minD'])
-    record['bad_primes'] = [simplify_one_ideal_string(K, p) for p in record['bad_primes']]
-    record['non_min_p'] = [simplify_one_ideal_string(K, p) for p in record['non_min_p']]
-    for ld in record['local_data']:
-        ld['p'] = simplify_one_ideal_string(K, ld['p'])
-    # avoid constructing the curve! D is the principal ideal generated
-    # by the discriminant.
-    ainvs = ainvs_from_string(K, record['ainvs'])
-    D = ec_disc(ainvs)
-    Dnorm = D.norm()
-    Dred = reduce_mod_units(D)
-    if D != Dred:
-        if len(str(Dred)) < len(str(D)):
-            D = Dred
-        else:
-            pass
-            # print("Before reducing modulo units, D = {}".format(D))
-            # print("After  reducing modulo units, D = {}".format(Dred))
-    record['D'] = '({})'.format(D)
-    record['Dnorm'] = Dnorm
-    return record
+    for ftype in ['curves', 'local_data', 'mwdata']:
+        new_file = os.path.join(base_dir, "{}.{}.fixed".format(ftype, field_label))
+        with open(new_file, 'w') as outfile:
+            n = 0
+            for label, record in data.items():
+                line = file_line(ftype, record)
+                outfile.write(line.rstrip()+"\n")
+                n += 1
+                if verbose and n%1000==0:
+                    print("{} lines output to {}...".format(n, new_file))
+    return data
 
 def simplify_ideal_strings_field(field_type, field_label, verbose=True):
     """Convert ideal strings from long form [N,a,alpha] to 1-generator
     (gen) or 2-generatorr (gen1,gen2).  This affects conductor_ideal
     in curves.* and minD, bad_primes in local_data.*.
 
-    At the same time we add the columns 'D', 'Dnorm' and remove the
-    column 'equation' in curves.*.
+    At the same time we add the columns 'D', 'Dnorm' to curves.*.
 
     """
     base_dir = os.path.join(ECNF_DIR, field_type)
     data = read_all_field_data(base_dir, field_label, check_cols=False, mwdata_format='new')
-    K = nf_lookup(field_label).change_names('w')
+    K = nf_lookup(field_label)
+    if K: # special treatment when 'field_label' is not an actual
+          # field label, e.g. for sengun/EC_IQF_egr
+        K = K.change_names('w')
     n = 0
     if verbose:
         print("processing ideals...")
@@ -957,7 +926,7 @@ def simplify_ideal_strings_field(field_type, field_label, verbose=True):
             sys.stdout.flush()
             if n%10000==0:
                 print()
-        record = simplify_ideal_strings_record(K, record)
+        record = simplify_ideal_strings(K, record)
     if(verbose):
         print("done")
     if verbose:
@@ -1003,4 +972,73 @@ def convert_curve_file(infilename, outfilename, ncurves=0):
             label = "-".join(data[:3]) + data[3]
             coeffs = ";".join(data[6:11])
             outfile.write(":".join([label,coeffs,pol])+"\n")
+
+def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
+    for ftype in ftypes:
+        if Detail:
+            print("Checking curves over fields in {}".format(ftype))
+        if not fields:
+            with open("{}/{}/fields.txt".format(ECNF_DIR,ftype)) as field_file:
+                fields = [f[:-1] for f in field_file.readlines()]
+        for fname in fields:
+            if Detail>1:
+                print("Checking curves over field {}".format(fname))
+            K = nf_lookup(fname)
+            data = {}
+            n = 0
+            curves_filename = "{}/{}/curves.{}".format(ECNF_DIR,ftype,fname)
+
+            with open(curves_filename) as curves:
+                for L in curves.readlines():
+                    label, record = parse_curves_line(L)
+                    if label:
+                        n += 1
+                        data[label] = record
+            if Detail:
+                print("Read {} curves from {}".format(n,curves_filename))
+            fcerts = {}
+            levels = []
+            bads = []
+            ngood = 0
+            n1 = 0
+            for c in data:
+                Edata = data[c]
+                if Edata['number']!=1:
+                    continue
+                n1 += 1
+                E = curve_from_string(K,Edata['ainvs'])
+                lab = Edata['label']
+                if Detail>1:
+                    print("Running Q-curve test on {}".format(lab))
+                res, cert = is_Q_curve(E, certificate=certs, verbose=(Detail>2))
+                if res != Edata['q_curve']:
+                    print("**********bad result for {}".format(lab))
+                    return E, Edata
+                    bads.append(lab)
+                else:
+                    if res:
+                        fcerts[lab] = cert
+                        if Detail>1:
+                            print("yes: certificate = {}".format(cert))
+                        if not cert['CM']:
+                            N = cert['N']
+                            if not N in levels:
+                                levels.append(N)
+                        if Detail>2:
+                            print("{} OK".format(lab))
+                    ngood += 1
+                if Detail>1 and ngood%100==0:
+                    print("{} curves checked OK".format(ngood))
+            if bads:
+                print("!!!!!!!!! {} discrepancies over {}: {}".format(len(bads), fname, bads))
+            if Detail:
+                print("Field {}: {} agreements out of {} classes".format(fname, ngood, n1))
+                if certs:
+                    if fcerts:
+                        print("Levels of non-CM Q-curves: {}".format(levels))
+                        print("Certificates of Q-curves:")
+                        for lab in fcerts:
+                            print("{}: {}".format(lab,fcerts[lab]))
+                    else:
+                        print("No Q-curves")
 
