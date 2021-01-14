@@ -653,7 +653,7 @@ def reduce_mod_units(a):
     if r1 + r2 == 1:  # unit rank is 0
         return a
 
-    prec = 1000  # lower precision works badly!
+    prec = 10000  # lower precision works badly!
     embs = K.places(prec=prec)
     degs = [1]*r1 + [2]*r2
     fu = K.units()

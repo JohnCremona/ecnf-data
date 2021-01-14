@@ -4,7 +4,7 @@ label_cols =  ['field_label', 'conductor_label', 'iso_label', 'number']
 
 column_names = { 'curves': label_cols + ['conductor_ideal', 'conductor_norm',
                                          'ainvs', 'jinv',
-                                         #'D', 'Dnorm',
+                                         'D', 'Dnorm',
                                          'equation',
                                          'cm', 'base_change', 'q_curve'],
                  'isoclass': label_cols + ['isogeny_matrix', 'trace_hash'],
