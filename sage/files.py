@@ -174,13 +174,15 @@ def parse_local_data_line(L):
     record.update(ldx) # fields 'bad_primes', 'n_bad_primes', 'semistable', 'potential_good_reduction', 'tamagawa_product'
 
     # The non_min_p column is a list of strings
-    # e.g. ['[N1,a1,alpha1]', '[N2,a2,alpha2]'] while the string in
-    # the file will contain [[N1,a1,alpha1],[N2,a2,alpha2]].
+    # e.g. ['(g)', '(g1,g2)'] while the string in
+    # the file will contain [(g),(g1,g2)].
+
     # Currently the list has 0 or 1 entries but we do not want to rely
     # on this.
+
     nmp = data[-2]
     #print(nmp)
-    record['non_min_p'] = [] if nmp == '[]' else ["["+P+"]" for P in nmp[2:-2].split("],[")]
+    record['non_min_p'] = [] if nmp == '[]' else ["("+P+")" for P in nmp[2:-2].split("),(")]
     #print(record['non_min_p'])
     record['minD'] = data[-1]
 

@@ -38,5 +38,5 @@ ec_nfcurves_schema = {
     'bad_primes': 'jsonb', 'Lvalue': 'numeric', 'sha': 'integer',
     'torsion_primes': 'integer[]', 'n_bad_primes': 'integer',
     'reducible_primes': 'integer[]', 'semistable': 'boolean', 'disc':
-    'text', 'normdisc': 'bigint',
+    'text', 'normdisc': 'numeric',
 }
