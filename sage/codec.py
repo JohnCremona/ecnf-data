@@ -277,9 +277,6 @@ def numerify_kodaira(kod):
 
 def local_data_from_string_one_prime(s):
     dat = s.split(":")
-    kod = dat[7]
-    if isinstance(kod, str):
-        kod = numerify_kodaira(kod)
     return {'p': dat[0], # string
             'normp': int(dat[1]),
             'ord_cond': int(dat[2]),
@@ -287,7 +284,7 @@ def local_data_from_string_one_prime(s):
             'ord_den_j': int(dat[4]),
             'red': None if dat[5]=='None' else int(dat[5]),
             'rootno': '?' if dat[6]=='?' else int(dat[6]),
-            'kod': kod, # int
+            'kod': int(dat[7]),
             'cp': int(dat[8])}
 
 def local_data_from_string(s):
@@ -334,7 +331,7 @@ encoders = {'number': num_encoder,
             'omega': num_encoder,
             'Lvalue': num_encoder,
             'galois_images': gal_im_encoder,
-            'Dnorm': num_encoder,
+            'normdisc': num_encoder,
 }
 
 def get_encoder(col):

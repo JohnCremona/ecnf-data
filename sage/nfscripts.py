@@ -698,8 +698,8 @@ def simplify_ideal_strings(K, record):
         Dred = reduce_mod_units(D)
         if len(str(Dred)) < len(str(D)):
            D = Dred
-    record['D'] = '({})'.format(D).replace(" ","")
-    record['Dnorm'] = Dnorm
+    record['disc'] = '({})'.format(D).replace(" ","")
+    record['normdisc'] = Dnorm
     return record
 
 # The following was used (with fix_models_field() in files.py) to

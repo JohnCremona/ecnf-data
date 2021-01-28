@@ -93,11 +93,15 @@ def parse_line_label_cols(L):
     return label, record
 
 def parse_curves_line(L):
-    r"""
-    Parse one line from a curves file
+    r"""Parse one line from a curves file
+
+    14 Columns (see schemas.py):
+    'field_label', 'conductor_label', 'iso_label', 'number',
+    'conductor_ideal', 'conductor_norm', 'ainvs', 'jinv', 'disc',
+    'normdisc', 'equation', 'cm', 'base_change', 'q_curve'
     """
     data = L.split()
-    if len(data)!=12:
+    if len(data)!=14:
         print("curves line {} does not have 12 fields, skipping".format(L))
         return
     label, record = parse_line_label_cols(L)
@@ -107,7 +111,10 @@ def parse_curves_line(L):
 
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
-    eqn = data[8]
+    record['disc'] = data[8]
+    record['normdisc'] = ZZ(data[9])
+
+    eqn = data[10]
     # the reason for doing the following is for the unique field
     # 2.2.5.1 where the field generator is not a single character such
     # as 'a' or 'i' but is '\phi', and we don't want to have '\phix'
@@ -116,14 +123,14 @@ def parse_curves_line(L):
         eqn = eqn.replace('x','{x}').replace('y','{y}')
     record['equation'] = eqn
 
-    record['cm'] = cm = ZZ(data[9]) if data[9]!='?' else '?'
+    record['cm'] = cm = ZZ(data[11]) if data[11]!='?' else '?'
     # The 'cm' column for a curve with rational (as opposed to only
     # potential) CM holds |D| where D<0 is the CM discriminant:
     if 'CM' in label:
         record['cm'] = cm.abs()
-    bc = data[10][1:-1]
+    bc = data[12][1:-1]
     record['base_change'] = [str(lab) for lab in bc.split(",")] if bc else []
-    record['q_curve'] = (data[11]=='1')
+    record['q_curve'] = (data[13]=='1')
     return label, record
 
 def parse_isoclass_line(L):
@@ -307,6 +314,8 @@ keys_and_types = {'field_label':  str_type,
                   'local_data': list_type, # of dicts
                   'non_min_p': list_type, # of strings
                   'minD': str_type,
+                  'disc': int_type,
+                  'normdisc': str_type,
                   'heights': list_type, # of floats
                   'reg': float_type, # or int(1)
                   'q_curve': bool_type,
@@ -907,7 +916,7 @@ def simplify_ideal_strings_field(field_type, field_label, verbose=True):
     (gen) or 2-generatorr (gen1,gen2).  This affects conductor_ideal
     in curves.* and minD, bad_primes in local_data.*.
 
-    At the same time we add the columns 'D', 'Dnorm' to curves.*.
+    At the same time we add the columns 'disc', 'normdisc' to curves.*.
 
     """
     base_dir = os.path.join(ECNF_DIR, field_type)

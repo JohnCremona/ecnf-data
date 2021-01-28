@@ -2,16 +2,12 @@ import os
 import sys
 from sage.all import Set
 from files import HOME, ECNF_DIR, all_ftypes, read_all_field_data, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
+from schemas import ec_nfcurves_schema
 
 postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes']
 
-def get_db():
-    sys.path.append(os.path.join(HOME, 'lmfdb'))
-    from lmfdb import db
-    return db
-
 def get_column_names_and_types():
-    t = get_db().ec_nfcurves.col_type
+    t = ec_nfcurves_schema
     return {k: t[k] for k in sorted(t) if k!='isogeny_degrees'}
 
 ec_nfcurves_column_names_and_types = get_column_names_and_types()
@@ -33,7 +29,7 @@ def column_to_string(colname, col):
             col = col.replace("[","{").replace("]","}")
         if colname == 'equation':
             col = col.replace("\\","\\\\")
-            col = ''.join(['"', col, '"'])
+            #col = ''.join(['"', col, '"'])
         if colname == 'local_data':
             col = col.replace("None", "null")
         return col
