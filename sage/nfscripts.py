@@ -653,18 +653,21 @@ def reduce_mod_units(a):
     if r1 + r2 == 1:  # unit rank is 0
         return a
 
-    prec = 10000  # lower precision works badly!
-    embs = K.places(prec=prec)
-    degs = [1]*r1 + [2]*r2
-    fu = K.units()
+    from sage.modules.all import vector
     from sage.matrix.all import Matrix
+
+    prec = 1000  # lower precision works badly!
+
+    embs = K.places(prec=prec)
+    aconjs = [e(a) for e in embs]
+    degs = [1]*r1 + [2]*r2
+    v = vector([aa.abs().log()*d for aa,d in zip(aconjs,degs)])
+
+    fu = K.units()
     U = Matrix([[e(u).abs().log()*d for d,e in zip(degs,embs)] for u in fu])
     A = U*U.transpose()
     Ainv = A.inverse()
 
-    aconjs = [e(a) for e in embs]
-    from sage.modules.all import vector
-    v = vector([aa.abs().log()*d for aa,d in zip(aconjs,degs)])
     exponents = [e.round() for e in -Ainv*U*v]
     u = prod([uj**ej for uj,ej in zip(fu,exponents)])
     return a*u
@@ -689,6 +692,7 @@ def simplify_ideal_strings(K, record):
     ainvs = ainvs_from_string(K, record['ainvs'])
     D = ec_disc(ainvs)
     Dnorm = D.norm()
+    print("D = {}".format(D))
     Dred = reduce_mod_units(D)
     if len(str(Dred)) < len(str(D)):
         D = Dred
