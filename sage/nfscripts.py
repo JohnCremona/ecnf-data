@@ -689,10 +689,13 @@ def simplify_ideal_strings(K, record):
     ainvs = ainvs_from_string(K, record['ainvs'])
     D = ec_disc(ainvs)
     Dnorm = D.norm()
-    Dred = reduce_mod_units(D)
-    if len(str(Dred)) < len(str(D)):
-        D = Dred
-    record['D'] = '({})'.format(D)
+    if Dnorm==1:
+        D = 1
+    else:
+        Dred = reduce_mod_units(D)
+        if len(str(Dred)) < len(str(D)):
+           D = Dred
+    record['D'] = '({})'.format(D).replace(" ","")
     record['Dnorm'] = Dnorm
     return record
 
