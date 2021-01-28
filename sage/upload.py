@@ -66,7 +66,7 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, columns=None,
     fields: list of one or more field labels; only makes sense if ftypes has one entry.
             (default: all fields of the field types requested are processed)
 
-    xfields: list of one or more field labels to moit; only makes sense if ftypes has one entry.
+    xfields: list of one or more field labels to omit; only makes sense if ftypes has one entry.
             (default: all fields of the field types requested are processed)
 
     columns: if None (default), output files contains all columns.  Otherwise just output these columns.
