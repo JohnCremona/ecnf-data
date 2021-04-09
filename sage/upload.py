@@ -1,7 +1,7 @@
 import os
 import sys
 from sage.all import Set
-from files import HOME, ECNF_DIR, all_ftypes, read_all_field_data, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
+from files import ECNF_DIR, all_ftypes, read_all_field_data, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
 from schemas import ec_nfcurves_schema
 
 postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes']
