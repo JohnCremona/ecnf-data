@@ -2,30 +2,12 @@
 r"""Functions to find ranks and generators of elliptic curves by
  interfacing with Magma
 
-This version reads curves from a curves.* file and outputs a mwdata.* file
-
-Format of mwdata file supercedes that of curve_data file, including
-also heights and regulator and torsion data.
-
-1. field_label
-2. conductor_label
-3. iso_label
-4. number
-5: rank                   int or ?
-6: rank_bounds      [int,int] or ?
-7: analytic_rank          int or ?
-8: ngens (number of generators of infinite order) int
-9: gens  (list of ngens lists of 3 lists of d rationals)
-10: heights         list of ngens reals
-11: regulator       real
-12: ntorsion         int
-13: torstruct       [int,int]
-14: torgens (list of 0,1 or 2 lists of 3 lists of d rationals)
-
 """
 from __future__ import print_function
 from sage.all import union, RealField, QQ, ZZ
 from nfscripts import torsion_data, global_period
+
+AR_DEGREE_BOUND = 5 # do not compute analytic ranks over field of degree larger than this
 
 # cache values of  RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
 
@@ -76,7 +58,6 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
         MWSI = mE.MordellWeilShaInformation(nvals=3)
     else:
         MWSI = mE.MordellWeilShaInformation(nvals=3, HeightBound=HeightBound)
-    ar = int(mE.AnalyticRank())
     if verbose:
         print("...done.")
     rank_bounds = MWSI[0].sage()
@@ -96,7 +77,6 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     return {'rank_bounds': rank_bounds,
             'gens': gens,
             'sha_bounds': sha_bounds,
-            'analytic_rank': ar,
            }
 
 
@@ -180,7 +160,7 @@ def MWInfo_class(Cl, HeightBound=None, test_saturation=False, verbose=False):
     if verbose:
         print("Using curve %s to find points" % list(Cl.curves[source].ainvs()))
     MWI = MWShaInfo(Cl.curves[source], HeightBound=HeightBound, test_saturation=test_saturation, verbose=verbose)
-    return [[MWI['rank_bounds'], pts, MWI['analytic_rank']] for pts in map_points(Cl.isogenies(), source, MWI['gens'], verbose)]
+    return [[MWI['rank_bounds'], pts] for pts in map_points(Cl.isogenies(), source, MWI['gens'], verbose)]
 
 
 def find_source(maps):
@@ -231,7 +211,7 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
         j = Cl.index(E)  # checks for isomorphism, not just equality
         iso = Cl.curves[j].isomorphism_to(E)
         # print("(i,j)=(%s,%s)" % (i,j))
-        fixed_MWI[i] = [MWI[j][0], [iso(P) for P in MWI[j][1]], MWI[j][2]]
+        fixed_MWI[i] = [MWI[j][0], [iso(P) for P in MWI[j][1]]]
 
     # Check we have it right:
     assert all([all([P in curves[i] for P in fixed_MWI[i][1]]) for i in range(n)])
@@ -249,7 +229,8 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
 
     'analytic_rank', 'rank_bounds', 'rank', 'gens', 'heights', 'reg', 'torsion_order', 'torsion_structure', 'torsion_gens'.
 
-    If the rank bounds are not equal then key 'rank' is missing.
+    - If the rank bounds are not equal then key 'rank' is missing.
+    - The analytic rank and L-value are only computed if the base field has degree at most AR_DEGREE_BOUND.
 
     """
     from magma import get_magma
@@ -274,7 +255,7 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         print("MW data: %s" % mwi)
 
     # anayltic rank (for degree<6 only):
-    if K.degree() < 6:
+    if K.degree() <= AR_DEGREE_BOUND:
         magma = get_magma()
         mE = magma(E)
         if verbose:
@@ -296,9 +277,13 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
             print("analytic rank = {}".format(ar))
     else:
         ar = lval = None
+
     mwdata = []
     for E, mw in zip(Es, mwi):
         data = {}
+        data['analytic_rank'] = ar # may be None
+        data['Lvalue'] = lval      # may be None
+        data['rank'] = None
         if mw[0]: # else something went wrong and we have no rank bounds (or any gens)
             data['rank_bounds'] = [int(r) for r in mw[0]]
             if mw[0][0] == mw[0][1]:
@@ -306,9 +291,13 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         data['gens'] = gens = mw[1]
         data['ngens'] = ngens = len(gens)
         data['heights'] = [P.height(prec) for P in gens]
-        data['reg'] = reg = E.regulator_of_points(gens, prec) if gens else 1
-        data['analytic_rank'] = ar
-        data['Lvalue'] = lval
+        # compute regulator if either rank lower and upper bounds
+        # agree, or lower rank bound = analytic rank:
+        if data['rank'] or data['analytic_rank']:
+            reg = E.regulator_of_points(gens, prec) if gens else 1
+        else:
+            reg = None
+        data['reg'] = reg
 
         # get torsion order, structure and generators:
         data.update(torsion_data(E))
@@ -318,12 +307,12 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         # normalization divides every height by K.degree(), so
         # the regulator we need has to be multiplied by
         # K.degree()**rank.
-        if ngens == ar:
-            NTreg = reg * K.absolute_degree()**ar
+        if reg:
+            NTreg = reg * K.absolute_degree()**ngens
             if verbose:
                 print("Neron-Tate regulator = {}".format(NTreg))
-            else:
-                NTreg = None
+        else:
+            NTreg = None
 
         # compute omega
 
@@ -346,7 +335,9 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         if verbose:
             print("Tamagawa product = {}".format(tamagawa_product))
 
-        if NTreg:
+        # Compute analytic sha, only if (1) we compted the L-value and
+        # analytic rank, and (2) we computed the regulator:
+        if lval and NTreg:
             Rsha = lval * nt**2  / (NTreg * tamagawa_product * omega)
             Kfactor = get_field_factor(K, RR)
             if verbose:
@@ -361,9 +352,10 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
                 print("****************************Not good! 0 or non-square or not close to a positive integer!")
 
         else:
+            sha = None
             if verbose:
-                print("Unable to compute regulator or analytic Sha, since analytic rank = {} but we only have {} generators".format(ar, ngens))
-            data['sha'] = None
+                print("Unable to compute analytic Sha, since we have not computed the rank or special L-value")
+        data['sha'] = sha
 
         if verbose:
             print("MW data for E={}:\n{}".format(E.ainvs(), data))

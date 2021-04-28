@@ -1,7 +1,7 @@
 # Sage interface to Sutherland's Magma script for Galois images
 
 import re
-from sage.all import prod
+#from sage.all import prod
 
 GALREP_SCRIPT_DIR = "/home/jec/galrep"
 
@@ -37,16 +37,26 @@ def galrep_data_from_magma(E, mag):
     """
     return str(mag.ComputeGaloisImage(E))
 
+# NB for elliptic curves over Q and over number fields, the columns
+# holding the mod-p Galois image data are different!
+#
+# EC/Q           EC/NF
+#
+# galois_images  galois_images         (the same: one, possibly empty, string)
+# modp_images    -                     (possibly empty list of strings)
+# nonmax_primes  non-surjective_primes (list of non-maximal primes)
+# nonmax_rad     -                     (product of non-maximal primes)
+
+
 def parse_galrep_data_string(galois_images, verbose=False):
     if verbose:
         print("galois images = {}".format(galois_images))
     image_codes = galois_images.split() # list of strings
     pr = [int(split_galois_image_code(s)[0]) for s in image_codes]
-    rad = prod(pr)
     record = {'galois_images': galois_images,
-              'modp_images': image_codes,
-              'nonmax_primes': pr,
-              'nonmax_rad': rad,
+              #'modp_images': image_codes,
+              'non-surjective_primes': pr,
+              #'nonmax_rad': prod(pr),
              }
     if verbose:
         print("galrep data: {}".format(record))

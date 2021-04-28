@@ -1,14 +1,17 @@
 import os
 import sys
 from sage.all import Set
-from files import ECNF_DIR, all_ftypes, read_all_field_data, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
-from schemas import ec_nfcurves_schema
+from files import ECNF_DIR, ECNF_UPLOAD_DIR, all_ftypes, read_all_field_data
+from schemas import ec_nfcurves_schema, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
 
-postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes']
+# Any columns in ec_ncurves which are lists must be in this list so
+# that the upload file uses "{...}" instead of "[...]":
+
+postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes', 'conductor_norm_factors']
 
 def get_column_names_and_types():
     t = ec_nfcurves_schema
-    return {k: t[k] for k in sorted(t) if k!='isogeny_degrees'}
+    return {k: t[k] for k in sorted(t)}
 
 ec_nfcurves_column_names_and_types = get_column_names_and_types()
 ec_nfcurves_columns = Set(ec_nfcurves_column_names_and_types.keys())
@@ -32,6 +35,8 @@ def column_to_string(colname, col):
             #col = ''.join(['"', col, '"'])
         if colname == 'local_data':
             col = col.replace("None", "null")
+        if colname == 'galois_images':
+            col = str(col.split()).replace("'",'"')
         return col
 
 def data_to_string(n, record, columns=None):
@@ -85,9 +90,8 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, columns=None,
             print("reading data for {}".format(fname))
             data = read_all_field_data(os.path.join(ECNF_DIR,ftype), fname, check_cols=True, mwdata_format="new")
             alldata.update(data)
-    #return alldata
     if outfilename:
-        outfile = open(outfilename, 'w')
+        outfile = open(os.path.join(ECNF_UPLOAD_DIR,outfilename), 'w')
     else:
         outfile = sys.stdout
     if columns:
@@ -113,4 +117,3 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, columns=None,
         outfile.close()
     print("{} data lines + 3 header lines with {} columns written to {}".format(id,len(keys),outfilename if outfilename else "stdout"))
     print("Columns:\n{}".format(keys))
-    

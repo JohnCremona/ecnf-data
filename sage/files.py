@@ -17,11 +17,12 @@ from schemas import all_file_types
 HOME = os.getenv("HOME")
 BIANCHI_DATA_DIR = os.path.join(HOME, "bianchi-data")
 ECNF_DIR = os.path.join(HOME, "ecnf-data")
+ECNF_UPLOAD_DIR = os.path.join(HOME, "ecnf-upload")
 
 with open(os.path.join(ECNF_DIR, "field_types")) as ftypes:
     all_ftypes = [ft.replace("\n","") for ft in ftypes.readlines()]
 
-def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='old'):
+def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='new'):
     r"""Given a field label, read all the data in files curves.field_label,
     isoclass.field_label, local_data.field_label, mwdata.field_label,
     galrep.field_label (from directory base_dir), returning a single
@@ -51,6 +52,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     all_data = {}
     n = 0
 
+    print("Reading from {}".format(curves_filename))
     with open(curves_filename) as curves:
         for L in curves:
             label, record = parse_curves_line(L)
@@ -60,6 +62,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     print("Read {} curves from {}".format(n,curves_filename))
     n = 0
 
+    print("Reading from {}".format(isoclass_filename))
     with open(isoclass_filename) as isoclass:
         for L in isoclass:
             label, record = parse_isoclass_line(L)
@@ -77,6 +80,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     print("Read {} classes from {}".format(n,isoclass_filename))
     n = 0
 
+    print("Reading from {}".format(local_data_filename))
     with open(local_data_filename) as ld:
         for L in ld:
             label, record = parse_local_data_line(L)
@@ -86,6 +90,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     print("Read {} local_data records from {}".format(n,local_data_filename))
     n = 0
 
+    print("Reading from {}".format(mwdata_filename))
     with open(mwdata_filename) as mwdata:
         for L in mwdata:
             if mwdata_format=='old':
@@ -98,6 +103,7 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
     print("Read {} mwdata records from {}".format(n,mwdata_filename))
     n = 0
 
+    print("Reading from {}".format(galrep_filename))
     with open(galrep_filename) as galrep:
         for L in galrep:
             label, record = parse_galrep_line(L)
@@ -113,10 +119,10 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='o
                 print("Wrong key set for {}".format(label))
                 diff = cols - ec_nfcurves_all_columns
                 if diff:
-                    print("data has extra keys {}".format(diff))
+                    print("data has extra keys (not in ec_nfcurves_all_columns) {}".format(diff))
                 diff = ec_nfcurves_all_columns - cols
                 if diff:
-                    print("data is missing keys {}".format(diff))
+                    print("data is missing keys (in ec_nfcurves_all_columns) {}".format(diff))
     return all_data
 
 def read_curve_file(infile):
@@ -272,7 +278,7 @@ def read_curves_magma(infile):
     record = {}
     with open(infile) as file:
         for L in file.readlines():
-            data = L.split()
+            data = L.strip().split(maxsplit=1)
             if len(data) == 0:
                 continue
             assert len(data) == 2, "Line {} has more than two fields".format(L)
@@ -284,6 +290,7 @@ def read_curves_magma(infile):
                 K.__gens_dict().update({'w':K.gen()})
             elif data[0] == 'Conductor':
                 record['conductor_ideal'] = data[1]
+                N = K.ideal([K(a) for a in data[1].replace("[", "").replace("]", "").split(",")])
             elif data[0] == 'Isogeny_class':
                 conductor_label, iso_label = data[1].split("-")
                 record['conductor_norm'] = conductor_norm = ZZ(conductor_label.split(".")[0])
@@ -294,7 +301,10 @@ def read_curves_magma(infile):
                 ainvs = data[1]
                 ainvs = ainvs[1:-1].split(",")
                 record['ainvs'] = ainvs = [K(ai) for ai in ainvs]
-                assert EllipticCurve(K, ainvs).conductor().norm() == conductor_norm
+                E = EllipticCurve(K, ainvs)
+                EN = E.conductor()
+                assert EN.norm() == conductor_norm
+                assert EN == N
                 yield record
             else:
                 print("Unrecognised line prefix {}, skipping this line".format(data[0]))

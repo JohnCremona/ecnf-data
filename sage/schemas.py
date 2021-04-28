@@ -31,7 +31,7 @@ ec_nfcurves_schema = {
     'base_change': 'jsonb', 'local_data': 'jsonb', 'analytic_rank':
     'smallint', 'minD': 'text', 'label': 'text', 'jinv': 'text',
     'conductor_label': 'text', 'class_deg': 'integer', 'reg': 'numeric',
-    'class_size': 'smallint', 'isogeny_degrees': 'jsonb', 'class_label':
+    'class_size': 'smallint', 'class_label':
     'text', 'iso_label': 'text', 'degree': 'smallint', 'non_min_p':
     'jsonb', 'q_curve': 'boolean', 'short_label': 'text',
     'short_class_label': 'text', 'isogeny_matrix': 'jsonb',
@@ -43,7 +43,7 @@ ec_nfcurves_schema = {
     'bad_primes': 'jsonb', 'Lvalue': 'numeric', 'sha': 'integer',
     'torsion_primes': 'integer[]', 'n_bad_primes': 'integer',
     'reducible_primes': 'integer[]', 'semistable': 'boolean', 'disc':
-    'text', 'normdisc': 'numeric',
+    'text', 'normdisc': 'numeric', 'conductor_norm_factors': 'integer[]',
 }
 
 # Python types of the columns in ec_nfcurves:
@@ -83,7 +83,6 @@ keys_and_types = {'field_label':  str_type,
                   'gens': list_type, # of strings
                   'torsion_gens': list_type, # of strings
                   'isogeny_matrix': list_type, # of lists of ints
-                  #'isogeny_degrees': list_type, # of ints
                   'isodeg': list_type, # of ints
                   'class_deg': int_type,
                   'non-surjective_primes': list_type, # of ints
@@ -98,7 +97,8 @@ keys_and_types = {'field_label':  str_type,
                   'reg': float_type, # or int(1)
                   'q_curve': bool_type,
                   'base_change': list_type, # of strings
-                  'trace_hash': hash_type
+                  'trace_hash': hash_type,
+                  'conductor_norm_factors': list_type,
 }
 
 ec_nfcurves_extra_columns = ['omega', 'potential_good_reduction', 'semistable', 'tamagawa_product', 'bad_primes', 'Lvalue', 'sha', 'torsion_primes', 'n_bad_primes', 'reducible_primes']

@@ -89,7 +89,8 @@ def parse_curves_line(L):
     label, record = parse_line_label_cols(L)
 
     record['conductor_ideal'] = data[4]
-    record['conductor_norm'] = ZZ(data[5])
+    record['conductor_norm'] = N = ZZ(data[5])
+    record['conductor_norm_factors'] = N.support()
 
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
@@ -214,7 +215,7 @@ def parse_new_mwdata_line(L):
     label, record = parse_line_label_cols(L)
 
     def decode_col(col, decoder): # use for columns which may have '?'
-        return None if col == '?' else decoder(col)
+        return None if col in ['?', 'None'] else decoder(col)
 
     record['rank'] = decode_col(data[4], int)
     record['rank_bounds'] = decode_col(data[5], decode_int_list)
@@ -228,8 +229,8 @@ def parse_new_mwdata_line(L):
     record['torsion_structure'] = decode_int_list(data[12])
     record['torsion_gens'] = decode_points_one2many(data[13])
     if len(data) == 17:
-        record['omega'] = RR(data[14])
-        record['Lvalue'] = RR(data[15])
+        record['omega'] = decode_col(data[14], RR)
+        record['Lvalue'] = decode_col(data[15], RR)
         record['sha'] = decode_col(data[16], int)
     else:
         record['omega'] = None
@@ -241,9 +242,9 @@ def parse_galrep_line(L):
     r"""
     Parse one line from a galrep file
     """
-    label, images = L.split(maxsplit=1)
-    record = parse_galrep_data_string(images)
-    record['label'] = label
+    data = L.split(maxsplit=1)
+    record = parse_galrep_data_string("" if len(data) == 1 else data[1])
+    record['label'] = label = data[0]
     return label, record
 
 def NFelt(a):
@@ -560,7 +561,8 @@ encoders = {'number': num_encoder,
             'torsion_gens': encode_points,
             'torsion_order': num_encoder,
             'omega': num_encoder,
-            'Lvalue': num_encoder,
+            'Lvalue': rank_encoder,
+            'reg': rank_encoder,
             'normdisc': num_encoder,
             'ainvs': ainvs_to_string,
             'jinv': NFelt,
@@ -576,10 +578,11 @@ def file_line(ftype, c):
     """
     if ftype in column_names:
         if ftype == 'mwdata':
-            # We want the regulator of 0 points to store as 1 exactly, not 1.00000
-            c['reg'] = (str(c['reg']) if c['reg']  else '?') if c['ngens'] else '1'
-        for k in column_names[ftype]:
-            print("{}: {} --> {} ({})".format(k, c[k], get_encoder(k)(c[k]), type(get_encoder(k)(c[k]))))
+            # this fix should not be necessary
+            if c['rank'] is None and c['analytic_rank'] is None:
+                c['reg'] = None
+            for k in column_names[ftype]:
+                print("{}: {} --> {} ({})".format(k, c[k], get_encoder(k)(c[k]), type(get_encoder(k)(c[k]))))
         return " ".join([get_encoder(k)(c[k]) for k in column_names[ftype]])
     else:
         raise ValueError("{} is not a valid file type".format(ftype))
