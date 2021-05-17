@@ -2,32 +2,21 @@
 r"""Functions to find ranks and generators of elliptic curves by
  interfacing with Magma
 
-This version reads curves from a curves.* file and outputs a mwdata.* file
-
-Format of mwdata file supercedes that of curve_data file, including
-also heights and regulator and torsion data.
-
-1. field_label
-2. conductor_label
-3. iso_label
-4. number
-5: rank                   int or ?
-6: rank_bounds      [int,int] or ?
-7: analytic_rank          int or ?
-8: ngens (number of generators of infinite order) int
-9: gens  (list of ngens lists of 3 lists of d rationals)
-10: heights         list of ngens reals
-11: regulator       real
-12: ntorsion         int
-13: torstruct       [int,int]
-14: torgens (list of 0,1 or 2 lists of 3 lists of d rationals)
-
 """
 from __future__ import print_function
-from sage.all import Magma, magma, union
-from fields import nf_lookup
-from files import read_classes_new, parse_mwdata_line, parse_curves_line
-from codec import encode_points, curve_from_string
+from sage.all import union, RealField, QQ, ZZ
+from nfscripts import torsion_data, global_period
+
+AR_DEGREE_BOUND = 5 # do not compute analytic ranks over field of degree larger than this
+
+# cache values of  RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+
+field_factors = {}
+def get_field_factor(K, RR):
+    global field_factors
+    if K not in field_factors:
+        field_factors[K] = RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+    return field_factors[K]
 
 def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     r"""
@@ -56,29 +45,28 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
         'sha_bounds': {2: [0, 0]}}
 
     """
+    from magma import get_magma
     K = E.base_field()
 
     def convert_point(P):
         return E([K([ci.sage() for ci in c.Eltseq()]) for c in P.Eltseq()])
     if verbose:
-        print("calling magma on E={} over {}...".format(E.ainvs(),K))
-    magma = Magma()
+        print("calling magma on E={} over {}...".format(E.ainvs(), K))
+    magma = get_magma()
     mE = magma(E)
     if HeightBound is None:
         MWSI = mE.MordellWeilShaInformation(nvals=3)
     else:
         MWSI = mE.MordellWeilShaInformation(nvals=3, HeightBound=HeightBound)
-    ar = int(mE.AnalyticRank())
     if verbose:
         print("...done.")
     rank_bounds = MWSI[0].sage()
     gens = [convert_point(P) for P in MWSI[1]]
     sha_bounds = dict(MWSI[2].sage())
-    magma.quit()
     if gens and test_saturation:
         if verbose:
             print("testing that Magma's generators are saturated...")
-        newgens, index, newreg = E.saturation(gens, verbose)
+        newgens, index, _ = E.saturation(gens, verbose)
         if index > 1:
             # Must print this even if not verbose!
             print("Magma's generators for curve %s were not saturated!  index = %s" % (E.ainvs(), index))
@@ -89,8 +77,7 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     return {'rank_bounds': rank_bounds,
             'gens': gens,
             'sha_bounds': sha_bounds,
-            'analytic_rank': ar,
-            }
+           }
 
 
 def map_points(maps, source, Plist, verbose=False):
@@ -114,7 +101,7 @@ def map_points(maps, source, Plist, verbose=False):
     nfill = 1
     # print("Qlists = %s" % Qlists)
     # while True: // OK if input satisfies the conditions, but otherwise would loop for ever
-    for nstep in range(ncurves):  # upper bound for number if iterations needed
+    for _ in range(ncurves):  # upper bound for number of iterations needed
         for i in range(ncurves):
             for j in range(ncurves):
                 if Qlists[i] != [] and (maps[i][j] != 0) and Qlists[j] == []:
@@ -126,14 +113,14 @@ def map_points(maps, source, Plist, verbose=False):
                     try:
                         E = Qlists[j][0].curve()
                         try:
-                            pts, index, reg = E.saturation(Qlists[j], one_prime=p, debug=True)
+                            pts, index, _ = E.saturation(Qlists[j], one_prime=p, debug=True)
                         except RuntimeError:
                             print("RuntimeError!")
                             print("Base field K = {}".format(E.base_field()))
                             print("E = {}".format(E.ainvs()))
                             print("Points = {}".format(Qlists[j]))
                             print("one_prime = {}".format(p))
-                            index=1
+                            index = 1
                         if index > 1:
                             Qlists[j] = E.lll_reduce(pts)[0]
                             if verbose:
@@ -173,7 +160,7 @@ def MWInfo_class(Cl, HeightBound=None, test_saturation=False, verbose=False):
     if verbose:
         print("Using curve %s to find points" % list(Cl.curves[source].ainvs()))
     MWI = MWShaInfo(Cl.curves[source], HeightBound=HeightBound, test_saturation=test_saturation, verbose=verbose)
-    return [[MWI['rank_bounds'], pts, MWI['analytic_rank']] for pts in map_points(Cl.isogenies(), source, MWI['gens'], verbose)]
+    return [[MWI['rank_bounds'], pts] for pts in map_points(Cl.isogenies(), source, MWI['gens'], verbose)]
 
 
 def find_source(maps):
@@ -187,7 +174,7 @@ def find_source(maps):
     mat = [[int((maps[i][j] != 0) or (i == j)) for j in range(n)] for i in range(n)]
     # print("mat = %s" % mat)
     children = [[j for j in range(n) if mat[i][j]] for i in range(n)]
-    for nstep in range(n):  # upper bound for number if iterations needed
+    for _ in range(n):  # upper bound for number if iterations needed
         for i in range(n):
             for j in children[i]:
                 children[i] = union(children[i], children[j])
@@ -216,268 +203,183 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
     # Now we must map the points to the correct curves!
 
     n = len(Cl.curves)
-    if not n==len(curves):
-        print("MWInfo_curves list of curves had length {} but isogeny class from 1st curve has length {}".format(len(curves),n))
+    if n != len(curves):
+        print("MWInfo_curves list of curves had length {} but isogeny class from 1st curve has length {}".format(len(curves), n))
     fixed_MWI = [None for _ in range(n)]  # just to set length
     for i in range(n):
         E = curves[i]
         j = Cl.index(E)  # checks for isomorphism, not just equality
         iso = Cl.curves[j].isomorphism_to(E)
         # print("(i,j)=(%s,%s)" % (i,j))
-        fixed_MWI[i] = [MWI[j][0], [iso(P) for P in MWI[j][1]], MWI[j][2]]
+        fixed_MWI[i] = [MWI[j][0], [iso(P) for P in MWI[j][1]]]
 
     # Check we have it right:
     assert all([all([P in curves[i] for P in fixed_MWI[i][1]]) for i in range(n)])
     return fixed_MWI
 
-def get_generators(iso_class, test_saturation=False, verbose=False):
+def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
     r"""Given an isogeny class, finds the rank (or bounds) and
     generators and torsion data for each curve in the class.
 
     iso_class is a dict as yielded by the read_classes() function, with keys:
-    field_label, N_label, N_def, iso_label, curves
+    field_label, conductor_label, conductor_ideal, iso_label, curves
+    of which the first 4 are strings and the last is a list of EllipticCurves.
+
+    Returns a list of dicts, one for each curve in the class, each with keys
+
+    'analytic_rank', 'rank_bounds', 'rank', 'gens', 'heights', 'reg', 'torsion_order', 'torsion_structure', 'torsion_gens'.
+
+    - If the rank bounds are not equal then key 'rank' is missing.
+    - The analytic rank and L-value are only computed if the base field has degree at most AR_DEGREE_BOUND.
+
+    """
+    from magma import get_magma
+
+    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
+        RR = RealField()
+        prec = RR.precision()
+        magma_prec = 16
+    else:
+        RR = RealField(prec)
+        # log(2)/log(10) =  0.301029995663981
+        magma_prec = RR(prec*0.301029995663981).round()
+
+    class_label = "-".join([iso_class['field_label'], iso_class['conductor_label'], iso_class['iso_label']])
+    Es = iso_class['curves']
+    E = Es[0]
+    K = E.base_field()
+    if verbose:
+        print("Curves in class %s: %s" % (class_label, [E.ainvs() for E in Es]))
+    mwi = MWInfo_curves(Es, HeightBound=2, test_saturation=test_saturation, verbose=verbose)
+    if verbose:
+        print("MW data: %s" % mwi)
+
+    # anayltic rank (for degree<6 only):
+    if K.degree() <= AR_DEGREE_BOUND:
+        magma = get_magma()
+        mE = magma(E)
+        if verbose:
+            print("Calling Magma's AnalyticRank()")
+        ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
+        if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
+            if verbose:
+                print("Special CM case: E = {}".format(E.ainvs()))
+                print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
+            ar *= 2
+            old_lval = lval
+            lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
+            if verbose:
+                print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
+                print(" (compare square of old lval:       {})".format(old_lval**2))
+        lval = RR(lval)
+        ar = int(ar)
+        if verbose:
+            print("analytic rank = {}".format(ar))
+    else:
+        ar = lval = None
+
+    mwdata = []
+    for E, mw in zip(Es, mwi):
+        data = {}
+        data['analytic_rank'] = ar # may be None
+        data['Lvalue'] = lval      # may be None
+        data['rank'] = None
+        if mw[0]: # else something went wrong and we have no rank bounds (or any gens)
+            data['rank_bounds'] = [int(r) for r in mw[0]]
+            if mw[0][0] == mw[0][1]:
+                data['rank'] = int(mw[0][0])
+        data['gens'] = gens = mw[1]
+        data['ngens'] = ngens = len(gens)
+        data['heights'] = [P.height(prec) for P in gens]
+        # compute regulator if either rank lower and upper bounds
+        # agree, or lower rank bound = analytic rank:
+        if data['rank'] or data['analytic_rank']:
+            reg = E.regulator_of_points(gens, prec) if gens else 1
+        else:
+            reg = None
+        data['reg'] = reg
+
+        # get torsion order, structure and generators:
+        data.update(torsion_data(E))
+
+        # allow for the scaling in the Neron-Tate height
+        # pairing: for BSD we need non-normalised heights and
+        # normalization divides every height by K.degree(), so
+        # the regulator we need has to be multiplied by
+        # K.degree()**rank.
+        if reg:
+            NTreg = reg * K.absolute_degree()**ngens
+            if verbose:
+                print("Neron-Tate regulator = {}".format(NTreg))
+        else:
+            NTreg = None
+
+        # compute omega
+
+        # find scaling factor in case we don't have a global minimal model
+        minDnorm = E.minimal_discriminant_ideal().norm()
+        modelDnorm = E.discriminant().norm().abs()
+        fac = (modelDnorm/minDnorm).nth_root(12) # will be exact
+        if fac != 1 and verbose:
+            print("Not a global minimal model")
+            print("Scaling factor = {}".format(fac))
+        data['omega'] = omega = global_period(E, fac, prec=prec)
+        if verbose:
+            print("omega = {}".format(omega))
+
+        nt = data['torsion_order']
+        if verbose:
+            print("Torsion order = {}".format(nt))
+
+        tamagawa_product = E.tamagawa_product()
+        if verbose:
+            print("Tamagawa product = {}".format(tamagawa_product))
+
+        # Compute analytic sha, only if (1) we compted the L-value and
+        # analytic rank, and (2) we computed the regulator:
+        if lval and NTreg:
+            Rsha = lval * nt**2  / (NTreg * tamagawa_product * omega)
+            Kfactor = get_field_factor(K, RR)
+            if verbose:
+                print("Field factor = {}".format(Kfactor))
+            Rsha *= Kfactor
+            data['sha'] = sha = Rsha.round()
+            if verbose:
+                print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
+            if sha == 0 or (sha-Rsha).abs() > 0.0001 or not ZZ(sha).is_square():
+                if not verbose:
+                    print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
+                print("****************************Not good! 0 or non-square or not close to a positive integer!")
+
+        else:
+            sha = None
+            if verbose:
+                print("Unable to compute analytic Sha, since we have not computed the rank or special L-value")
+        data['sha'] = sha
+
+        if verbose:
+            print("MW data for E={}:\n{}".format(E.ainvs(), data))
+        mwdata.append(data)
+
+    return mwdata
+
+def get_generators(iso_class, test_saturation=False, verbose=False, prec=None):
+    r"""Given an isogeny class, finds the rank (or bounds) and
+    generators and torsion data for each curve in the class.
+
+    iso_class is a dict as yielded by the read_classes() function, with keys:
+    field_label, conductor_label, conductor_ideal, iso_label, curves
     of which the first 4 are strings and the last is a list of EllipticCurves.
 
     Returns iso_class with an extra key 'mwdata' whose value is a list
     of data, for each curve in the class, the data being a dict with
     keys
 
-    'rank_bounds', 'rank', 'gens', 'hts', 'reg', 'ntors', 'torstruct', 'tgens'.
+    'rank_bounds', 'rank', 'gens', 'heights', 'reg', 'torsion_order', 'torsion_structure', 'torsion_gens'.
 
     If the rank bounds are not equal then key 'rank' is missing.
 
     """
-    class_label = "-".join([iso_class['field_label'], iso_class['N_label'], iso_class['iso_label']])
-    Es = iso_class['curves']
-    if verbose:
-        print("Curves in class %s: %s" % (class_label, [E.ainvs() for E in Es]))
-    try:
-        mwi = MWInfo_curves(Es, HeightBound=2, test_saturation=test_saturation, verbose=verbose)
-        if verbose:
-            print("MW data: %s" % mwi)
-    except RuntimeError as e:
-        # We can still try for the anayltic rank:
-        ar = int(magma(Es[0]).AnalyticRank())
-        print(e)
-        print("Unable to compute rank bounds for {}, but analytic rank = {}".format(class_label, ar))
-        mwi = [[None, [], ar] for E in Es]
-
-    iso_class['mwdata'] = []
-    for E, mw in zip(Es, mwi):
-        data = {}
-        if mw[0]: # else something went wrong and we have no rank bounds (or any gens)
-            data['rank_bounds'] = [int(r) for r in mw[0]]
-            if mw[0][0] == mw[0][1]:
-                data['rank'] = int(mw[0][0])
-        data['gens'] = gens = mw[1]
-        data['hts'] = [P.height() for P in gens]
-        data['reg'] = E.regulator_of_points(gens) if gens else 1
-        data['analytic_rank'] = mw[2]
-
-        # get torsion order, structure and generators:
-        torgroup = E.torsion_subgroup()
-        data['ntors'] = torgroup.order()
-        data['torstruct'] = list(torgroup.invariants())
-        data['tgens'] = [P.element() for P in torgroup.gens()]
-
-        if verbose:
-            print("MW data for E={}:\n{}".format(E.ainvs(),data))
-        iso_class['mwdata'].append(data)
-
+    iso_class['mwdata'] = compute_mwdata(iso_class, test_saturation, verbose, prec)
     return iso_class
 
-def make_mwdata_line(c):
-    r"""return a string for one line of a mwdata file.
-
-    c is a dict with keys:
-    field_label, conductor_label, iso_label, number, mwdata
-    where mwdata is a dict with keys
-    rank (int or '?')
-    rank_bounds (list of 2 ints)
-    analytic_rank (int or '?')
-    ngens (int: 0 means we have no gens, whatever the rank)
-    gens (list of points)
-    ntors (torsion order)
-    torstruct (list of <=2 ints>1, defining the torsion structure)
-    tgens (list of points)
-
-    Output line fields (14); all but the first 4 are optional. If
-    rank, rank_bounds or analytic_rank are not known they must be "?".
-
-    field_label conductor_label iso_label number rank rank_bounds
-    analytic_rank ngens gens heights regulator ntors torstruct torgens
-
-    Sample output line:
-
-    2.0.4.1 2053.1809.1 a 1 2 [2,2] ? 2 [[[0,0],[-1,0],[1,0]];[[2,0],[2,0],[1,0]]] 1 [] []
-
-    """
-    mwdata = c['mwdata']
-    r = str(mwdata['rank']) if 'rank' in mwdata else '?'
-    rbds = str(mwdata['rank_bounds']).replace(" ", "") if 'rank_bounds' in mwdata else '?'
-    ar = str(mwdata['analytic_rank']) if 'analytic_rank' in mwdata else '?'
-    ngens = str(len(mwdata['gens']))
-    gens = encode_points(mwdata['gens'])
-    hts = str(mwdata['hts']).replace(" ", "")
-    reg = str(mwdata['reg'])
-    ntors = str(mwdata['ntors'])
-    torstruct = str(mwdata['torstruct']).replace(" ", "")
-    tgens = encode_points(mwdata['tgens'])
-    output_fields = [c['field_label'], c['N_label'], c['iso_label'], str(c['number']),
-                     r, rbds, ar, ngens, gens, hts, reg,
-                     ntors, torstruct, tgens]
-    return " ".join(output_fields)
-
-def make_mwdata_lines(cl):
-    r""" return a string for all lines of a mwdata file for one isogeny class.
-    """
-    return "\n".join([make_mwdata_line(
-        {
-            'field_label': cl['field_label'],
-            'N_label': cl['N_label'],
-            'iso_label': cl['iso_label'],
-            'number': i+1,
-            'mwdata': mw,
-            }
-    ) for i,mw in enumerate(cl['mwdata'])])
-
-def make_mwdata(curves_filename, mwdata_filename, label=None,
-                min_cond_norm=None, max_cond_norm=None,
-                test_saturation=False, verbose=False):
-    r"""Retrieves curves from a curves file
-    with conductor norm between given bounds (optional), finds their
-    ranks (or bounds) and generators, and outputs an mwdata file.
-
-    If label is given, it should be a short isogeny class label, and
-    then only that class will be run.  Otherwise, the minimum and
-    maximum conductor may optionally be given.  Otherwise all the
-    curves (isogeny classes) in the in put file are processed.
-
-    """
-    with open(mwdata_filename, 'w', 1) as mw_out:
-        for cl in read_classes_new(curves_filename):
-            short_class_label = "-".join([cl['N_label'],cl['iso_label']])
-            class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
-            if label:
-                if label!=short_class_label:
-                    if verbose:
-                        print("Skipping {}".format(short_class_label))
-                    continue
-            NN = cl['N_norm']
-            if min_cond_norm and NN<min_cond_norm:
-                # if verbose:
-                #     print("Skipping class as conductor norm < {}".format(min_cond_norm))
-                continue
-            if max_cond_norm and NN>max_cond_norm:
-                if verbose:
-                    print("Skipping rest of file as conductor norms >= {} > {}".format(NN,max_cond_norm))
-                break
-
-            print("Processing class {}".format(class_label))
-            try:
-                cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
-                mwlines = make_mwdata_lines(cl)
-                if verbose:
-                    print(mwlines)
-                mw_out.write(mwlines+"\n")
-            except RuntimeError as e:
-                print("caught RuntimeError: {}".format(e))
-
-def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=False):
-    r"""Retrieves curves from a curves file and mwdata from the mwdata
-     file.  Computes analytic ranks and rewrites the mwdata file
-     adding the suffix to its filename.
-
-    This is a one-off since the orginal mwdata file code forgot to
-    compute and output analytic ranks.
-    """
-    ar_table = {}
-    n = 0
-    for cl in read_classes_new(curves_filename):
-        class_label = "-".join([cl['field_label'],cl['N_label'],cl['iso_label']])
-        magma = Magma()
-        ar = int(magma(cl['curves'][0]).AnalyticRank())
-        magma.quit()
-        ar_table[class_label] = ar
-        if verbose:
-            print("Processing class {}: analytic rank = {}".format(class_label, ar))
-        n += 1
-    print("Finished computing analytic ranks for {} classes".format(n))
-    #print(ar_table)
-    with open(mwdata_filename) as mw_in, open(mwdata_filename+suffix, 'w', 1) as mw_out:
-        for L in mw_in.readlines():
-            label, record = parse_mwdata_line(L)
-            if record['analytic_rank'] is None:
-                class_label = record['class_label']
-                ar = ar_table[class_label]
-                if verbose:
-                    print("Updating analytic rank of {} to {}".format(class_label,ar))
-                data = L.split()
-                data[6] = str(ar)
-                L = " ".join(data)
-                if verbose:
-                    print("New mwdata line: {}".format(L))
-                mw_out.write(L + "\n")
-            else:
-                mw_out.write(L)
-
-def add_analytic_ranks_new(curves_filename, mwdata_filename, suffix='x', verbose=False):
-    r"""Retrieves curves from a curves file and mwdata from the mwdata
-     file.  Computes analytic ranks and rewrites the mwdata file
-     adding the suffix to its filename.
-
-    This is a one-off since the orginal mwdata file code forgot to
-    compute and output analytic ranks.
-    """
-    curve_table = {}
-    n = 0
-    with open(curves_filename) as curves:
-        for L in curves.readlines():
-            label, record = parse_curves_line(L)
-            if label:
-                n += 1
-                curve_table[label] = record
-    print("Read {} curves from {}".format(n,curves_filename))
-
-    ar_table = {}
-    nmag = 0
-    magma = Magma()
-
-    def AnalyticRank(Edata):
-        nonlocal nmag, magma, verbose
-        class_label = "-".join([Edata['field_label'],Edata['conductor_label'],Edata['iso_label']])
-        if class_label in ar_table:
-            return ar_table[class_label]
-        if verbose:
-            print("Computing analytic rank of {}".format(class_label))
-        K = nf_lookup(Edata['field_label'])
-        E = curve_from_string(K, Edata['ainvs'])
-        nmag += 1
-        if nmag%100==0:
-            nmag = 0
-            magma.quit(verbose=verbose)
-            if verbose:
-                print("Starting a new Magma instance")
-            magma = Magma()
-        else:
-            if verbose:
-                print("Using Magma for the {}'th  time".format(nmag))
-        ar = int(magma(E).AnalyticRank())
-        ar_table[class_label] = ar
-        return ar
-
-    with open(mwdata_filename) as mw_in, open(mwdata_filename+suffix, 'w', 1) as mw_out:
-        for L in mw_in.readlines():
-            label, record = parse_mwdata_line(L)
-            if record['analytic_rank'] is None:
-                ar = AnalyticRank(curve_table[label])
-                if verbose:
-                    print("Updating analytic rank of {} to {}".format(label,ar))
-                data = L.split()
-                data[6] = str(ar)
-                L = " ".join(data)
-                if verbose:
-                    print("New mwdata line: {}".format(L))
-                mw_out.write(L + "\n")
-            else:
-                mw_out.write(L)

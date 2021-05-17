@@ -2,10 +2,12 @@
 
 from sage.all import ZZ, copy
 from sage.databases.cremona import cremona_letter_code
-from nfscripts import ap_list, minimal_model, is_Q_curve, isModular, isomorphism_class_key
+from nfscripts import ap_list, minimal_model, isModular, isomorphism_class_key
+from Qcurves import is_Q_curve
 from fields import nf_lookup, add_field, field_data, cm_j_dict
-from files import read_curves, read_curve_file, write_curve_file
+from files import read_curves, read_curve_file#, write_curve_file
 from codec import ideal_from_string, ideal_to_string, ainvs_to_string, curve_from_strings, curve_from_data
+from trace_hash import TraceHash
 
 # Originally adapted from Warren Moore's scripts.  The main function
 # process_curves(curves) takes a list of elliptic curves and outputs
@@ -123,11 +125,11 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                 field_label = kdata['labels']
                 nf_data_k = kdata['nf_data'] # may be None; that's ok
                 # Set up 2 dicts to collect the data to be output after sorting:
-                if not k in data:
-                        data[k] = {}
-                        isogdata[k] = {}
-                data_k = data[k]
-                isogdata_k = isogdata[k]
+                if not field_label in data:
+                        data[field_label] = {}
+                        isogdata[field_label] = {}
+                data_k = data[field_label]
+                isogdata_k = isogdata[field_label]
 
                 E = minimal_model(E)
                 N = E.conductor()
@@ -184,7 +186,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                                 ainvs = E.a_invariants()
                                 for n, found_isog_class in enumerate(data_k[norm][hnf[1][0]][hnf[1][1]]):
                                         curve_data = found_isog_class[0].split()
-                                        if E.is_isogenous(curve_from_strings(k, curve_data[6:11]), maxnorm=200):
+                                        print("curve_data: {}".format(curve_data))
+                                        if E.is_isogenous(curve_from_string(k, curve_data[6]), maxnorm=200):
                                                 print("Warning: input curve %s isogenous to previous curve %s but not found by isogeny class computation!" % (list(E.ainvs()),curve_data[6:11]))
                                                 curve_data[3] = len(found_isog_class)+1
                                                 curve_data[6:11] = [",".join([str(c) for c in ai]) for ai in ainvs]
@@ -215,7 +218,8 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
                         used[norm] += clist
 
                         matlist = str([list(r) for r in mat]).replace(' ','')
-                        isogdata_line = "%s %s %s %i %s" % (field_label, cond_label, isog, 1, matlist)
+                        trace_hash = TraceHash(E)
+                        isogdata_line = "%s %s %s %i %s %s" % (field_label, cond_label, isog, 1, matlist, trace_hash)
                         isogdata_k[norm][hnf[1][0]][hnf[1][1]].append([isogdata_line])
                         if verbose>1:
                                 print("isog_data: %s" % isogdata_line)
@@ -252,26 +256,25 @@ def process_curves(curves, outfile = None, classfile=None, verbose=0):
         # Sort and output the data
 
         #print(data)
-        ks = data.keys()
+        ks = list(data.keys())
         if verbose>0:
                 print()
                 print("fields: {}".format(ks))
         for k in sorted(ks):
             data_k = data[k]
             isogdata_k = isogdata[k]
-            norms = data_k.keys()
+            norms = list(data_k.keys())
             for norm in sorted(norms):
                 data_k_n = data_k[norm]
                 isogdata_k_n = isogdata_k[norm]
-                hnf0s = data_k_n.keys()
+                hnf0s = list(data_k_n.keys())
                 for hnf0 in sorted(hnf0s):
                         data_k_n_h = data_k_n[hnf0]
                         isogdata_k_n_h = isogdata_k_n[hnf0]
-                        hnf1s = data_k_n_h.keys()
+                        hnf1s = list(data_k_n_h.keys())
                         for hnf1 in sorted(hnf1s):
                                 dat = data_k_n_h[hnf1]
                                 isogdat = isogdata_k_n_h[hnf1]
-                                #dat.sort(cmp = isog_class_cmp)
                                 for n, (cdata,isodata) in enumerate(zip(dat,isogdat)):
                                         isoline = isodata[0]
                                         if isog==":isog":
@@ -388,52 +391,52 @@ def check_modularity(pth,fld, verbose=False):
     else:
         print("Only {} out of {} curves over {} were proved to be modular!".format(ntrue,nall, field_label))
 
-def check_Q_curve_flags(filename, output=False, verbose=True):
-    curves = list(read_curve_file(filename))
-    ncurves = len(curves)
-    if verbose:
-        print("Read {} curves from {}".format(ncurves, filename))
-    nall = 0
-    nbad = 0
-    nbad01 = 0
-    nbad10 = 0
-    cache = {} # dict of class_label:flag
-    for c in curves:
-        old_flag = c['q_curve_flag']
-        if old_flag=='?' and not output:
-            continue
-        nall += 1
+# def check_Q_curve_flags(filename, output=False, verbose=True):
+#     curves = list(read_curve_file(filename))
+#     ncurves = len(curves)
+#     if verbose:
+#         print("Read {} curves from {}".format(ncurves, filename))
+#     nall = 0
+#     nbad = 0
+#     nbad01 = 0
+#     nbad10 = 0
+#     cache = {} # dict of class_label:flag
+#     for c in curves:
+#         old_flag = c['q_curve_flag']
+#         if old_flag=='?' and not output:
+#             continue
+#         nall += 1
 
-        class_label = "-".join([c['field_label'], c['N_label'], c['iso_label']])
+#         class_label = "-".join([c['field_label'], c['N_label'], c['iso_label']])
 
-        if class_label in cache:
-            flag = cache[class_label]
-        else:
-            flag = is_Q_curve(curve_from_data(c),c['field_label'],verbose) # True, False, '?'
-            cache[class_label] = flag
+#         if class_label in cache:
+#             flag = cache[class_label]
+#         else:
+#             flag = is_Q_curve(curve_from_data(c),c['field_label'],verbose) # True, False, '?'
+#             cache[class_label] = flag
 
-        if flag != '?':
-            flag = str(int(flag))
-        if verbose:
-            print("Q-curve flag (computed): {}".format(flag))
-            print("Q-curve flag (file):     {}".format(old_flag))
-        #assert flag!='?'
-        if old_flag!='?' and flag != old_flag:
-            print("curve {}: flag on file is {} but should be {}".format(c,old_flag,flag))
-            nbad += 1
-        if [old_flag, flag] == ['0','1']:
-            nbad01 += 1
-        if [old_flag, flag] == ['1','0']:
-            nbad10 += 1
+#         if flag != '?':
+#             flag = str(int(flag))
+#         if verbose:
+#             print("Q-curve flag (computed): {}".format(flag))
+#             print("Q-curve flag (file):     {}".format(old_flag))
+#         #assert flag!='?'
+#         if old_flag!='?' and flag != old_flag:
+#             print("curve {}: flag on file is {} but should be {}".format(c,old_flag,flag))
+#             nbad += 1
+#         if [old_flag, flag] == ['0','1']:
+#             nbad01 += 1
+#         if [old_flag, flag] == ['1','0']:
+#             nbad10 += 1
 
-        c['q_curve_flag'] = flag # a string, either '0' or '1'
+#         c['q_curve_flag'] = flag # a string, either '0' or '1'
 
-    if output:
-        newfilename = filename+".qc_fix"
-        print("Writing revised curves file to {}".format(newfilename))
-        write_curve_file(curves,newfilename)
+#     if output:
+#         newfilename = filename+".qc_fix"
+#         print("Writing revised curves file to {}".format(newfilename))
+#         write_curve_file(curves,newfilename)
 
-    print("{} out of {} curves had incorrect Q-curve flag".format(nbad,nall))
-    if nbad:
-        print("In {} cases flag on file was 0, new flag is 1".format(nbad01))
-        print("In {} cases flag on file was 1, new flag is 0".format(nbad10))
+#     print("{} out of {} curves had incorrect Q-curve flag".format(nbad,nall))
+#     if nbad:
+#         print("In {} cases flag on file was 0, new flag is 1".format(nbad01))
+#         print("In {} cases flag on file was 1, new flag is 0".format(nbad10))

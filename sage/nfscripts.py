@@ -1,77 +1,93 @@
 # coding=utf-8
 #
-# Functions written to help filling in gaps in the Bianchi (imaginary
-# quadratic field) curve tables, using Bianchi newforms data and Magma
-# scripts.
+# Functions for computing elliptic curve data
 #
-from sage.all import (polygen, ZZ, QQ, Magma, magma, latex, EllipticCurve, primes, Infinity,
-                      flatten, Primes, legendre_symbol, prod, RR, RealField,
-                      PowerSeriesRing, O, Integer, srange, sign)
-from fields import add_field, field_data, nf_lookup
-from psort import nf_key, primes_of_degree_iter
-from codec import ainvs_to_string, ainvs_from_string, curve_from_string, curve_from_strings, ideal_to_string, ideal_from_string, parse_point, encode_points, decode_points_one2many
+from sage.all import (polygen, ZZ, QQ, latex,
+                      EllipticCurve, primes, flatten, Primes,
+                      legendre_symbol, prod, RealField,
+                      PowerSeriesRing, O, Integer, srange, sign, copy)
+
+from fields import (add_field, field_data, cm_j_dict)
+
+from codec import (ainvs_to_string, ainvs_from_string,
+                   curve_from_string, curve_from_strings,
+                   ideal_to_string, ideal_from_string, parse_point,
+                   encode_points, decode_points_one2many)
+
+from magma import get_magma
+
+def torsion_data(E):
+    T = E.torsion_subgroup()
+    tdata = {}
+    tdata['torsion_structure'] = ts = list(T.invariants())
+    tdata['torsion_gens'] = tg = [P.element() for P in T.smith_form_gens()]
+    tdata['torsion_order'] = T.order()
+    if len(ts) == 2:
+        assert ts[1]%ts[0] == 0
+        assert tg[0].order() == ts[0]
+        assert tg[1].order() == ts[1]
+    return tdata
 
 def ap(E, p):
-        r"""
-        Return a_p(E).
+    r""" Return a_p(E).
 
-        INPUT:
+    INPUT:
 
-        - ``E`` - an elliptic curve defined over a number field `k`;
+    - ``E`` - an elliptic curve defined over a number field `k`;
 
-        - ``p`` - a prime ideal of `k`.
+    - ``p`` - a prime ideal of `k`.
 
-        OUTPUT:
+    OUTPUT:
 
-        `a_p(E)`: the trace of Frobenius of `E` at `p` if `E` has good
-        reduction, otherwise the appropriate L-series coefficient
-        depending on the type of bad reduction.
-        """
-        if E.has_good_reduction(p):
-                return E.reduction(p).trace_of_frobenius()
-        elif E.has_split_multiplicative_reduction(p):
-                return 1
-        elif E.has_nonsplit_multiplicative_reduction(p):
-                return -1
-        elif E.has_additive_reduction(p):
-                return 0
+    `a_p(E)`: the trace of Frobenius of `E` at `p` if `E` has good
+    reduction, otherwise the appropriate L-series coefficient
+    depending on the type of bad reduction.
+    """
+    if E.has_good_reduction(p):
+        return E.reduction(p).trace_of_frobenius()
+    elif E.has_split_multiplicative_reduction(p):
+        return 1
+    elif E.has_nonsplit_multiplicative_reduction(p):
+        return -1
+    elif E.has_additive_reduction(p):
+        return 0
 
 def minimal_model(E):
-        r""" Return a reduced minimal (or semi-minimal) model; here 'reduced'
-        means by unit scaling and then by translation.
+    r""" Return a reduced minimal (or semi-minimal) model; here 'reduced'
+    means by unit scaling and then by translation.
 
-        NB The isogeny_class function does not currently do any
-        minimisation or reduction of models.
-        """
-        return E.global_minimal_model(E, semi_global=True)
+    NB The isogeny_class function does not currently do any
+    minimisation or reduction of models.
+    """
+    return E.global_minimal_model(E, semi_global=True)
 
 def min_disc_norm(E):
-        r"""
-        Return the norm of the minimal discriminant ideal of `E`.
-        """
-        I = E.minimal_discriminant_ideal()
-        if I.ring()==ZZ:
-            return I.gen()
-        return I.norm()
+    r"""
+    Return the norm of the minimal discriminant ideal of `E`.
+    """
+    I = E.minimal_discriminant_ideal()
+    if I.ring() == ZZ:
+        return I.gen()
+    return I.norm()
 
 def ap_list(E, Plist=None):
-        r"""
-        Return [a_p(E) for p in Plist].
+    r"""
+    Return [a_p(E) for p in Plist].
 
-        INPUT:
+    INPUT:
 
-        - ``E`` - an elliptic curve defined over a number field `k`;
-        - ``Plist`` - a list of primes of `k`, or None (default) in which case field_data[k]['Plist'] is used.
+    - ``E`` - an elliptic curve defined over a number field `k`;
+    - ``Plist`` - a list of primes of `k`, or None (default) in which case field_data[k]['Plist'] is used.
 
-        OUTPUT:
+    OUTPUT:
 
-        A list of a_P(E) for P in the list Plist.
-        """
-        if Plist is None:
-            K = E.base_field()
-            add_field(K)
-            Plist = field_data[K]['Plist']
-        return [ap(E,p) for p in Plist]
+    A list of a_P(E) for P in the list Plist.
+    """
+    if Plist is None:
+        K = E.base_field()
+        add_field(K)
+        Plist = field_data[K]['Plist']
+    return [ap(E, p) for p in Plist]
 
 # Functions for testing if E is a Q-curve
 
@@ -86,13 +102,14 @@ def is_Galois_invariant(N, field_label=None):
             K = N.parent()
         except AttributeError:
             raise ValueError("unable to determine field from %s" % N)
-    if K is QQ: return True
+    if K is QQ:
+        return True
     add_field(K, field_label=field_label)
     G = field_data[K]['G']
     NL = G[0](N) # base-change to Galois closure
-    return all([sigma(N)==NL for sigma in G.gens()])
+    return all([sigma(N) == NL for sigma in G.gens()])
 
-def conj_curve(E,sigma):
+def conj_curve(E, sigma):
     r"""
     Return the Galois conjugate elliptic curve under sigma.
     """
@@ -114,17 +131,17 @@ def conj_curve(E,sigma):
 
 # key functions for sorting curves in an isogeny class
 def isogeny_class_key_traditional(E):
-        return flatten([list(ai) for ai in E.ainvs()])
+    return flatten([list(ai) for ai in E.ainvs()])
 
 def isogeny_class_key_cm(E):
-        return (int(E.has_rational_cm() and -E.cm_discriminant()),
-                flatten([list(ai) for ai in E.ainvs()]))
+    return (int(E.has_rational_cm() and -E.cm_discriminant()),
+            flatten([list(ai) for ai in E.ainvs()]))
 
 # A version of primes_of_degree_iter for K=Q:
 def primes_iter_Q(condition):
     for p in Primes():
         if condition(p):
-            yield(p)
+            yield p
 
 def cmj_key(E):
     r""" Key to compare curves with non-rational CM which are quadratic
@@ -132,180 +149,183 @@ def cmj_key(E):
     for which this tie-break comparison is not needed, so we return 0
     instantly when we know that is the case.
     """
+    from psort import primes_of_degree_iter
     if (not E.has_cm()) or E.has_rational_cm():
         return 0
     d = E.cm_discriminant()
     K = E.base_field()
     deg = K.absolute_degree()
-    D = 1 if deg==1 else ZZ(K.defining_polynomial().discriminant())
+    D = 1 if deg == 1 else ZZ(K.defining_polynomial().discriminant())
     j = E.j_invariant()
     c4, c6 = E.c_invariants()
-    jj, c, w = (j, c4, 4) if j==1728 else (j-1728, c6, 6)
-    NN = E.conductor() if deg==1 else E.conductor().norm()
+    jj, c, w = (j, c4, 4) if j == 1728 else (j-1728, c6, 6)
+    NN = E.conductor() if deg == 1 else E.conductor().norm()
     bad = 6*d*D*NN
 
     # Get the first degree 1 prime P, dividing a prime p not dividng
     # bad for which d is a quadratic non-residue, such that j-1728 (or
     # j when j=1728) is a P-unit:
-    ptest = lambda p: not p.divides(bad) and legendre_symbol(d,p)==-1
-    if deg==1:
+    ptest = lambda p: not p.divides(bad) and legendre_symbol(d, p) == -1
+    if deg == 1:
         it = primes_iter_Q(ptest)
     else:
-        it = primes_of_degree_iter(K,deg=1, condition = ptest)
-    P = it.next()
-    while jj.valuation(P)!=0:
-        P = it.next()
-    p = P if deg==1 else P.smallest_integer() # = residue characteristic
+        it = primes_of_degree_iter(K, deg=1, condition=ptest)
+    P = next(it)
+    while jj.valuation(P) != 0:
+        P = next(it)
+    p = P if deg == 1 else P.smallest_integer() # = residue characteristic
     print("E = {} with j = {}: tie-break prime P = {} above p = {}".format(E.ainvs(), j, P, p))
 
     # The key is now (c6|p) (or (c4|p) if c6=0) with c4, c6 from the
     # P-minimal model.  Although E has good reduction at P the model
     # may not be minimal, and some adjustment is necessary:
     k = c.valuation(P)
-    if k>0:
+    if k > 0:
         assert w.divides(k)
-        pi = K.uniformizer(P,others='negative')
+        pi = K.uniformizer(P, others='negative')
         c = c/pi**(k//w) # still integral everywhere
-    return legendre_symbol(K.residue_field(P)(c),p)
+    return legendre_symbol(K.residue_field(P)(c), p)
 
 def isomorphism_class_key_j(E):
-    """FOr isogenous curves, first sort by CM-discriminant, then by
+    """For isogenous curves, first sort by CM-discriminant, then by
     j-invariant, then (only necessary when E has potential CM) the
     tie-break.
 
     """
+    from psort import nf_key
     return (int(E.has_rational_cm() and -E.cm_discriminant()),
             nf_key(E.j_invariant()),
             cmj_key(E))
 
 isomorphism_class_key = isomorphism_class_key_j
 
-def Euler_polynomial(E,P):
-        r"""
-        Return the Euler polynomial of E at the prime P.
+def Euler_polynomial(E, P):
+    r"""
+    Return the Euler polynomial of E at the prime P.
 
-        INPUT:
+    INPUT:
 
-        - `E` -- an elliptic curve defined over a number field K
+    - `E` -- an elliptic curve defined over a number field K
 
-        - `P` -- a prime ideal of K
+    - `P` -- a prime ideal of K
 
-        OUTPUT:
+    OUTPUT:
 
-        The polynomial `f(X) \in \ZZ[X]` such that `f(N(P)^{-s})` is
-        the inverse of the Euler factor of the L-function of `E` at
-        `P`.
-        """
-        EP = E.local_data(P)
-        if EP.has_good_reduction():
-                return E.reduction(P).frobenius_polynomial().reverse()
-        else:
-                return 1-EP.bad_reduction_type()*polygen(ZZ)
+    The polynomial `f(X) \in \ZZ[X]` such that `f(N(P)^{-s})` is
+    the inverse of the Euler factor of the L-function of `E` at
+    `P`.
+    """
+    EP = E.local_data(P)
+    if EP.has_good_reduction():
+        return E.reduction(P).frobenius_polynomial().reverse()
+    else:
+        return 1 - EP.bad_reduction_type()*polygen(ZZ)
 
-def rational_Euler_polynomial(E,p):
-        r"""
-        Return the Euler polynomial of E at the rational prime p.
+def rational_Euler_polynomial(E, p):
+    r"""
+    Return the Euler polynomial of E at the rational prime p.
 
-        INPUT:
+    INPUT:
 
-        - `E` -- an elliptic curve defined over a number field K
+    - `E` -- an elliptic curve defined over a number field K
 
-        - `P` -- a prime number
+    - `P` -- a prime number
 
-        OUTPUT:
+    OUTPUT:
 
-        The polynomial `f(X) \in \ZZ[X]` such that `f(p^{-s})` is
-        the inverse of the Euler factor of the L-function of `E` at
-        `p`.
-        """
-        x = polygen(ZZ)
-        K = E.base_field()
-        return prod([Euler_polynomial(E,P)(x^P.residue_class_degree())
-                     for P in K.primes_above(p)])
+    The polynomial `f(X) \in \ZZ[X]` such that `f(p^{-s})` is
+    the inverse of the Euler factor of the L-function of `E` at
+    `p`.
+    """
+    x = polygen(ZZ)
+    K = E.base_field()
+    return prod([Euler_polynomial(E, P)(x^P.residue_class_degree())
+                 for P in K.primes_above(p)])
 
 def rational_L_coefficients(E, nmax, prime_powers_only=True):
-        r"""
-        Return a dict giving the first ``nmax`` coefficients of the
-        L-function of E.
+    r"""
+    Return a dict giving the first ``nmax`` coefficients of the
+    L-function of E.
 
-        INPUT:
+    INPUT:
 
-        - ``E`` -- an elliptic curve defined over a number field.
+    - ``E`` -- an elliptic curve defined over a number field.
 
-        - ``nmax`` -- a positive integer
+    - ``nmax`` -- a positive integer
 
-        - ``prime_powers_only`` (bool, default ``True``) -- if
-          ``True``, the keys will be restricted to primes powers;
-          otherwise all positive integers up to ``nmax``.
+    - ``prime_powers_only`` (bool, default ``True``) -- if
+    ``True``, the keys will be restricted to primes powers;
+    otherwise all positive integers up to ``nmax``.
 
-        OUTPUT:
+    OUTPUT:
 
-        A dict keyed by positive integers `n` up to ``nmax`` whose
-        value at `n` is the cofficient of `n^{-s}` in the L-function
-        of ``E``, for `n=1,2,\dots,` ``nmax`` (or just the prime
-        powers `n>1`).
-        """
-        # maxexp(p) = max{i: p^i <= nmax}
-        lognmax = RR(nmax).log()
-        maxexp = lambda p: (lognmax/RR(p).log()).floor()
+    A dict keyed by positive integers `n` up to ``nmax`` whose
+    value at `n` is the cofficient of `n^{-s}` in the L-function
+    of ``E``, for `n=1,2,\dots,` ``nmax`` (or just the prime
+    powers `n>1`).
+    """
+    from sage.all import RR
+    # maxexp(p) = max{i: p^i <= nmax}
+    lognmax = RR(nmax).log()
+    maxexp = lambda p: (lognmax/RR(p).log()).floor()
 
-        polydata = [(p,maxexp(p),rational_Euler_polynomial(E,p))
-                    for p in primes(nmax+1)]
-        t = PowerSeriesRing(ZZ,'t').gen()
-        c = {}
-        for p,e,pol in polydata:
-                s = (1/pol(t) + O(t**nmax)).dict()
-                cp = dict([(p^i,s.get(i,0)) for i in range(1,e+1)])
-                c.update(cp)
+    polydata = [(p, maxexp(p), rational_Euler_polynomial(E, p))
+                for p in primes(nmax+1)]
+    t = PowerSeriesRing(ZZ, 't').gen()
+    c = {}
+    for p, e, pol in polydata:
+        s = (1/pol(t) + O(t**nmax)).dict()
+        cp = dict([(p^i, s.get(i, 0)) for i in range(1, e+1)])
+        c.update(cp)
 
-        # so far, c[n] is defined for n=p^i with 1<n<=nmax, but only when c[n]!=0
-        c[1] = Integer(1)
-        if prime_powers_only:
-                return c
-
-        for n in srange(2,nmax+1):
-                if not n in c: # we do not yet know c[n]
-                        nf =n.factor()
-                        assert len(nf)>1
-                        n1 = nf[0][0]**nf[0][1] # p**e
-                        n2 = n//n1 # n2<n so we have c[n2]
-                        c[n] = c[n1]*c[n2]
+    # so far, c[n] is defined for n=p^i with 1<n<=nmax, but only when c[n]!=0
+    c[1] = Integer(1)
+    if prime_powers_only:
         return c
 
-def curve_cmp_via_L(E1,E2,nmax=100):
-        r"""
-        Comparison function for elliptic curves, using rational L-functions.
+    for n in srange(2, nmax+1):
+        if n not in c: # we do not yet know c[n]
+            nf = n.factor()
+            assert len(nf) > 1
+            n1 = nf[0][0]**nf[0][1] # p**e
+            n2 = n//n1 # n2<n so we have c[n2]
+            c[n] = c[n1]*c[n2]
+    return c
 
-        INPUT:
+def curve_cmp_via_L(E1, E2, nmax=100):
+    r"""
+    Comparison function for elliptic curves, using rational L-functions.
 
-        - ``E1``, ``E2`` - elliptic curves defined over number fields;
+    INPUT:
 
-        - ``nmax`` (int, default 100) - number of L-series coefficients to use.
+    - ``E1``, ``E2`` - elliptic curves defined over number fields;
 
-        OUTPUT:
+    - ``nmax`` (int, default 100) - number of L-series coefficients to use.
 
-        0,+1,-1 (for comparison) based on lexicographical ordering of
-        the Dirichlet expansions of the L-functions of E1,E2 (in the
-        form `\sum_{n=1}^{\infty}a_n/n^s`).  Since the L-function is
-        isogeny-invariant, the output will be 0 only for isogenous
-        curves (but see below); this comparison is intended for the
-        purpose of sorting isogeny classes.
+    OUTPUT:
 
-        .. NOTE:
+    0,+1,-1 (for comparison) based on lexicographical ordering of
+    the Dirichlet expansions of the L-functions of E1,E2 (in the
+    form `\sum_{n=1}^{\infty}a_n/n^s`).  Since the L-function is
+    isogeny-invariant, the output will be 0 only for isogenous
+    curves (but see below); this comparison is intended for the
+    purpose of sorting isogeny classes.
 
-        If ``nmax`` is too small, the output may be 0 even though the
-        curves are not isogenous.
-        """
-        L1 = rational_L_coefficients(E1,nmax)
-        L2 = rational_L_coefficients(E2,nmax)
-        L = [L1[n] for n in sorted(L1.keys())]
-        c = [L, [L2[n] for n in sorted(L2.keys())]]
-        if c:
-                return c
-        # For testing purposes:
-        if not E1.is_isogenous(E2):
-                print("Warning: curves %s and %s of conductor %s have matching L-functions\n   %s but are not isogenous!" % (E1.ainvs(),E2.ainvs(), E1.conductor(), L))
-                return c
+    .. NOTE:
+
+    If ``nmax`` is too small, the output may be 0 even though the
+    curves are not isogenous.
+    """
+    L1 = rational_L_coefficients(E1, nmax)
+    L2 = rational_L_coefficients(E2, nmax)
+    L = [L1[n] for n in sorted(L1.keys())]
+    c = [L, [L2[n] for n in sorted(L2.keys())]]
+    if c:
+        return c
+    # For testing purposes:
+    if not E1.is_isogenous(E2):
+        print("Warning: curves %s and %s of conductor %s have matching L-functions\n   %s but are not isogenous!" % (E1.ainvs(), E2.ainvs(), E1.conductor(), L))
+        return c
 
 # Isogeny class comparison: experimental for, based on comparison
 # between the L-functions as rational Dirichlet series (indexed by
@@ -316,31 +336,31 @@ def curve_cmp_via_L(E1,E2,nmax=100):
 # L-function and would need a tie-break anyway.
 
 def isog_class_cmp2(k, I, J):
-    E1 = curve_from_strings(k,I[0].split()[6:11])
-    E2 = curve_from_strings(k,J[0].split()[6:11])
-    return curve_cmp_via_L(E1,E2)
-
+    E1 = curve_from_strings(k, I[0].split()[6:11])
+    E2 = curve_from_strings(k, J[0].split()[6:11])
+    return curve_cmp_via_L(E1, E2)
 
 # Isogeny class comparison: original form, using the L-functions as
 # sums over integral ideals of k.  This matches the sorting of Bianchi
 # newforms.
 
 def isog_class_cmp1(k, I, J):
-    E_I = curve_from_strings(k,I[0].split()[6:11])
-    E_J = curve_from_strings(k,J[0].split()[6:11])
+    E_I = curve_from_strings(k, I[0].split()[6:11])
+    E_J = curve_from_strings(k, J[0].split()[6:11])
 
-    if not k in field_data:
+    if k not in field_data:
         add_field(k)
     for p in field_data[k]['Plist']:
         c = int(ap(E_I, p) - ap(E_J, p))
-        if c: return sign(c)
+        if c:
+            return sign(c)
 
     raise NotImplementedError("Bound on primes is too small to determine...")
 
 
 def isModular(E):
     # Create a new magma instance for each curve:
-    mag = Magma()
+    mag = get_magma()
     # read in Samir Siksek's code:
     mag.eval('load "modularitycheck.m";\n')
     # Define the number field in Magma and the list of primes
@@ -353,17 +373,28 @@ def isModular(E):
     mag.eval("E := EllipticCurve(%s);\n" % list(E.ainvs()))
     mag.eval("res := isModular(E);\n")
     res = mag('res;').sage()
-    mag.quit()
     return res
 
 def local_data(E):
-    r"""Return a local data structure, which is a list of dicts, one for each bad prime, with keys
+    r"""Return disct containing local data of E:
 
-    'p', 'normp', 'ord_cond', 'ord_disc', 'ord_den_j', 'red', 'rootno', 'kod', 'cp'
+    'local_data': a list of dicts, one for each bad prime, with keys
+    'p', 'normp', 'ord_cond', 'ord_disc', 'ord_den_j', 'red',
+    'rootno', 'kod', 'cp'.  All are integers except 'p' which is a
+    simplified ideal string defining the prime.
+
+    'non_min_p': a list of non-minimal primes (as simplified ideal strings)
+
+    'minD':  the minimal discriminant ideal (as a simplified ideal string)
+
+    'bad_primes': a list of the primes of bad reduction (as simplified
+    ideal strings). Note that this may be shorter than 'local_data' if
+    there are primes of good reduction at which the model is
+    non-minimal.
 
     These are all computable in Sage except for the local root number at additive primes.
 
-    Note that The model of E might not be a global minimal model, so
+    Note that the model of E might not be a global minimal model, so
     there may be one or more (in practice no more than one) entry with
     good reduction in the list. This causes no problems except that
     the bad_reduction_type is then None which cannot be converted to
@@ -371,37 +402,40 @@ def local_data(E):
     in {-1,0,1}.
 
     """
+    magma = get_magma()
     Eld = E.local_data()
-    if any([ld.bad_reduction_type()==0 for ld in Eld]):
+    if any([ld.bad_reduction_type() == 0 for ld in Eld]):
         mE = magma(E) # for local root numbers if not semistable
         mE.Conductor() # otherwise the RootNumber() function sometimes fails strangely
     def local_root_number(ldp): # ldp is a component of E.local_data()
         red_type = ldp.bad_reduction_type()
-        if red_type==0: # additive reduction: call Magma
+        if red_type == 0: # additive reduction: call Magma
             # print("Calling Magma's RootNumber(E,P) with E = {}".format(mE))
             # print(" and P = {} = {}".format(ldp.prime(), magma(ldp.prime())))
             eps = mE.RootNumber(ldp.prime())
-        elif red_type==+1:
+        elif red_type == +1:
             eps = -1
         else:  # good or non-split multiplcative reduction
             eps = +1
         return int(eps)
 
     E_local_data = [{'p': ideal_to_string(ld.prime()),
-                   'normp': str(ld.prime().norm()),
-                   'ord_cond': int(ld.conductor_valuation()),
-                   'ord_disc': int(ld.discriminant_valuation()),
-                   'ord_den_j': int(max(0,-(E.j_invariant().valuation(ld.prime())))),
-                   'red': None if ld.bad_reduction_type() is None else int(ld.bad_reduction_type()),
-                   'rootno': local_root_number(ld),
-                   'kod': ld.kodaira_symbol()._pari_code(),
-                   #'kod': str(latex(ld.kodaira_symbol())),
+                     'normp': str(ld.prime().norm()),
+                     'ord_cond': int(ld.conductor_valuation()),
+                     'ord_disc': int(ld.discriminant_valuation()),
+                     'ord_den_j': int(max(0, -(E.j_invariant().valuation(ld.prime())))),
+                     'red': None if ld.bad_reduction_type() is None else int(ld.bad_reduction_type()),
+                     'rootno': local_root_number(ld),
+                     'kod': ld.kodaira_symbol()._pari_code(),
+                     'cp': int(ld.tamagawa_number())}
+                    for ld in Eld]
+    return {'local_data': E_local_data,
+            'non_min_p': [ideal_to_string(P) for P in E.non_minimal_primes()],
+            'minD': ideal_to_string(E.minimal_discriminant_ideal()),
+            'bad_primes': [ldp['p'] for ldp in E_local_data if ldp['ord_cond']],
+           }
 
-                   'cp': int(ld.tamagawa_number())}
-                  for ld in Eld]
-    return E_local_data, E.non_minimal_primes(), E.minimal_discriminant_ideal()
-
-def global_period(E, scale = None, prec = None):
+def global_period(E, scale=None, prec=None):
     r"""Return the global period of E.  This is the product over all
     infinite places v of the base field K of a local period at v,
     times a scaling factor to allow for the model not being a global
@@ -425,7 +459,7 @@ def global_period(E, scale = None, prec = None):
         if L.is_real():
             return L.omega(prec) if prec else L.omega()
         else:
-            w1,w2 = L.basis(prec) if prec else L.basis()
+            w1, w2 = L.basis(prec) if prec else L.basis()
             return (w1*w2.conjugate()).imag().abs()
 
     om = prod(omega(E.period_lattice(e)) for e in E.base_field().places())
@@ -434,7 +468,7 @@ def global_period(E, scale = None, prec = None):
     return om
 
 def extend_mwdata_one(Edata, classdata, Kfactors, magma,
-                      max_sat_prime = Infinity, prec=None, verbose=False):
+                      max_sat_prime=None, prec=None, verbose=False):
     r"""
     Computes analytic rank and L-value using Magma, and omega (global period).
     Computes analytic Sha (rounded).
@@ -445,11 +479,11 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     rapidly.
     """
     if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
-        RR = RealField()
-        prec = RR.precision()
+        R = RealField()
+        prec = R.precision()
         magma_prec = 16
     else:
-        RR  = RealField(prec)
+        R = RealField(prec)
         # log(2)/log(10) =  0.301029995663981
         magma_prec = (prec*0.301029995663981).round()
 
@@ -458,12 +492,12 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     # We need to construct every E as a Sage EllipticCurve in
     # order to compute omega, but we only need construct it as
     # a Magma curve once per isogeny class.
-    E = curve_from_string(K,Edata['ainvs'])
+    E = curve_from_string(K, Edata['ainvs'])
 
     # find analytic rank and L-value:
 
     class_label = Edata['class_label']
-    if not class_label in classdata: # then we need to compute analytic rank and L-value
+    if class_label not in classdata: # then we need to compute analytic rank and L-value
         mE = magma(E)
         if verbose:
             print("Calling Magma's AnalyticRank()")
@@ -471,43 +505,39 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
         if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
             if verbose:
                 print("Special CM case: E = {}".format(E.ainvs()))
-                print("AnalyticRank's ar={}, lval = {}".format(ar,lval))
+                print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
             ar *= 2
             old_lval = lval
             lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
             if verbose:
-                print("ar doubled to {}, lval recomputed to {}".format(ar,lval))
+                print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
                 print(" (compare square of old lval:       {})".format(old_lval**2))
-        lval = RR(lval)
+        lval = R(lval)
         ar = int(ar)
-        classdata[class_label] = (ar,lval)
+        classdata[class_label] = (ar, lval)
     else:
         ar, lval = classdata[class_label]
     Edata['analytic_rank'] = ar
     Edata['Lvalue'] = lval
     if verbose:
-        print("analytic rank = {}\nL-value = {}".format(ar,lval))
+        print("analytic rank = {}\nL-value = {}".format(ar, lval))
 
     # recompute regulator.  Original heights were computed
     # before fixing Sage's height function precision issues
     # properly.
 
-    gens = [E(parse_point(K,P)) for P in Edata['gens']]
+    gens = [E(parse_point(K, P)) for P in Edata['gens']]
     ngens = len(gens)
     if verbose:
         print("gens = {}".format(gens))
 
     if max_sat_prime and ngens:
-        if max_sat_prime==Infinity:
-            try:
-                new_gens, index, new_reg = E.saturation(gens, verbose=verbose)
-            except ValueError:
-                print("Warning: unable to compute saturation index bound, using 100")
-                new_gens, index, new_reg = E.saturation(gens, max_prime=100, verbose=verbose)
+        if max_sat_prime is None:
+            new_gens, index, _ = E.saturation(gens, verbose=verbose)
         else:
-            new_gens, index, new_reg = E.saturation(gens, max_prime=max_sat_prime, verbose=verbose)
-        if index>1:
-            print("Original gens were not saturated, index = {} (using max_prime {})".format(index,max_sat_prime))
+            new_gens, index, _ = E.saturation(gens, max_prime=max_sat_prime, verbose=verbose)
+        if index > 1:
+            print("Original gens were not saturated, index = {} (using max_prime {})".format(index, max_sat_prime))
             gens = new_gens
             Edata['gens'] = decode_points_one2many(encode_points(gens)) # list of strings
         else:
@@ -515,7 +545,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
                 print("gens are saturated at primes up to {}".format(max_sat_prime))
 
     heights = [P.height(precision=prec) for P in gens]
-    Edata['heights'] = str(heights).replace(" ","")
+    Edata['heights'] = str(heights).replace(" ", "")
     if verbose:
         print("heights = {}".format(heights))
     reg = E.regulator_of_points(gens, precision=prec)
@@ -541,20 +571,20 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     minDnorm = ZZ(Edata['minD'][1:].split(",")[0]).abs()
     modelDnorm = E.discriminant().norm().abs()
     fac = (modelDnorm/minDnorm).nth_root(12) # will be exact
-    if fac!=1 and verbose:
+    if fac != 1 and verbose:
         print("Not a global minimal model")
         print("Scaling factor = {}".format(fac))
     Edata['omega'] = omega = global_period(E, fac, prec=prec)
     if verbose:
         print("omega = {}".format(omega))
 
-    T = E.torsion_subgroup()
-    nt = T.order()
+    tdata = torsion_data(E)
+    nt = tdata['torsion_order']
     if nt != Edata['torsion_order']:
-        print("{}: torsion order is {}, not {} as on file; updating data".format(Edata['label'],nt,Edata['torsion_order']))
+        print("{}: torsion order is {}, not {} as on file; updating data".format(Edata['label'], nt, Edata['torsion_order']))
         Edata['torsion_order'] = nt
-        Edata['torsion_structure'] = list(T.invariants())
-        tgens = [P.element() for P in T.gens()]
+        Edata['torsion_structure'] = tdata['torsion_structure']
+        tgens = tdata['torsion_gens']
         Edata['torsion_gens'] = decode_points_one2many(encode_points(tgens)) # list of strings
     if verbose:
         print("Torsion order = {} (checked)".format(nt))
@@ -566,8 +596,8 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     if NTreg:
         Rsha = lval * nt**2  / (NTreg * tamagawa_product * omega)
 
-        if not K in Kfactors:
-            Kfactors[K] = RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+        if K not in Kfactors:
+            Kfactors[K] = R(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
         if verbose:
             print("Field factor = {}".format(Kfactors[K]))
 
@@ -575,7 +605,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
         Edata['sha'] = sha = Rsha.round()
         if verbose:
             print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
-        if sha==0 or (sha-Rsha).abs()>0.0001 or not ZZ(sha).is_square():
+        if sha == 0 or (sha-Rsha).abs() > 0.0001 or not ZZ(sha).is_square():
             if not verbose:
                 print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
             print("****************************Not good! 0 or non-square or not close to a positive integer!")
@@ -593,9 +623,9 @@ def latex_equation(ainvs):
         pol = coeff.polynomial()
         mons = pol.monomials()
         n = len(mons)
-        if n==0:
+        if n == 0:
             return ""
-        if n>1:
+        if n > 1:
             return r"+\left({}\right)".format(latex(coeff))
         # now we have a numerical coefficient times a power of the generator
         if coeff == 1:
@@ -609,17 +639,17 @@ def latex_equation(ainvs):
         if not coeff:
             return ""
         if not mon:
-            return "+{}".format(latex(coeff)).replace("+-","-")
+            return "+{}".format(latex(coeff)).replace("+-", "-")
         return "{}{}".format(co(coeff), mon)
 
     return ''.join([r'y^2',
-                    term(a1,'xy'),
-                    term(a3,'y'),
+                    term(a1, 'xy'),
+                    term(a3, 'y'),
                     '=x^3',
-                    term(a2,'x^2'),
-                    term(a4,'x'),
-                    term(a6,''),
-                    r'']).replace(" ","")
+                    term(a2, 'x^2'),
+                    term(a4, 'x'),
+                    term(a6, ''),
+                    r'']).replace(" ", "")
 
 def simplify_one_ideal_string(K, Istring):
     """Given an ideal string in the form "[N,a,alpha]" representing an
@@ -627,7 +657,7 @@ def simplify_one_ideal_string(K, Istring):
     g2)" defining the same ideal with the minimal number of
     generators.
     """
-    return str(ideal_from_string(K, Istring).gens_reduced()).replace(",)",")").replace(" ","")
+    return ideal_to_string(ideal_from_string(K, Istring))
 
 def ec_disc(ainvs):
     """
@@ -647,7 +677,7 @@ def reduce_mod_units(a):
     Return u*a for a unit u such that u*a is reduced.
     """
     K = a.parent()
-    if a.norm().abs()==1:
+    if a.norm().abs() == 1:
         return K(1)
     r1, r2 = K.signature()
     if r1 + r2 == 1:  # unit rank is 0
@@ -661,21 +691,28 @@ def reduce_mod_units(a):
     embs = K.places(prec=prec)
     aconjs = [e(a) for e in embs]
     degs = [1]*r1 + [2]*r2
-    v = vector([aa.abs().log()*d for aa,d in zip(aconjs,degs)])
+    v = vector([aa.abs().log()*d for aa, d in zip(aconjs, degs)])
 
     fu = K.units()
-    U = Matrix([[e(u).abs().log()*d for d,e in zip(degs,embs)] for u in fu])
+    U = Matrix([[e(u).abs().log()*d for d, e in zip(degs, embs)] for u in fu])
     A = U*U.transpose()
     Ainv = A.inverse()
 
     exponents = [e.round() for e in -Ainv*U*v]
-    u = prod([uj**ej for uj,ej in zip(fu,exponents)])
+    u = prod([uj**ej for uj, ej in zip(fu, exponents)])
     return a*u
+
+def simplified_gens(I):
+    """
+    return simplified generators for the ideal I
+    """
+    return [reduce_mod_units(a) for a in I.gens_reduced()]
 
 def simplify_ideal_strings(K, record):
     """Convert ideal strings from long form [N,a,alpha] to 1-generator
     (gen) or 2-generators (gen1,gen2).
     """
+    from fields import nf_lookup
     if not K:
         K = nf_lookup(record['field_label'])
     record['conductor_ideal'] = simplify_one_ideal_string(K, record['conductor_ideal'])
@@ -692,15 +729,131 @@ def simplify_ideal_strings(K, record):
     ainvs = ainvs_from_string(K, record['ainvs'])
     D = ec_disc(ainvs)
     Dnorm = D.norm()
-    if Dnorm==1:
+    if Dnorm == 1:
         D = 1
     else:
         Dred = reduce_mod_units(D)
         if len(str(Dred)) < len(str(D)):
-           D = Dred
-    record['disc'] = '({})'.format(D).replace(" ","")
+            D = Dred
+    record['disc'] = '({})'.format(D).replace(" ", "")
     record['normdisc'] = Dnorm
     return record
+
+def make_isogeny_class(curve, verbose=False, prec=None):
+    """curve is a dict with keys
+
+    field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
+
+    defining a single curve.
+
+    Returns a dict with keys curve labels, one for each curve in the
+    isogeny class, and values complete curve records.
+
+    """
+    from mwinfo import compute_mwdata
+    from trace_hash import TraceHash
+    from Qcurves import is_Q_curve
+    from galrep import get_galrep_data
+
+    class_label = "-".join([curve[k] for k in ['field_label', 'conductor_label', 'iso_label']])
+    if verbose:
+        print("Processing isogeny class {}".format(class_label))
+
+    ainvs = curve['ainvs']
+    K = ainvs[0].parent()
+    E = EllipticCurve(K, ainvs)
+
+    Cl = E.isogeny_class()
+    clist0 = [minimal_model(C) for C in Cl.curves]
+    mat0 = Cl.matrix()
+    clist = sorted(clist0, key=isomorphism_class_key)
+    nc = len(clist)
+    # perm[i]=j where sorted#i = unsorted#j
+    perm = dict([(i, clist0.index(Ei)) for i, Ei in enumerate(clist)])
+    mat = [[mat0[perm[i], perm[j]] for j in range(nc)] for i in range(nc)]
+
+    curve['isogeny_matrix'] = mat
+    curve['q_curve'] = is_Q_curve(E) # isogeny-invariant
+    curve['trace_hash'] = TraceHash(E)
+
+    # this adds 'mwdata' to curve, being a list of dicts with keys
+    #'rank_bounds', 'rank', 'gens', 'hts', 'reg', 'ntors',
+    #'torstruct', 'tgens'.  Some of this is isogeny-invariant, the
+    #rest will get copied across to the individual curve records
+
+    curve['curves'] = clist
+    mwdata = compute_mwdata(curve, prec=prec, verbose=verbose)
+    if verbose > 1:
+        print("Computed mwdata")
+    # copy class-invariant data
+    curve['analytic_rank'] = mwdata[0].get('analytic_rank', None)
+    curve['rank_bounds'] = mwdata[0]['rank_bounds']
+    curve['rank'] = mwdata[0].get('rank', None)
+
+    # fill in data for individual curves
+
+    data = {} # will hold all data to be returned
+    for i, c in enumerate(clist):
+        record = copy(curve)
+
+        record['number'] = i + 1 # count from 1 here
+        record['label'] = label = class_label + str(record['number'])
+        record['ainvs'] = ainvs = c.ainvs()
+        record['jinv'] = j = c.j_invariant()
+        D = c.discriminant()
+        Dnorm = D.norm()
+        if Dnorm == 1:
+            D = 1
+        else:
+            if D in ZZ: # fairly common special case
+                D = D.abs()
+            else:
+                Dred = reduce_mod_units(D)
+                if len(str(Dred)) < len(str(D)):
+                    D = Dred
+        record['disc'] = '({})'.format(D).replace(" ", "")
+        record['normdisc'] = Dnorm
+        record['equation'] = latex_equation(ainvs)
+        record['cm'] = cm_j_dict.get(j, 0)
+
+        # The following will fail for curves which are
+        # base-changes of curves over Q with large conductor (and
+        # hence no Cremona label)
+        record['base_change'] = [cQ.label() for cQ in c.descend_to(QQ)]
+
+        # local_data (keys 'local_data', 'non_min_p', 'minD', 'bad_primes'):
+        ld = local_data(c)
+        record.update(ld)
+
+        # MW data per curve ('gens', 'ngens', 'heights', 'reg',
+        # 'torsion_order', 'torsion_structure', 'torsion_gens',
+        # 'omega', 'Lvalue', 'sha'):
+        record.update(mwdata[i])
+
+        # Galois image data via magma
+        galrepdata = get_galrep_data(E, verbose=verbose) # one string with spaces
+        record.update(galrepdata)
+
+        data[label] = record
+
+    return data
+
+def make_isogeny_classes(raw_curves, verbose=0, prec=None):
+    """raw_curves is a generator yielding short 'raw' curve dicts with fields (as in read_curves_magma()):
+
+    field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
+
+    This function computes the isogeny class of each and returns a
+    dist whose keys are curve labels, values are curve records.
+
+    """
+    data = {}
+    for record1 in raw_curves:
+        data.update(make_isogeny_class(record1, prec=prec, verbose=verbose))
+
+    return data
+
+
 
 # The following was used (with fix_models_field() in files.py) to
 # adjust the data for any field where the stored models were not

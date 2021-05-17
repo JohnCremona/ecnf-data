@@ -98,7 +98,7 @@ field_data = {} # dict whose keys are fields k and values are dicts holding:
 cm_j_dict = {}
 
 def add_field(K, field_label=None, prime_norm_bound=200, nf_data_file=None):
-    global field_data
+    global field_data, cm_j_dict
     if K in field_data:
         return
 
