@@ -1,7 +1,7 @@
 from sys import stdout
 import os
 from sage.all import Magma, EllipticCurve
-from fields import field_label, get_IQF_info, get_field_name
+from fields import field_label, get_IQF_info, get_field_name, ideal_from_IQF_label
 from files import read_newform_data, read_missing_levels, BIANCHI_DATA_DIR
 from psort import ideal_from_label
 from codec import ideal_to_string, old_ideal_label
@@ -83,7 +83,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
 
     INPUT:
 
-    - ``field`` (integer) -- 1, 2, 3, 7 or 11.
+    - ``field`` (integer) -- 1, 2, 3, 7, 11 or 19 (so far).
 
     - ``missing_label_file`` (string) -- filename of file containing
       labels of missing isogeny classes.  If absent, assumes all
@@ -130,7 +130,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
     if outfilename:
         outfile=open(outfilename, mode="a")
         if verbose:
-            print("Using {} for output".format(outfile))
+            print("Using {} for output".format(outfilename))
     newforms = read_newform_data(bmf_filename)
     if verbose:
         print("...read newform data finished")
@@ -142,7 +142,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
     bad_labels = []#["16900.0.130-b","16900.0.130-c"]
     mag=Magma()
     for level in read_missing_levels(open(missing_label_file)):
-        N = ideal_from_label(K, level)
+        N = ideal_from_IQF_label(K, level)
         NN = N.norm()
         if min_norm and NN<min_norm:
             continue
@@ -349,7 +349,7 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         missing_label_file = bmf_filename
 
     for level in read_missing_levels(open(missing_label_file)):
-        N = ideal_from_label(K, level)
+        N = ideal_from_IQF_label(K, level)
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
         if verbose:
             print("Missing level %s = %s" % (level,N))

@@ -139,6 +139,23 @@ def add_field(K, field_label=None, prime_norm_bound=200, nf_data_file=None):
     field_data[K] = Kdata
     print("...finished adding field.")
 
+import re
+ideal_label_regex = re.compile(r'\d+\.\d+\.\d+')
+
+def parse_ideal_label(s):
+    if not ideal_label_regex.match(s):
+        return [int(i) for i in s[1:-1].split(r',')]
+    return [int(i) for i in s.split(r'.')]
+
+def ideal_from_HNF(K,H):
+    a,c,d = H
+    return K.ideal([a,c+d*K.gen()])
+
+def ideal_from_IQF_label(K,s):
+    H = parse_ideal_label(s)
+    H[0]/= H[2]
+    return ideal_from_HNF(K,H)
+
 def get_IQF_info(field_info_filename, maxpnorm=200, verbose=False):
     r"""
     Returns a number field and ordered list of primes.
@@ -155,7 +172,6 @@ def get_IQF_info(field_info_filename, maxpnorm=200, verbose=False):
 
     Tuple of a number field and a list of prime ideals, ordered as in the data file.
     """
-    from codec import ideal_from_label
     Plist=[]
     with open(field_info_filename) as field_info_file:
         for L in field_info_file.readlines():
@@ -174,7 +190,7 @@ def get_IQF_info(field_info_filename, maxpnorm=200, verbose=False):
                 p = ZZ(p)
                 e = ZZ(e)
                 deg = ZZ(deg)
-                P = ideal_from_label(K,lab)
+                P = ideal_from_IQF_label(K,lab)
                 assert P.norm()==nm
                 #print("Prime %s with char %s, degree %s, label %s, norm %s" % (P,p,deg,lab,nm))
                 Plist.append(P)
