@@ -290,20 +290,20 @@ def read_curves_magma(infile):
                 K.__gens_dict().update({'w':K.gen()})
             elif data[0] == 'Conductor':
                 record['conductor_ideal'] = data[1]
-                N = K.ideal([K(a) for a in data[1].replace("[", "").replace("]", "").split(",")])
+                cond = data[1].replace("[", "").replace("]", "").replace("(", "").replace(")", "")
+                N = K.ideal([K(a) for a in cond.split(",")])
             elif data[0] == 'Isogeny_class':
                 conductor_label, iso_label = data[1].split("-")
                 record['conductor_norm'] = conductor_norm = ZZ(conductor_label.split(".")[0])
                 record['conductor_label'] = conductor_label
                 record['iso_label'] = iso_label
-                conductor_norm
             elif data[0] == 'Curve':
                 ainvs = data[1]
                 ainvs = ainvs[1:-1].split(",")
                 record['ainvs'] = ainvs = [K(ai) for ai in ainvs]
                 E = EllipticCurve(K, ainvs)
                 EN = E.conductor()
-                assert EN.norm() == conductor_norm
+                assert EN.norm() == record['conductor_norm']
                 assert EN == N
                 yield record
             else:

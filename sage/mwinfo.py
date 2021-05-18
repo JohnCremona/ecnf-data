@@ -275,6 +275,7 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         ar = int(ar)
         if verbose:
             print("analytic rank = {}".format(ar))
+            print("Special L-value = {}".format(lval))
     else:
         ar = lval = None
 
@@ -293,7 +294,7 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         data['heights'] = [P.height(prec) for P in gens]
         # compute regulator if either rank lower and upper bounds
         # agree, or lower rank bound = analytic rank:
-        if data['rank'] or data['analytic_rank']:
+        if data['rank'] is not None or data['analytic_rank'] is not None:
             reg = E.regulator_of_points(gens, prec) if gens else 1
         else:
             reg = None

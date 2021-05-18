@@ -3,7 +3,7 @@ import os
 from sage.all import Magma, EllipticCurve
 from fields import field_label, get_IQF_info, get_field_name, ideal_from_IQF_label
 from files import read_newform_data, read_missing_levels, BIANCHI_DATA_DIR
-from psort import ideal_from_label
+from psort import ideal_from_label, ideal_label
 from codec import ideal_to_string, old_ideal_label
 
 def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
@@ -131,6 +131,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         outfile=open(outfilename, mode="a")
         if verbose:
             print("Using {} for output".format(outfilename))
+    output("Field {}\n".format(field_lab))
     newforms = read_newform_data(bmf_filename)
     if verbose:
         print("...read newform data finished")
@@ -139,7 +140,6 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if verbose:
             print("Using {} for missing labels".format(missing_label_file))
 
-    bad_labels = []#["16900.0.130-b","16900.0.130-c"]
     mag=Magma()
     for level in read_missing_levels(open(missing_label_file)):
         N = ideal_from_IQF_label(K, level)
@@ -149,18 +149,15 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if max_norm and NN>max_norm:
             continue
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
+        level_label = conductor_label = ideal_label(N)
         if verbose:
-            print("Missing level %s = %s" % (level,N))
+            print("Missing conductor %s = %s" % (level_label,N))
         nfs = newforms[level]
         for id in nfs.keys():
             nf = nfs[id]
-            label = "%s-%s" % (level,id)
-            if label in bad_labels:
-                print("\nIgnoring form %s" % label)
-                continue
-            else:
-                if verbose:
-                    print("\nWorking on form %s" % label)
+            class_label = "%s-%s" % (level_label,id)
+            if verbose:
+                print("\nWorking on form %s" % class_label)
             # Create the array of traces for good primes:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
             # Do the search:
@@ -171,25 +168,18 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
                 # with the correct traces
                 curves = []
             if curves:
-                print("Found {} curves matching {}: {}".format(len(curves),label," ".join([str(E.ainvs()) for E in curves])))
+                print("Found {} curves matching {}: {}".format(len(curves),class_label," ".join([str(E.ainvs()) for E in curves])))
                 E = curves[0]
             else:
-                print("**********No curve found to match newform {}*************".format(label))
+                print("**********No curve found to match newform {}*************".format(class_label))
                 E = None
             if E!=None:
-                ec = {}
-                ec['field_label'] = field_lab
-                ec['conductor_label'] = level
-                ec['iso_label'] = id
-                ec['number'] = int(1)
-                conductor_ideal = E.conductor()
-                ec['conductor_ideal'] = ideal_to_string(conductor_ideal,False)
-                ec['conductor_norm'] = NN
-                ai = E.ainvs()
-                ec['ainvs'] = [[str(c) for c in list(a)] for a in ai]
-                ec['cm'] = '?'
-                ec['base_change'] = []
-                output(make_curves_line(ec) + "\n")
+                # output 3 lines per curve, as expected by the function read_curves_magma:
+
+                output("Conductor {}\n".format(ideal_to_string(E.conductor())))
+                output("Isogeny_class {}\n".format(class_label))
+                ainvs = str(list(E.ainvs())).replace("a", "w")
+                output("Curve {}\n".format(ainvs))
                 if outfilename:
                     outfile.flush()
 

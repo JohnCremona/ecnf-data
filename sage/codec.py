@@ -581,8 +581,8 @@ def file_line(ftype, c):
             # this fix should not be necessary
             if c['rank'] is None and c['analytic_rank'] is None:
                 c['reg'] = None
-            for k in column_names[ftype]:
-                print("{}: {} --> {} ({})".format(k, c[k], get_encoder(k)(c[k]), type(get_encoder(k)(c[k]))))
+            # for k in column_names[ftype]:
+            #     print("{}: {} --> {} ({})".format(k, c[k], get_encoder(k)(c[k]), type(get_encoder(k)(c[k]))))
         return " ".join([get_encoder(k)(c[k]) for k in column_names[ftype]])
     else:
         raise ValueError("{} is not a valid file type".format(ftype))
