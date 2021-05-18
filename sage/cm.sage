@@ -1,72 +1,69 @@
 from sage.all import QuadraticField, NumberField, srange, EllipticCurve, polygen, QQ, is_squarefree
-from nfscripts import make_curves_line, make_ec_dict
+from codec import ideal_to_string
+from psort import ideal_label
+#from nfscripts import make_curves_line, make_ec_dict
 
 x = polygen(QQ)
-K1 = QuadraticField(-1, 'i'); i=K1.gen()
-K2 = QuadraticField(-2, 't'); t=K2.gen()
-K3 = NumberField(x^2-x+1, 'z'); z=K3.gen()
-K7 = NumberField(x^2-x+2, 'a'); a=K7.gen()
-K11 = NumberField(x^2-x+3, 'b'); b=K11.gen()
+K1 = QuadraticField(-1, 'i')
+K2 = QuadraticField(-2, 't')
+K3 = NumberField(x^2-x+1, 'z')
+K7 = NumberField(x^2-x+2, 'a')
+K11 = NumberField(x^2-x+3, 'b')
+K19 = NumberField(x^2-x+5, 'a19')
+K43 = NumberField(x^2-x+11, 'a43')
+K67 = NumberField(x^2-x+17, 'a67')
+K163 = NumberField(x^2-x+41, 'a163')
 
-def K1_iterator(norm_bound, S=[]):
-    By = norm_bound.isqrt()
-    for y in srange(By+1):
-        Bx = (norm_bound-y*y).isqrt()
-        xmin = 1
-        for x in srange(xmin,Bx+1):
-            a = x+y*i
-            if all([a.valuation(p)==0 for p in S]):
-                yield a
+fields = {1: K1,
+          2: K2,
+          3: K3,
+          7: K7,
+          11: K11,
+          19: K19,
+          43: K43,
+          67: K67,
+          163: K163}
 
-def K2_iterator(norm_bound, S=[]):
-    By = (norm_bound//2).isqrt()
+cm_j_invs = {1: {1: 1728, 2: 287496},
+             2: {1: 8000},
+             3: {1: 0, 2: 54000, 3: -12288000},
+             7: {1: -3375, 2: 16581375},
+             11: {1: -32768},
+             19: {1: -884736},
+             43: {1: -884736000},
+             67: {1: -147197952000},
+             163: {1: -262537412640768000}}
+
+def K_even_iterator(K, norm_bound, S=[]):
+    n = K.discriminant().abs()//4
+    By = (norm_bound//n).isqrt()
     for y in srange(By+1):
-        Bx = (norm_bound-2*y*y).isqrt()
+        Bx = (norm_bound-n*y*y).isqrt()
         xmin = 1
         if y: xmin = -Bx
         for x in srange(xmin,Bx+1):
-            a = x+y*t
+            a = K([x,y])
             if all([a.valuation(p)==0 for p in S]):
                 yield a
 
-def K3_iterator(norm_bound, S=[]):
-    By = (4*norm_bound//3).isqrt()
+def K_odd_iterator(K, norm_bound, S=[]): # for all except K1, K2
+    n = K.discriminant().abs()
+    By = (4*norm_bound//n).isqrt()
     for y in srange(By+1):
-        Bz = (4*norm_bound-3*y*y).isqrt()
+        Bz = (4*norm_bound-n*y*y).isqrt()
         zmin = y+2
         for z in srange(zmin,Bz+1,2):
             x = (z-y)/2
-            a = x+y*K3.gen()
+            a = K([x,y])
             if all([a.valuation(p)==0 for p in S]):
                 yield a
 
-def K7_iterator(norm_bound, S=[]):
-    By = (4*norm_bound//7).isqrt()
-    for y in srange(By+1):
-        Bz = (4*norm_bound-7*y*y).isqrt()
-        zmin = y+2
-        if y:
-            zmin = -Bz
-            if (y-zmin)%2: zmin +=1
-        for z in srange(zmin,Bz+1,2):
-            x = (z-y)/2
-            a = x+y*K7.gen()
-            if all([a.valuation(p)==0 for p in S]):
-                yield a
-
-def K11_iterator(norm_bound, S=[]):
-    By = (4*norm_bound//11).isqrt()
-    for y in srange(By+1):
-        Bz = (4*norm_bound-11*y*y).isqrt()
-        zmin = y+2
-        if y:
-            zmin = -Bz
-            if (y-zmin)%2: zmin +=1
-        for z in srange(zmin,Bz+1,2):
-            x = (z-y)/2
-            a = x+y*K11.gen()
-            if all([a.valuation(p)==0 for p in S]):
-                yield a
+def K_iterator(K, norm_bound, S=[]):
+    D = K.discriminant().abs()
+    if D%4==0:
+        return K_even_iterator(K, norm_bound, S)
+    else:
+        return K_odd_iterator(K, norm_bound, S)
 
 def is_powerfree(a, d=2):
     return all([e<d for p,e in a.factor()])
@@ -80,13 +77,13 @@ def uniq_iso(EE):
 
 
 def curves_K1(max_norm, min_norm=1, f=1, verb=False):
-    j = [0,1728,287496][f]
+    j = cm_j_invs[1][f]
     m = [0,4,2][f]
     E = EllipticCurve(j=j).change_ring(K1)
     S = K1(6).support()
     supps = {}
     twists = {}
-    for d1 in K1_iterator(max_norm.isqrt(),S):
+    for d1 in K_iterator(K1, max_norm.isqrt(),S):
         if is_powerfree(d1,2):
             print("d1={}".format(d1))
             d1supp = d1.support()
@@ -114,7 +111,7 @@ def curves_K2(max_norm, min_norm=1, verb=False):
     j = 8000
     E = EllipticCurve(j=j).change_ring(K2)
     S = K2(6).support()
-    for d1 in K2_iterator(max_norm.isqrt(),S):
+    for d1 in K_iterator(K2, max_norm.isqrt(),S):
         if is_squarefree(d1):
             for d0 in K2.selmer_group_iterator(S,2):
                 d = d0*d1
@@ -126,10 +123,10 @@ def curves_K2(max_norm, min_norm=1, verb=False):
                     yield Ed
 
 def curves_K7(max_norm, min_norm=1, f=1, verb=False):
-    j = [0,-3375,16581375][f]
+    j = cm_j_invs[3][f]
     E = EllipticCurve(j=j).change_ring(K7)
     S = K7(6*7).support()
-    for d1 in K7_iterator(max_norm.isqrt(),S):
+    for d1 in K_iterator(K7, max_norm.isqrt(),S):
         if is_squarefree(d1):
             for d0 in K7.selmer_group_iterator(S,2):
                 d = d0*d1
@@ -142,10 +139,10 @@ def curves_K7(max_norm, min_norm=1, f=1, verb=False):
 
 
 def curves_K11(max_norm, min_norm=1, verb=False):
-    j = -32768
+    j = cm_j_invs[11][1]
     E = EllipticCurve(j=j).change_ring(K11)
     S = K11(6*11).support()
-    for d1 in K11_iterator(max_norm.isqrt(),S):
+    for d1 in K_iterator(K11, max_norm.isqrt(),S):
         if is_squarefree(d1):
             for d0 in K11.selmer_group_iterator(S,2):
                 d = d0*d1
@@ -156,9 +153,26 @@ def curves_K11(max_norm, min_norm=1, verb=False):
                     if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
 
+# use for K from 11 on
+def curves_K(d, max_norm, min_norm=1, verb=False):
+    j = cm_j_invs[d][1]
+    K = fields[d]
+    E = EllipticCurve(j=j).change_ring(K)
+    S = K(6*11).support()
+    for d1 in K_iterator(K, max_norm.isqrt(),S):
+        if is_squarefree(d1):
+            for d0 in K.selmer_group_iterator(S,2):
+                d = d0*d1
+                Ed = E.quadratic_twist(d)
+                Nn = Ed.conductor().norm()
+                if min_norm <= Nn <= max_norm:
+                    Ed = Ed.global_minimal_model()
+                    if verb: print(d, Ed.ainvs(), Nn)
+                    yield Ed
+
 
 def curves_K3(max_norm, min_norm=1, f=1, verb=False):
-    j = [0,0,54000,-12288000][f]
+    j = cm_j_invs[3][f]
     m = [0,6,2,2][f]
     E = EllipticCurve(j=j).change_ring(K3)
     S = K3(6).support()
@@ -191,13 +205,25 @@ def dump(Elist, outfilename=None):
     if outfilename == None:
         return
     outfile = open(outfilename, mode='w')
+    field_lab = "2.0.{}.1".format(Elist[0].base_field().discriminant().abs())
+    outfile.write("Field {}\n".format(field_lab))
+    cond_lab_count = {}
     for E in Elist:
-        outfile.write(make_curves_line(make_ec_dict(E))+'\n')
+        cond = E.conductor()
+        cond_label = ideal_label(cond)
+        class_label_base = "{}-CM".format(cond_label)
+        i = cond_lab_count.get(class_label_base,0) + 1
+        cond_lab_count[class_label_base] = i
+        class_label = class_label_base + 'abcdef'[i-1]
+        outfile.write("Conductor {}\n".format(ideal_to_string(cond)))
+        outfile.write("Isogeny_class {}\n".format(class_label))
+        ainvs = str(list(E.ainvs())).replace("a", "w")
+        outfile.write("Curve {}\n".format(ainvs))
     outfile.close()
 
 
 def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
-    """ field is 1, 2, 3, 7, 11
+    """ field is 1, 2, 3, 7, 11, 19, 43, 67, 163
     """
     if field==1:
         if verbose:
@@ -248,14 +274,16 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
         dump(E7, outfilename)
         return E7
 
-    if field==11:
-        if verbose:
-            print("Qsqrt-11, norms {}-{}".format(min_norm,max_norm))
-
-    E11 = list(curves_K11(max_norm, min_norm,verbose))
-    assert all_non_iso(E11)
+    # now field >=11
     if verbose:
-        print(" found {} curves".format(len(E11)))
-    dump(E11, outfilename)
-    return E11
+        print("Qsqrt-{}, norms {}-{}".format(field, min_norm,max_norm))
+
+        E11 = list(curves_K(field, max_norm, min_norm,verbose))
+        assert all_non_iso(E11)
+        if verbose:
+            print(" found {} curves".format(len(E11)))
+        dump(E11, outfilename)
+        for E in E11:
+            print(E.ainvs(), E.conductor())
+        return E11
 
