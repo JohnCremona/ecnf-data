@@ -4,35 +4,20 @@ from psort import ideal_label
 #from nfscripts import make_curves_line, make_ec_dict
 
 x = polygen(QQ)
-K1 = QuadraticField(-1, 'i')
-K2 = QuadraticField(-2, 't')
-K3 = NumberField(x^2-x+1, 'z')
-K7 = NumberField(x^2-x+2, 'a')
-K11 = NumberField(x^2-x+3, 'b')
-K19 = NumberField(x^2-x+5, 'a19')
-K43 = NumberField(x^2-x+11, 'a43')
-K67 = NumberField(x^2-x+17, 'a67')
-K163 = NumberField(x^2-x+41, 'a163')
 
-fields = {1: K1,
-          2: K2,
-          3: K3,
-          7: K7,
-          11: K11,
-          19: K19,
-          43: K43,
-          67: K67,
-          163: K163}
+def IQF(d):
+    t,n = (0,d) if d%4 in [1,2] else (1,(d+1)//4)
+    return NumberField(x^2-t*x+n, 'a')
 
-cm_j_invs = {1: {1: 1728, 2: 287496},
-             2: {1: 8000},
-             3: {1: 0, 2: 54000, 3: -12288000},
-             7: {1: -3375, 2: 16581375},
-             11: {1: -32768},
-             19: {1: -884736},
-             43: {1: -884736000},
-             67: {1: -147197952000},
-             163: {1: -262537412640768000}}
+
+Dfj_list = cm_j_invariants_and_orders(QQ)
+
+cm_j_invs = dict([(D.abs() if D%2 else -D//4, dict([(f,j) for d,f,j in Dfj_list if d==D]))
+                  for D in set(D for D,f,j in Dfj_list)])
+
+d_list = sorted([d for d in cm_j_invs])
+fields = dict([(d,IQF(d)) for d in d_list])
+
 
 def K_even_iterator(K, norm_bound, S=[]):
     n = K.discriminant().abs()//4
@@ -75,15 +60,15 @@ def uniq_iso(EE):
     return [E for i,E in enumerate(EE) if not any([E.is_isomorphic(EE[j]) for j in range(i)])]
 
 
-
 def curves_K1(max_norm, min_norm=1, f=1, verb=False):
+    K = fields[1]
     j = cm_j_invs[1][f]
     m = [0,4,2][f]
-    E = EllipticCurve(j=j).change_ring(K1)
-    S = K1(6).support()
+    E = EllipticCurve(j=j).change_ring(K)
+    S = K(6).support()
     supps = {}
     twists = {}
-    for d1 in K_iterator(K1, max_norm.isqrt(),S):
+    for d1 in K_iterator(K, max_norm.isqrt(),S):
         if is_powerfree(d1,2):
             print("d1={}".format(d1))
             d1supp = d1.support()
@@ -91,7 +76,7 @@ def curves_K1(max_norm, min_norm=1, f=1, verb=False):
             if t in supps:
                 continue
             supps[t] = 1
-            for d in K1.selmer_group_iterator(S+d1supp,m):
+            for d in K.selmer_group_iterator(S+d1supp,m):
                 if d in twists:
                     continue
                 twists[d] = 1
@@ -108,57 +93,10 @@ def curves_K1(max_norm, min_norm=1, f=1, verb=False):
                     yield Ed
 
 def curves_K2(max_norm, min_norm=1, verb=False):
-    j = 8000
-    E = EllipticCurve(j=j).change_ring(K2)
-    S = K2(6).support()
-    for d1 in K_iterator(K2, max_norm.isqrt(),S):
-        if is_squarefree(d1):
-            for d0 in K2.selmer_group_iterator(S,2):
-                d = d0*d1
-                Ed = E.quadratic_twist(d)
-                Nn = Ed.conductor().norm()
-                if min_norm <= Nn <= max_norm:
-                    Ed = Ed.global_minimal_model()
-                    if verb: print(d, Ed.ainvs(), Nn)
-                    yield Ed
-
-def curves_K7(max_norm, min_norm=1, f=1, verb=False):
-    j = cm_j_invs[3][f]
-    E = EllipticCurve(j=j).change_ring(K7)
-    S = K7(6*7).support()
-    for d1 in K_iterator(K7, max_norm.isqrt(),S):
-        if is_squarefree(d1):
-            for d0 in K7.selmer_group_iterator(S,2):
-                d = d0*d1
-                Ed = E.quadratic_twist(d)
-                Nn = Ed.conductor().norm()
-                if min_norm <= Nn <= max_norm:
-                    Ed = Ed.global_minimal_model()
-                    if verb: print(d, Ed.ainvs(), Nn)
-                    yield Ed
-
-
-def curves_K11(max_norm, min_norm=1, verb=False):
-    j = cm_j_invs[11][1]
-    E = EllipticCurve(j=j).change_ring(K11)
-    S = K11(6*11).support()
-    for d1 in K_iterator(K11, max_norm.isqrt(),S):
-        if is_squarefree(d1):
-            for d0 in K11.selmer_group_iterator(S,2):
-                d = d0*d1
-                Ed = E.quadratic_twist(d)
-                Nn = Ed.conductor().norm()
-                if min_norm <= Nn <= max_norm:
-                    Ed = Ed.global_minimal_model()
-                    if verb: print(d, Ed.ainvs(), Nn)
-                    yield Ed
-
-# use for K from 11 on
-def curves_K(d, max_norm, min_norm=1, verb=False):
-    j = cm_j_invs[d][1]
-    K = fields[d]
+    K = fields[2]
+    j = cm_j_invs[2][1] # = 8000
     E = EllipticCurve(j=j).change_ring(K)
-    S = K(6*11).support()
+    S = K(6).support()
     for d1 in K_iterator(K, max_norm.isqrt(),S):
         if is_squarefree(d1):
             for d0 in K.selmer_group_iterator(S,2):
@@ -172,13 +110,14 @@ def curves_K(d, max_norm, min_norm=1, verb=False):
 
 
 def curves_K3(max_norm, min_norm=1, f=1, verb=False):
+    K = fields[3]
     j = cm_j_invs[3][f]
     m = [0,6,2,2][f]
-    E = EllipticCurve(j=j).change_ring(K3)
-    S = K3(6).support()
+    E = EllipticCurve(j=j).change_ring(K)
+    S = K(6).support()
     supps = {}
     twists = {}
-    for d1 in K3_iterator(max_norm.isqrt(),S):
+    for d1 in K_iterator(max_norm.isqrt(),S):
         if is_powerfree(d1,2):
             print("d1={}".format(d1))
             d1supp = d1.support()
@@ -186,7 +125,7 @@ def curves_K3(max_norm, min_norm=1, f=1, verb=False):
             if t in supps:
                 continue
             supps[t] = 1
-            for d in K3.selmer_group_iterator(S+d1supp,m):
+            for d in K.selmer_group_iterator(S+d1supp,m):
                 if d in twists:
                     continue
                 twists[d] = 1
@@ -200,6 +139,40 @@ def curves_K3(max_norm, min_norm=1, f=1, verb=False):
                     Ed = Ed.global_minimal_model()
                     if verb: print(d, Ed.ainvs(), Nn)
                     yield Ed
+
+def curves_K7(max_norm, min_norm=1, f=1, verb=False):
+    K = fields[7]
+    j = cm_j_invs[7][f]
+    E = EllipticCurve(j=j).change_ring(K)
+    S = K(6*7).support()
+    for d1 in K_iterator(K, max_norm.isqrt(),S):
+        if is_squarefree(d1):
+            for d0 in K.selmer_group_iterator(S,2):
+                d = d0*d1
+                Ed = E.quadratic_twist(d)
+                Nn = Ed.conductor().norm()
+                if min_norm <= Nn <= max_norm:
+                    Ed = Ed.global_minimal_model()
+                    if verb: print(d, Ed.ainvs(), Nn)
+                    yield Ed
+
+# use for K from 11 on (odd, only one f, only 2 units)
+def curves_K(d, max_norm, min_norm=1, verb=False):
+    K = fields[d]
+    j = cm_j_invs[d][1]
+    E = EllipticCurve(j=j).change_ring(K)
+    S = K(6*11).support()
+    for d1 in K_iterator(K, max_norm.isqrt(),S):
+        if is_squarefree(d1):
+            for d0 in K.selmer_group_iterator(S,2):
+                d = d0*d1
+                Ed = E.quadratic_twist(d)
+                Nn = Ed.conductor().norm()
+                if min_norm <= Nn <= max_norm:
+                    Ed = Ed.global_minimal_model()
+                    if verb: print(d, Ed.ainvs(), Nn)
+                    yield Ed
+
 
 def dump(Elist, outfilename=None):
     if outfilename == None:

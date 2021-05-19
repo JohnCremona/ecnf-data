@@ -72,7 +72,7 @@ def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
     Elist = [0 for i in range(ncurves)]
     for i in range(ncurves):
         mag.eval('E := curves[%s];\n' % (i+1))
-        Elist[i] = EllipticCurve(mag('aInvariants(E);\n').sage())
+        Elist[i] = EllipticCurve(mag('aInvariants(E);\n').sage()).global_minimal_model(semi_global=True)
     if local_magma:
         mag.quit()
     return Elist
@@ -173,15 +173,16 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             else:
                 print("**********No curve found to match newform {}*************".format(class_label))
                 E = None
+            # output 3 lines per curve, as expected by the function read_curves_magma:
+            output("Conductor {}\n".format(ideal_to_string(N)))
+            output("Isogeny_class {}\n".format(class_label))
             if E!=None:
-                # output 3 lines per curve, as expected by the function read_curves_magma:
-
-                output("Conductor {}\n".format(ideal_to_string(E.conductor())))
-                output("Isogeny_class {}\n".format(class_label))
                 ainvs = str(list(E.ainvs())).replace("a", "w")
                 output("Curve {}\n".format(ainvs))
-                if outfilename:
-                    outfile.flush()
+            else:
+                output("No curve found{}\n")
+            if outfilename:
+                outfile.flush()
 
 def make_ec_dict(E):
     K = E.base_field()
