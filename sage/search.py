@@ -1,9 +1,9 @@
 from sys import stdout
 import os
 from sage.all import Magma, EllipticCurve
-from fields import field_label, get_IQF_info, get_field_name, ideal_from_IQF_label
+from fields import get_field_label, get_IQF_info, get_field_name, ideal_from_IQF_label
 from files import read_newform_data, read_missing_levels, BIANCHI_DATA_DIR
-from psort import ideal_from_label, ideal_label
+from psort import ideal_label
 from codec import ideal_to_string, old_ideal_label
 
 def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
@@ -126,7 +126,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             print("Using {} for newform input".format(bmf_filename))
 
     K, Plist = get_IQF_info(field_info_filename, 200, verbose)
-    field_lab = field_label(K)
+    field_lab = get_field_label(K)
     if outfilename:
         outfile=open(outfilename, mode="a")
         if verbose:
@@ -149,7 +149,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if max_norm and NN>max_norm:
             continue
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
-        level_label = conductor_label = ideal_label(N)
+        level_label = ideal_label(N)
         if verbose:
             print("Missing conductor %s = %s" % (level_label,N))
         nfs = newforms[level]
@@ -188,7 +188,7 @@ def make_ec_dict(E):
     N = E.conductor()
     ai = E.ainvs()
     ec = {}
-    ec['field_label'] = field_label(K)
+    ec['field_label'] = get_field_label(K)
     ec['conductor_label'] = old_ideal_label(N)
     ec['iso_label'] = 'a'  # placeholder only
     ec['number'] = int(1) # placeholder only
@@ -323,7 +323,7 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
             print("Using {} for newform input".format(bmf_filename))
 
     K, Plist = get_IQF_info(field_info_filename, 200, verbose)
-    field_lab = field_label(K)
+    field_lab = get_field_label(K)
     if outfilename:
         output_magma_field(field_lab,K,Plist,outfilename)
         if verbose:

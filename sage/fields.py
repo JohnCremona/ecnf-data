@@ -60,7 +60,7 @@ def nf_lookup(label, verbose=False):
             print("We do not have it!")
         return None
 
-def field_label(K, verbose=False):
+def get_field_label(K, verbose=False):
     r"""
     Return the label of field K (or None if it is not in nf_table)
     """
@@ -103,7 +103,7 @@ def add_field(K, field_label=None, prime_norm_bound=200, nf_data_file=None):
         return
 
     if field_label==None:
-        field_label = field_label(K)
+        field_label = get_field_label(K)
         print("...created new label {}".format(field_label))
     print("Adding {} (label={}) to fields collection...".format(K,field_label))
     Kdata = {}

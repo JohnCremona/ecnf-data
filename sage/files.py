@@ -294,7 +294,7 @@ def read_curves_magma(infile):
                 N = K.ideal([K(a) for a in cond.split(",")])
             elif data[0] == 'Isogeny_class':
                 conductor_label, iso_label = data[1].split("-")
-                record['conductor_norm'] = conductor_norm = ZZ(conductor_label.split(".")[0])
+                record['conductor_norm'] = ZZ(conductor_label.split(".")[0])
                 record['conductor_label'] = conductor_label
                 record['iso_label'] = iso_label
             elif data[0] == 'Curve':
