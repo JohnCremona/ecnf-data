@@ -1,7 +1,7 @@
 from sage.all import QuadraticField, NumberField, srange, EllipticCurve, polygen, QQ, is_squarefree
 from codec import ideal_to_string
-from psort import ideal_label
-#from nfscripts import make_curves_line, make_ec_dict
+from psort import ideal_label, primes_iter
+from nfscripts import ap_list #make_curves_line, make_ec_dict
 
 x = polygen(QQ)
 
@@ -178,9 +178,22 @@ def dump(Elist, outfilename=None):
     if outfilename == None:
         return
     outfile = open(outfilename, mode='w')
-    field_lab = "2.0.{}.1".format(Elist[0].base_field().discriminant().abs())
+    K = Elist[0].base_field()
+    Plist = list(primes_iter(K,maxnorm=100))
+    def sort_key(E):
+        return (E.conductor().norm(), E.conductor(), ap_list(E,Plist))
+
+    field_lab = "2.0.{}.1".format(K.discriminant().abs())
     outfile.write("Field {}\n".format(field_lab))
     cond_lab_count = {}
+    print("Before sorting:")
+    for E in Elist:
+        print(E.ainvs())
+    Elist.sort(key=sort_key)
+    print("After sorting:")
+    for E in Elist:
+        print(E.conductor().norm(), E.conductor(), E.ainvs(), ap_list(E, Plist[:5]))
+
     for E in Elist:
         cond = E.conductor()
         cond_label = ideal_label(cond)
@@ -251,12 +264,12 @@ def cm_curves(field,max_norm, min_norm=1, outfilename=None, verbose=False):
     if verbose:
         print("Qsqrt-{}, norms {}-{}".format(field, min_norm,max_norm))
 
-        E11 = list(curves_K(field, max_norm, min_norm,verbose))
-        assert all_non_iso(E11)
-        if verbose:
-            print(" found {} curves".format(len(E11)))
-        dump(E11, outfilename)
-        for E in E11:
-            print(E.ainvs(), E.conductor())
-        return E11
+    EE = list(curves_K(field, max_norm, min_norm,verbose))
+    assert all_non_iso(EE)
+    if verbose:
+        print(" found {} curves".format(len(EE)))
+    dump(EE, outfilename)
+    for E in EE:
+        print(E.ainvs(), E.conductor(), E.conductor().norm())
+    return EE
 

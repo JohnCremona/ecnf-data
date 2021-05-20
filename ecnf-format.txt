@@ -260,16 +260,18 @@ In each file, every line starts with the following four columns
 except that in galdata.* these are combined into a single label column
 {}-{}-{}{}.
 
-In curves.* there are 8 further columns, 12 in all:
+In curves.* there are 10 further columns, 14 in all:
 
 5. conductor_ideal
 6. conductor_norm
 7. ainvs
 8. jinv
-9. equation
-10. cm
-11. base_change
-12. q_curve
+9. disc
+10. normdisc
+11. equation
+12. cm
+13. base_change
+14. q_curve
 
 In isoclass.* there are 2 further columns, 6 in all:
 

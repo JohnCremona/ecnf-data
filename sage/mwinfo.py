@@ -261,7 +261,7 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         if verbose:
             print("Calling Magma's AnalyticRank()")
         ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-        if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
+        if False:#'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
             if verbose:
                 print("Special CM case: E = {}".format(E.ainvs()))
                 print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
