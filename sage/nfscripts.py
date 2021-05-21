@@ -761,6 +761,7 @@ def make_isogeny_class(curve, verbose=False, prec=None):
 
     ainvs = curve['ainvs']
     K = ainvs[0].parent()
+    add_field(K)
     E = EllipticCurve(K, ainvs)
 
     Cl = E.isogeny_class()
@@ -815,6 +816,7 @@ def make_isogeny_class(curve, verbose=False, prec=None):
         record['normdisc'] = Dnorm
         record['equation'] = latex_equation(ainvs)
         record['cm'] = cm_j_dict.get(j, 0)
+        print("j-invariant = {}, CM = {}".format(j, record['cm']))
 
         # The following will fail for curves which are
         # base-changes of curves over Q with large conductor (and
