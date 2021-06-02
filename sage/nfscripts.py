@@ -756,7 +756,7 @@ def make_isogeny_class(curve, verbose=False, prec=None):
     from galrep import get_galrep_data
 
     class_label = "-".join([curve[k] for k in ['field_label', 'conductor_label', 'iso_label']])
-    if verbose:
+    if True:
         print("Processing isogeny class {}".format(class_label))
 
     ainvs = curve['ainvs']
@@ -816,7 +816,8 @@ def make_isogeny_class(curve, verbose=False, prec=None):
         record['normdisc'] = Dnorm
         record['equation'] = latex_equation(ainvs)
         record['cm'] = cm_j_dict.get(j, 0)
-        print("j-invariant = {}, CM = {}".format(j, record['cm']))
+        if verbose:
+            print("j-invariant = {}, CM = {}".format(j, record['cm']))
 
         # The following will fail for curves which are
         # base-changes of curves over Q with large conductor (and

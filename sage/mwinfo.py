@@ -294,7 +294,7 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         data['heights'] = [P.height(prec) for P in gens]
         # compute regulator if either rank lower and upper bounds
         # agree, or lower rank bound = analytic rank:
-        if data['rank'] is not None or data['analytic_rank'] is not None:
+        if data['rank'] is not None or (ar is not None and mw[0][0]==ar):
             reg = E.regulator_of_points(gens, prec) if gens else 1
         else:
             reg = None

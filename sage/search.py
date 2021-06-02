@@ -180,7 +180,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
                 ainvs = str(list(E.ainvs())).replace("a", "w")
                 output("Curve {}\n".format(ainvs))
             else:
-                output("No curve found{}\n")
+                output("No curve found\n")
             if outfilename:
                 outfile.flush()
 
