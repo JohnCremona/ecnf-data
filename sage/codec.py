@@ -462,7 +462,7 @@ def encode_points(Plist):
     return '[' + ','.join([encode_point(P) for P in Plist]) + ']'
 
 def decode_points_one2many(gens):
-    return [] if gens == '[]' else gens.replace("[[[", "[[").replace("]]]", "]]").replace("]], [[", "]];[[").split(";")
+    return [] if gens == '[]' else gens.replace("[[[", "[[").replace("]]]", "]]").replace("]],[[", "]];[[").split(";")
 
 def encode_points_many2one(gens):
     return ("["+",".join(gens)+"]").replace(" ", "")

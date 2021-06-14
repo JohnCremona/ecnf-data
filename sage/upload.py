@@ -4,7 +4,7 @@ from sage.all import Set
 from files import ECNF_DIR, ECNF_UPLOAD_DIR, all_ftypes, read_all_field_data
 from schemas import ec_nfcurves_schema, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
 
-# Any columns in ec_ncurves which are lists must be in this list so
+# Any columns in ec_nfcurves which are lists must be in this list so
 # that the upload file uses "{...}" instead of "[...]":
 
 postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes', 'conductor_norm_factors']
