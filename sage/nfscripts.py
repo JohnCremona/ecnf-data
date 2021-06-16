@@ -16,6 +16,12 @@ from codec import (ainvs_to_string, ainvs_from_string,
 
 from magma import get_magma
 
+def get_label(EQ):
+    try:
+        return EQ.label()
+    except LookupError:
+        return "{}.?.?".format(EQ.conductor())
+
 def torsion_data(E):
     T = E.torsion_subgroup()
     tdata = {}
@@ -824,7 +830,12 @@ def make_isogeny_class(curve, verbose=False, prec=None):
         # The following will fail for curves which are
         # base-changes of curves over Q with large conductor (and
         # hence no Cremona label)
-        record['base_change'] = [cQ.label() for cQ in c.descend_to(QQ)]
+        EEQ = c.descend_to(QQ)
+        if EEQ:
+            if verbose:
+                print("curves     over Q: {}".format([E.ainvs() for E in EEQ]))
+                print("conductors over Q: {}".format([E.conductor() for E in EEQ]))
+        record['base_change'] = [get_label(cQ) for cQ in c.descend_to(QQ)]
 
         # local_data (keys 'local_data', 'non_min_p', 'minD', 'bad_primes'):
         ld = local_data(c)
