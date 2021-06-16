@@ -764,7 +764,9 @@ def make_isogeny_class(curve, verbose=False, prec=None):
     add_field(K)
     E = EllipticCurve(K, ainvs)
 
-    Cl = E.isogeny_class()
+    from sage.schemes.elliptic_curves.isogeny_class import IsogenyClass_EC_NumberField
+    Cl = IsogenyClass_EC_NumberField(E, reducible_primes=None, algorithm='Billerey', minimal_models=True)
+    #Cl = E.isogeny_class()
     clist0 = [minimal_model(C) for C in Cl.curves]
     mat0 = Cl.matrix()
     clist = sorted(clist0, key=isomorphism_class_key)
