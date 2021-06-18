@@ -1,0 +1,1359 @@
+Field 2.0.67.1
+Field 2.0.67.1
+Field 2.0.67.1
+Field 2.0.67.1
+Field 2.0.67.1
+Field 2.0.67.1
+Conductor (-2*w+1)
+Isogeny_class 67.1-a
+Curve [0, 1, 1, -12, -21]
+Conductor (11)
+Isogeny_class 121.1-a
+Curve [0, -1, 1, -10, -20]
+Conductor (3*w-3)
+Isogeny_class 153.2-a
+Curve [w + 1, w - 1, 1, -5*w - 14, 20]
+Conductor (-3*w)
+Isogeny_class 153.1-a
+Curve [w, w + 1, w, -3*w - 1, -5*w + 16]
+Conductor (14)
+Isogeny_class 196.1-a
+Curve [1, 0, 1, 4, -6]
+Conductor (15)
+Isogeny_class 225.1-a
+Curve [1, 1, 1, -10, -10]
+Conductor (3*w-12)
+Isogeny_class 261.2-a
+Curve [w + 1, w + 1, w + 1, -4*w - 6, -3*w + 17]
+Conductor (3*w+9)
+Isogeny_class 261.1-a
+Curve [w, w, w + 1, -4*w + 6, 12]
+Conductor (-4*w+6)
+Isogeny_class 284.1-a
+Curve [w, w + 1, 0, -2*w - 4, 4]
+Conductor (4*w+2)
+Isogeny_class 284.2-a
+Curve [w + 1, w - 1, w, -6*w + 1, w + 24]
+Conductor (17)
+Isogeny_class 289.2-a
+Curve [1, -1, 1, -1, -14]
+Conductor (17)
+Isogeny_class 289.2-b
+Curve [w, -1, w, -w + 17, 0]
+Conductor (17)
+Isogeny_class 289.2-c
+Curve [w + 1, -w - 1, w + 1, -w + 16, -w]
+Conductor (-2*w+17)
+Isogeny_class 323.1-a
+Curve [1, -w - 1, w + 1, -16*w + 79, 27*w + 217]
+Conductor (2*w+15)
+Isogeny_class 323.4-a
+Curve [1, w + 1, w + 1, 17*w + 63, -12*w + 308]
+Conductor (19)
+Isogeny_class 361.2-a
+Curve [0, 1, 1, -9, -15]
+Conductor (20)
+Isogeny_class 400.1-a
+Curve [0, 1, 0, 4, 4]
+Conductor (3*w-18)
+Isogeny_class 423.2-a
+Curve [w, w, 0, -3*w - 2, w + 7]
+Conductor (3*w+15)
+Isogeny_class 423.1-a
+Curve [w + 1, w + 1, 1, -3*w - 14, -2*w + 12]
+Conductor (21)
+Isogeny_class 441.1-a
+Curve [1, 0, 0, -4, -1]
+Conductor (24)
+Isogeny_class 576.1-a
+Curve [0, -1, 0, -4, 4]
+Conductor (-6*w+3)
+Isogeny_class 603.1-a
+Curve [1, 1, 0, -794, 8289]
+Conductor (-6*w+3)
+Isogeny_class 603.1-b
+Curve [1, 0, 0, -1, 2]
+Conductor (-6*w+3)
+Isogeny_class 603.1-c
+Curve [0, -1, 1, 2, 0]
+Conductor (3*w-24)
+Isogeny_class 657.2-a
+Curve [w, 0, w, -w + 13, 3]
+Conductor (3*w+21)
+Isogeny_class 657.1-a
+Curve [w + 1, -w, w + 1, -w + 12, -w + 3]
+Conductor (26)
+Isogeny_class 676.1-a
+Curve [1, 0, 1, -5, -8]
+Conductor (26)
+Isogeny_class 676.1-b
+Curve [1, -1, 1, -3, 3]
+Conductor (27)
+Isogeny_class 729.1-a
+Curve [0, 0, 1, 0, 0]
+Conductor (7*w-12)
+Isogeny_class 893.1-a
+Curve [w, -w, 1, 5*w - 4, -10*w + 23]
+Conductor (7*w+5)
+Isogeny_class 893.4-a
+Curve [w + 1, -1, 1, -6*w + 1, 10*w + 13]
+Conductor (30)
+Isogeny_class 900.1-a
+Curve [1, 0, 1, 1, 2]
+Conductor (32)
+Isogeny_class 1024.1-a
+Curve [0, 0, 0, -1, 0]
+Conductor (6*w-24)
+Isogeny_class 1044.2-a
+Curve [w, 0, 1, -2*w, 2]
+Conductor (6*w+18)
+Isogeny_class 1044.1-a
+Curve [w + 1, -w, 1, w - 2, 2]
+Conductor (-8*w+4)
+Isogeny_class 1072.1-a
+Curve [0, -1, 0, 3, -7]
+Conductor (8*w-8)
+Isogeny_class 1088.2-a
+Curve [0, -w, 0, -4, 0]
+Conductor (-8*w)
+Isogeny_class 1088.1-a
+Curve [0, w - 1, 0, -4, 0]
+Conductor (33)
+Isogeny_class 1089.1-a
+Curve [1, 1, 0, -11, 0]
+Conductor (34)
+Isogeny_class 1156.2-a
+Curve [1, 0, 0, -3, 1]
+Conductor (-6*w+27)
+Isogeny_class 1179.1-a
+Curve [0, w - 1, 1, -13, -3*w - 6]
+Conductor (6*w+21)
+Isogeny_class 1179.2-a
+Curve [0, -w, 1, -13, 3*w - 9]
+Conductor (35)
+Isogeny_class 1225.1-a
+Curve [0, 1, 1, 9, 1]
+Conductor (3*w-35)
+Isogeny_class 1273.1-a
+Curve [w, w + 1, 1, -4*w - 2, 2*w + 6]
+Conductor (-3*w-32)
+Isogeny_class 1273.2-a
+Curve [w + 1, w - 1, w + 1, -5*w + 1, -w + 2]
+Conductor (36)
+Isogeny_class 1296.1-a
+Curve [0, 0, 0, 0, 1]
+Conductor (37)
+Isogeny_class 1369.2-a
+Curve [0, 1, 1, -23, -50]
+Conductor (37)
+Isogeny_class 1369.2-b
+Curve [0, 0, 1, -1, 0]
+Conductor (9*w-9)
+Isogeny_class 1377.2-a
+Curve [w + 1, 1, 1, w - 41, -92*w + 166]
+Conductor (-9*w)
+Isogeny_class 1377.1-a
+Curve [w, -w - 1, w + 1, -w - 23, 92*w + 114]
+Conductor (38)
+Isogeny_class 1444.2-a
+Curve [1, 1, 1, 0, 1]
+Conductor (38)
+Isogeny_class 1444.2-b
+Curve [1, 0, 1, 9, 90]
+Conductor (-8*w+25)
+Isogeny_class 1513.3-a
+Curve [w, -w - 1, w, 2*w + 15, -2*w + 2]
+Conductor (8*w+17)
+Isogeny_class 1513.2-a
+Curve [w + 1, 1, 0, -w, 0]
+Conductor (39)
+Isogeny_class 1521.1-a
+Curve [1, 1, 0, -4, -5]
+Conductor (9*w-18)
+Isogeny_class 1539.2-a
+Curve [w + 1, 1, w + 1, -3*w + 8, 6]
+Conductor (9*w-18)
+Isogeny_class 1539.2-b
+Curve [w + 1, 1, w, -4*w + 10, -5*w + 26]
+Conductor (9*w+9)
+Isogeny_class 1539.1-a
+Curve [w, -w - 1, 0, 3*w + 6, -3*w + 1]
+Conductor (9*w+9)
+Isogeny_class 1539.1-b
+Curve [w, -w - 1, 1, 4*w + 6, w + 15]
+Conductor (40)
+Isogeny_class 1600.1-a
+Curve [0, 0, 0, -7, -6]
+Conductor (-10*w+5)
+Isogeny_class 1675.1-a
+Curve [0, 0, 1, -2, 2]
+Conductor (6*w-36)
+Isogeny_class 1692.2-a
+Curve [w + 1, w, w + 1, 461*w + 211, 3231*w + 23632]
+Conductor (6*w-36)
+Isogeny_class 1692.2-b
+Curve [w, -w + 1, 0, -w + 23, -11*w - 61]
+Conductor (6*w+30)
+Isogeny_class 1692.1-a
+Curve [w, w - 1, w + 1, -471*w + 690, -2551*w + 34100]
+Conductor (6*w+30)
+Isogeny_class 1692.1-b
+Curve [w + 1, 0, 0, w + 22, 11*w - 72]
+Conductor (8*w-30)
+Isogeny_class 1748.1-a
+Curve [w + 1, -w + 1, w, -66*w - 45, 495*w - 768]
+Conductor (8*w-30)
+Isogeny_class 1748.1-b
+Curve [w + 1, -w, 1, -w, 0]
+Conductor (-8*w-22)
+Isogeny_class 1748.4-a
+Curve [w, 1, w + 1, 64*w - 110, -496*w - 273]
+Conductor (-8*w-22)
+Isogeny_class 1748.4-b
+Curve [w, 0, 1, 0, 0]
+Conductor (42)
+Isogeny_class 1764.1-a
+Curve [1, 1, 1, -4, 5]
+Conductor (43)
+Isogeny_class 1849.1-a
+Curve [0, 1, 1, 0, 0]
+Conductor (10*w-19)
+Isogeny_class 1871.2-a
+Curve [0, -w + 1, 1, -6, w + 2]
+Conductor (-10*w-9)
+Isogeny_class 1871.1-a
+Curve [0, w, 1, -6, -w + 3]
+Conductor (-6*w+39)
+Isogeny_class 1899.1-a
+Curve [w, 1, 0, -w + 3, w]
+Conductor (6*w+33)
+Isogeny_class 1899.2-a
+Curve [w + 1, -w + 1, 0, w + 2, -w + 1]
+Conductor (44)
+Isogeny_class 1936.1-a
+Curve [0, 1, 0, 3, -1]
+Conductor (9*w-29)
+Isogeny_class 1957.2-a
+Curve [w + 1, w, w, -5*w - 4, -2*w + 26]
+Conductor (9*w+20)
+Isogeny_class 1957.3-a
+Curve [w, w - 1, w, -4*w + 8, w + 12]
+Conductor (45)
+Isogeny_class 2025.1-a
+Curve [1, -1, 0, 0, -5]
+Conductor (10*w-24)
+Isogeny_class 2036.2-a
+Curve [w + 1, -1, 0, -2*w + 5, w - 1]
+Conductor (10*w+14)
+Isogeny_class 2036.1-a
+Curve [w, -w, 0, 2*w + 3, -w]
+Conductor (-5*w+43)
+Isogeny_class 2059.1-a
+Curve [1, 0, w, -w - 9, -w - 7]
+Conductor (-5*w-38)
+Isogeny_class 2059.4-a
+Curve [1, 0, w + 1, -10, -8]
+Conductor (46)
+Isogeny_class 2116.2-a
+Curve [1, -1, 0, -10, -12]
+Conductor (10*w-28)
+Isogeny_class 2204.1-a
+Curve [w + 1, -w, w + 1, -2*w + 18, -8]
+Conductor (-10*w-18)
+Isogeny_class 2204.4-a
+Curve [w, 0, w, 18, -w - 7]
+Conductor (w-48)
+Isogeny_class 2273.2-a
+Curve [w, 1, w, -w + 11, 4]
+Conductor (w+47)
+Isogeny_class 2273.1-a
+Curve [w + 1, -w + 1, w + 1, -w + 10, -w + 4]
+Conductor (48)
+Isogeny_class 2304.1-a
+Curve [0, w + 1, 0, w - 135, 241*w - 188]
+Conductor (48)
+Isogeny_class 2304.1-b
+Curve [0, -w - 1, 0, w - 135, -241*w + 188]
+Conductor (48)
+Isogeny_class 2304.1-c
+Curve [0, -w - 1, 0, w - 6063, -16465*w + 11264]
+Conductor (48)
+Isogeny_class 2304.1-d
+Curve [0, w + 1, 0, w - 6063, 16465*w - 11264]
+Conductor (48)
+Isogeny_class 2304.1-e
+Curve [0, w + 1, 0, w + 1, w]
+Conductor (48)
+Isogeny_class 2304.1-f
+Curve [0, 1, 0, -4, -4]
+Conductor (48)
+Isogeny_class 2304.1-g
+Curve [0, -w - 1, 0, w + 1, -w]
+Conductor (48)
+Isogeny_class 2304.1-h
+Curve [0, -w - 1, 0, w - 16, -2*w + 9]
+Conductor (48)
+Isogeny_class 2304.1-i
+Curve [0, w + 1, 0, w - 16, 2*w - 9]
+Conductor (48)
+Isogeny_class 2304.1-j
+Curve [0, -w - 1, 0, w + 681, 1439*w - 1060]
+Conductor (48)
+Isogeny_class 2304.1-k
+Curve [0, w + 1, 0, w + 681, -1439*w + 1060]
+Conductor (9*w-36)
+Isogeny_class 2349.2-a
+Curve [w + 1, 1, w + 1, -3*w + 11, w - 1]
+Conductor (9*w+27)
+Isogeny_class 2349.1-a
+Curve [w, -w - 1, 0, 3*w + 9, -4*w - 8]
+Conductor (49)
+Isogeny_class 2401.1-a
+Curve [1, -1, 0, -2, -1]
+Conductor (-12*w+6)
+Isogeny_class 2412.1-a
+Curve [1, 0, 1, -145, 692]
+Conductor (-12*w+6)
+Isogeny_class 2412.1-b
+Curve [1, 0, 1, -10, -4]
+Conductor (-12*w+6)
+Isogeny_class 2412.1-c
+Curve [1, 1, 0, -2, -12]
+Conductor (-12*w+6)
+Isogeny_class 2412.1-d
+Curve [1, 1, 1, -37, 71]
+Conductor (12*w-7)
+Isogeny_class 2413.1-a
+Curve [w + 1, -1, w + 1, 10, -10*w - 19]
+Conductor (-12*w+5)
+Isogeny_class 2413.4-a
+Curve [w, -w, w, -2*w + 12, 9*w - 28]
+Conductor (10*w-33)
+Isogeny_class 2459.2-a
+Curve [0, -w, 1, -3*w + 8, -5*w - 46]
+Conductor (10*w+23)
+Isogeny_class 2459.1-a
+Curve [0, w - 1, 1, 3*w + 5, 5*w - 51]
+Conductor (50)
+Isogeny_class 2500.1-a
+Curve [1, 0, 1, -1, -2]
+Conductor (50)
+Isogeny_class 2500.1-b
+Curve [1, 1, 1, -13, -219]
+Conductor (10*w-34)
+Isogeny_class 2516.1-a
+Curve [1, w + 1, w, w - 4, 1]
+Conductor (10*w+24)
+Isogeny_class 2516.4-a
+Curve [1, -w - 1, w, -4, 5]
+Conductor (3*w-51)
+Isogeny_class 2601.1-a
+Curve [1, -w, 1, w + 70, -156*w + 783]
+Conductor (51)
+Isogeny_class 2601.2-a
+Curve [0, 1, 1, 1, -1]
+Conductor (-3*w-48)
+Isogeny_class 2601.3-a
+Curve [1, w - 1, 1, -w + 71, 156*w + 627]
+Conductor (10*w-37)
+Isogeny_class 2699.1-a
+Curve [1, w, w, -6, -w + 3]
+Conductor (10*w+27)
+Isogeny_class 2699.2-a
+Curve [1, -w + 1, w + 1, -w - 6, 2]
+Conductor (52)
+Isogeny_class 2704.1-a
+Curve [0, 0, 0, 1, -10]
+Conductor (53)
+Isogeny_class 2809.1-a
+Curve [1, -1, 1, 0, 0]
+Conductor (13*w-7)
+Isogeny_class 2831.4-a
+Curve [w + 1, -w - 1, w, 16, -w + 1]
+Conductor (13*w-6)
+Isogeny_class 2831.1-a
+Curve [w, -1, w + 1, -2*w + 17, 0]
+Conductor (7*w-49)
+Isogeny_class 2891.2-a
+Curve [1, 1, w, w - 1, 7]
+Conductor (7*w+42)
+Isogeny_class 2891.1-a
+Curve [1, 1, w + 1, -2*w, -w + 7]
+Conductor (-6*w+51)
+Isogeny_class 2907.1-a
+Curve [w, -1, w, 17, -w]
+Conductor (-6*w+51)
+Isogeny_class 2907.1-b
+Curve [w + 1, -1, w + 1, -18*w + 11, -15*w + 166]
+Conductor (3*w-54)
+Isogeny_class 2907.3-a
+Curve [w, -w + 1, w + 1, w + 12, -2*w + 3]
+Conductor (3*w+51)
+Isogeny_class 2907.2-a
+Curve [w + 1, 0, w, -3*w + 14, w + 2]
+Conductor (6*w+45)
+Isogeny_class 2907.4-a
+Curve [w + 1, -w - 1, w + 1, -2*w + 17, -1]
+Conductor (6*w+45)
+Isogeny_class 2907.4-b
+Curve [w, -w, w, 16*w - 5, 14*w + 152]
+Conductor (54)
+Isogeny_class 2916.1-a
+Curve [1, -1, 0, 12, 8]
+Conductor (54)
+Isogeny_class 2916.1-b
+Curve [1, -1, 1, 1, -1]
+Conductor (-12*w+29)
+Isogeny_class 2941.3-a
+Curve [w + 1, w - 1, w + 1, -6*w + 3, 2*w + 13]
+Conductor (12*w+17)
+Isogeny_class 2941.2-a
+Curve [w, w + 1, 1, -3*w - 1, w + 3]
+Conductor (-4*w+54)
+Isogeny_class 2972.1-a
+Curve [w, 1, 1, -w + 4, w - 2]
+Conductor (4*w+50)
+Isogeny_class 2972.2-a
+Curve [w + 1, -w + 1, 1, 3, -w - 1]
+Conductor (55)
+Isogeny_class 3025.1-a
+Curve [1, -1, 0, -4, 3]
+Conductor (13*w-22)
+Isogeny_class 3071.2-a
+Curve [w + 1, -1, 1, 7*w - 18, 8*w + 2]
+Conductor (13*w+9)
+Isogeny_class 3071.3-a
+Curve [w, -w, 1, -8*w - 10, -8*w + 10]
+Conductor (56)
+Isogeny_class 3136.1-a
+Curve [0, 0, 0, 1, 2]
+Conductor (56)
+Isogeny_class 3136.1-b
+Curve [0, -1, 0, 0, -4]
+Conductor (3*w-57)
+Isogeny_class 3231.2-a
+Curve [w + 1, w - 1, 1, -5*w - 9, 17]
+Conductor (3*w+54)
+Isogeny_class 3231.1-a
+Curve [w, w + 1, w, -3*w + 4, 13]
+Conductor (-9*w+48)
+Isogeny_class 3249.1-a
+Curve [0, -1, 1, -2*w + 11, -6*w + 15]
+Conductor (-9*w+48)
+Isogeny_class 3249.1-b
+Curve [w, -w, w + 1, -23*w + 141, 326*w - 1186]
+Conductor (-9*w+48)
+Isogeny_class 3249.1-c
+Curve [w, -w + 1, 0, 3*w - 6, 12]
+Conductor (57)
+Isogeny_class 3249.2-a
+Curve [1, 0, 1, -7, 5]
+Conductor (57)
+Isogeny_class 3249.2-b
+Curve [0, -1, 1, -2, 2]
+Conductor (57)
+Isogeny_class 3249.2-c
+Curve [0, 1, 1, 20, -32]
+Conductor (9*w+39)
+Isogeny_class 3249.3-a
+Curve [0, -1, 1, 2*w + 9, 6*w + 9]
+Conductor (9*w+39)
+Isogeny_class 3249.3-b
+Curve [w + 1, -1, w, 21*w + 119, -327*w - 859]
+Conductor (9*w+39)
+Isogeny_class 3249.3-c
+Curve [w + 1, 0, 0, -3*w - 3, 12]
+Conductor (-14*w+7)
+Isogeny_class 3283.1-a
+Curve [1, 0, 1, -80, -275]
+Conductor (-14*w+7)
+Isogeny_class 3283.1-b
+Curve [1, -1, 1, -12, 18]
+Conductor (-14*w+7)
+Isogeny_class 3283.1-c
+Curve [w, -w + 1, w + 1, 2*w + 14, -6*w + 11]
+Conductor (-14*w+7)
+Isogeny_class 3283.1-d
+Curve [w + 1, 0, w, -4*w + 17, 5*w + 6]
+Conductor (2*w-58)
+Isogeny_class 3316.2-a
+Curve [1, -w + 1, w, -w - 4, 3]
+Conductor (2*w+56)
+Isogeny_class 3316.1-a
+Curve [1, w, w + 1, -5, -w + 3]
+Conductor (14*w-14)
+Isogeny_class 3332.2-a
+Curve [w + 1, -1, 1, 56*w + 221, -213*w + 1010]
+Conductor (14*w-14)
+Isogeny_class 3332.2-b
+Curve [w + 1, 0, w + 1, -6*w + 16, 7*w]
+Conductor (14*w-14)
+Isogeny_class 3332.2-c
+Curve [w + 1, -w, 1, 5*w + 50, -18*w + 6]
+Conductor (-14*w)
+Isogeny_class 3332.1-a
+Curve [w, -w, 1, -57*w + 278, 213*w + 797]
+Conductor (-14*w)
+Isogeny_class 3332.1-b
+Curve [w, -w + 1, w, 4*w + 12, -8*w + 8]
+Conductor (-14*w)
+Isogeny_class 3332.1-c
+Curve [w, 0, 1, -6*w + 56, 18*w - 12]
+Conductor (58)
+Isogeny_class 3364.2-a
+Curve [w, -w, 0, 5*w - 18, 6*w + 9]
+Conductor (58)
+Isogeny_class 3364.2-b
+Curve [w + 1, -1, 0, -5*w - 13, -6*w + 15]
+Conductor (58)
+Isogeny_class 3364.2-c
+Curve [1, 1, 1, 5, 9]
+Conductor (58)
+Isogeny_class 3364.2-d
+Curve [1, -1, 0, -1, 1]
+Conductor (2*w-60)
+Isogeny_class 3548.2-a
+Curve [w, -w + 1, 1, 4*w + 18, -2*w - 37]
+Conductor (2*w+58)
+Isogeny_class 3548.1-a
+Curve [w + 1, 0, 1, -5*w + 22, 2*w - 39]
+Conductor (10*w-50)
+Isogeny_class 3700.2-a
+Curve [w, -w + 1, 1, -1, 0]
+Conductor (10*w+40)
+Isogeny_class 3700.1-a
+Curve [w + 1, 0, 1, -w - 1, 0]
+Conductor (61)
+Isogeny_class 3721.1-a
+Curve [1, 0, 0, -2, 1]
+Conductor (-15*w+11)
+Isogeny_class 3781.4-a
+Curve [1, 0, w, -23*w + 32, -60*w + 269]
+Conductor (-15*w+4)
+Isogeny_class 3781.1-a
+Curve [1, 0, w + 1, 22*w + 9, 59*w + 209]
+Conductor (9*w-54)
+Isogeny_class 3807.2-a
+Curve [w, -w - 1, w + 1, 2*w + 22, -7*w - 4]
+Conductor (9*w+45)
+Isogeny_class 3807.1-a
+Curve [w + 1, 1, 1, -2*w + 7, 4*w - 3]
+Conductor (-14*w+30)
+Isogeny_class 3812.1-a
+Curve [w, 1, w, -2*w + 14, w + 6]
+Conductor (14*w+16)
+Isogeny_class 3812.2-a
+Curve [w + 1, -w + 1, w + 1, 12, -2*w + 7]
+Conductor (15*w-15)
+Isogeny_class 3825.2-a
+Curve [0, -w - 1, w + 1, w, -w + 3]
+Conductor (-15*w)
+Isogeny_class 3825.1-a
+Curve [0, w + 1, w, w, 3]
+Conductor (62)
+Isogeny_class 3844.1-a
+Curve [1, -1, 1, -1, 1]
+Conductor (6*w-60)
+Isogeny_class 3852.2-a
+Curve [w, w + 1, w + 1, -2*w + 1, -2*w + 6]
+Conductor (6*w+54)
+Isogeny_class 3852.1-a
+Curve [w + 1, w - 1, 0, -6*w - 10, 36]
+Conductor (63)
+Isogeny_class 3969.1-a
+Curve [1, -1, 0, 9, 0]
+Conductor (-3*w+64)
+Isogeny_class 4057.1-a
+Curve [0, -w - 1, w, w - 5, 7]
+Conductor (3*w+61)
+Isogeny_class 4057.2-a
+Curve [0, w + 1, w + 1, w - 5, -w + 2]
+Conductor (64)
+Isogeny_class 4096.1-a
+Curve [0, 0, 0, 1, 0]
+Conductor (-6*w+63)
+Isogeny_class 4203.1-a
+Curve [0, -1, 1, -110*w + 157, 380*w - 3751]
+Conductor (6*w+57)
+Isogeny_class 4203.2-a
+Curve [0, -1, 1, 110*w + 47, -380*w - 3371]
+Conductor (65)
+Isogeny_class 4225.1-a
+Curve [1, 0, 0, -1, 0]
+Conductor (-16*w+10)
+Isogeny_class 4292.1-a
+Curve [w, 0, 1, -w, 0]
+Conductor (-16*w+6)
+Isogeny_class 4292.4-a
+Curve [w + 1, -w, 1, -1, 0]
+Conductor (-14*w+39)
+Isogeny_class 4307.4-a
+Curve [1, -w + 1, 0, 3*w - 10, -2*w + 7]
+Conductor (-14*w-25)
+Isogeny_class 4307.1-a
+Curve [1, w, 0, -3*w - 7, 2*w + 5]
+Conductor (16*w-16)
+Isogeny_class 4352.2-a
+Curve [0, w, 0, -4, 0]
+Conductor (-16*w)
+Isogeny_class 4352.1-a
+Curve [0, -w + 1, 0, -4, 0]
+Conductor (66)
+Isogeny_class 4356.1-a
+Curve [1, w, 0, -35*w - 135, 199*w + 508]
+Conductor (66)
+Isogeny_class 4356.1-b
+Curve [1, -w + 1, 0, 35*w - 170, -199*w + 707]
+Conductor (66)
+Isogeny_class 4356.1-c
+Curve [1, 0, 1, -6, 4]
+Conductor (66)
+Isogeny_class 4356.1-d
+Curve [1, 0, 0, -45, 81]
+Conductor (66)
+Isogeny_class 4356.1-e
+Curve [1, 1, 1, -2, -1]
+Conductor (7*w-63)
+Isogeny_class 4361.2-a
+Curve [w + 1, -w - 1, 0, w + 7, -w - 2]
+Conductor (7*w+56)
+Isogeny_class 4361.1-a
+Curve [w, -1, 0, -w + 8, w - 3]
+Conductor (15*w-32)
+Isogeny_class 4369.3-a
+Curve [w, 0, 0, -w + 6, w - 3]
+Conductor (15*w+17)
+Isogeny_class 4369.2-a
+Curve [w + 1, -w, 0, w + 5, -w - 2]
+Conductor (9*w-60)
+Isogeny_class 4437.3-a
+Curve [1, w - 1, w + 1, -166*w + 1836, -5816*w - 12924]
+Conductor (-9*w-51)
+Isogeny_class 4437.2-a
+Curve [1, -w, w, 165*w + 1671, 5815*w - 18739]
+Conductor (6*w-65)
+Isogeny_class 4447.2-a
+Curve [0, w + 1, 1, 2*w, w - 1]
+Conductor (-6*w-59)
+Isogeny_class 4447.1-a
+Curve [0, -w - 1, 1, 1, -1]
+Conductor (16*w-21)
+Isogeny_class 4457.2-a
+Curve [1, -w, 1, -7, w - 1]
+Conductor (16*w+5)
+Isogeny_class 4457.1-a
+Curve [1, w - 1, 1, -7, -w]
+Conductor (10*w-58)
+Isogeny_class 4484.3-a
+Curve [w + 1, w - 1, w, -5*w + 14, 2*w + 3]
+Conductor (-10*w-48)
+Isogeny_class 4484.2-a
+Curve [w, w + 1, 0, -3*w + 10, 12*w + 1]
+Conductor (15*w-36)
+Isogeny_class 4581.2-a
+Curve [w + 1, -w, w + 1, -30*w - 154, -21*w + 1102]
+Conductor (15*w+21)
+Isogeny_class 4581.1-a
+Curve [w, 0, w, 28*w - 182, 20*w + 1082]
+Conductor (-16*w+26)
+Isogeny_class 4612.2-a
+Curve [1, w - 1, w + 1, -7, -2*w + 1]
+Conductor (-16*w-10)
+Isogeny_class 4612.1-a
+Curve [1, -w, w, -w - 6, w]
+Conductor (w-69)
+Isogeny_class 4709.4-a
+Curve [w, -1, w, -3*w + 15, 2*w + 6]
+Conductor (w+68)
+Isogeny_class 4709.1-a
+Curve [w + 1, -w - 1, w + 1, w + 12, -3*w + 8]
+Conductor (-15*w+39)
+Isogeny_class 4761.1-a
+Curve [w + 1, -w + 1, 0, -40*w + 108, 524*w - 259]
+Conductor (-15*w+39)
+Isogeny_class 4761.1-b
+Curve [w + 1, w + 1, 1, -w - 20, -5*w - 2]
+Conductor (-15*w+39)
+Isogeny_class 4761.1-c
+Curve [0, w, 1, -3*w + 3, -9*w + 20]
+Conductor (69)
+Isogeny_class 4761.2-a
+Curve [1, 0, 1, -1, -1]
+Conductor (-15*w-24)
+Isogeny_class 4761.3-a
+Curve [w, w, 0, -5*w - 6, 28]
+Conductor (-15*w-24)
+Isogeny_class 4761.3-b
+Curve [w, 1, 0, 40*w + 68, -524*w + 265]
+Conductor (-15*w-24)
+Isogeny_class 4761.3-c
+Curve [0, -w + 1, 1, 3*w, 9*w + 11]
+Conductor (16*w-30)
+Isogeny_class 4772.2-a
+Curve [1, -w, 0, -4, 0]
+Conductor (-16*w-14)
+Isogeny_class 4772.1-a
+Curve [1, w - 1, 0, -4, 0]
+Conductor (-6*w+68)
+Isogeny_class 4828.2-a
+Curve [w, w - 1, 1, -7*w - 1, 8*w + 22]
+Conductor (2*w-70)
+Isogeny_class 4828.4-a
+Curve [w, 0, 1, -123*w + 472, 564*w + 5420]
+Conductor (2*w+68)
+Isogeny_class 4828.1-a
+Curve [w + 1, -w, 1, 122*w + 349, -564*w + 5984]
+Conductor (6*w+62)
+Isogeny_class 4828.3-a
+Curve [w + 1, w, 0, -w - 16, -9*w - 8]
+Conductor (70)
+Isogeny_class 4900.1-a
+Curve [1, -1, 1, 2, -3]
+Conductor (17*w-17)
+Isogeny_class 4913.3-a
+Curve [w, -w - 1, 1, 3*w + 17, -8*w - 13]
+Conductor (17*w-17)
+Isogeny_class 4913.3-b
+Curve [w + 1, -1, w, -9*w + 25, 8*w + 64]
+Conductor (17*w-17)
+Isogeny_class 4913.3-c
+Curve [1, w, w, 6*w - 12, -12*w - 53]
+Conductor (-17*w)
+Isogeny_class 4913.2-a
+Curve [w + 1, 1, w, -3*w + 20, 5*w - 1]
+Conductor (-17*w)
+Isogeny_class 4913.2-b
+Curve [1, -w + 1, w + 1, -7*w - 6, 11*w - 65]
+Conductor (-17*w)
+Isogeny_class 4913.2-c
+Curve [w, -w, w + 1, 7*w + 17, -9*w + 72]
+Conductor (15*w-42)
+Isogeny_class 4959.1-a
+Curve [w + 1, w, 1, -109*w + 540, -449*w - 4464]
+Conductor (-6*w+69)
+Isogeny_class 4959.3-a
+Curve [w + 1, w + 1, 1, -21*w + 178, -326*w - 201]
+Conductor (6*w+63)
+Isogeny_class 4959.2-a
+Curve [w, w, 0, 15*w + 172, 499*w - 1010]
+Conductor (-15*w-27)
+Isogeny_class 4959.4-a
+Curve [w, w - 1, 0, 101*w + 448, 897*w - 7150]
+Conductor (-16*w+34)
+Isogeny_class 4964.1-a
+Curve [w + 1, w + 1, 1, -6*w - 11, -w + 55]
+Conductor (16*w+18)
+Isogeny_class 4964.4-a
+Curve [w, w, 0, -2, 0]
+Conductor (9*w-65)
+Isogeny_class 5017.3-a
+Curve [w + 1, -w, w + 1, -w + 14, -w + 1]
+Conductor (9*w+56)
+Isogeny_class 5017.2-a
+Curve [w, 0, w, -w + 15, 1]
+Conductor (-14*w+50)
+Isogeny_class 5132.1-a
+Curve [w, 0, 1, -2*w + 6, 2*w - 4]
+Conductor (-14*w-36)
+Isogeny_class 5132.2-a
+Curve [w + 1, -w, 1, w + 4, -2*w - 2]
+Conductor (15*w-45)
+Isogeny_class 5175.2-a
+Curve [w, 1, 0, 3, 0]
+Conductor (15*w+30)
+Isogeny_class 5175.1-a
+Curve [w + 1, -w + 1, 0, 3, 0]
+Conductor (72)
+Isogeny_class 5184.1-a
+Curve [0, 0, 0, 6, -7]
+Conductor (-2*w+73)
+Isogeny_class 5251.3-a
+Curve [0, w + 1, w, -5, -w + 18]
+Conductor (-2*w-71)
+Isogeny_class 5251.2-a
+Curve [0, -w - 1, w + 1, 2*w - 6, -w + 23]
+Conductor (-16*w+40)
+Isogeny_class 5312.1-a
+Curve [0, -w + 1, 0, w - 12, 4*w + 1]
+Conductor (16*w+24)
+Isogeny_class 5312.2-a
+Curve [0, w, 0, -w - 11, -4*w + 5]
+Conductor (73)
+Isogeny_class 5329.2-a
+Curve [1, -1, 0, 4, -3]
+Conductor (6*w-72)
+Isogeny_class 5364.2-a
+Curve [1, 0, w, -5*w + 8, -w + 1]
+Conductor (6*w+66)
+Isogeny_class 5364.1-a
+Curve [1, 0, w + 1, 4*w + 3, 0]
+Conductor (-18*w+9)
+Isogeny_class 5427.1-a
+Curve [1, -1, 0, -9, -54]
+Conductor (-18*w+9)
+Isogeny_class 5427.1-b
+Curve [1, -1, 1, -7151, -230952]
+Conductor (-18*w+9)
+Isogeny_class 5427.1-c
+Curve [1, -1, 1, -29, 28]
+Conductor (-18*w+9)
+Isogeny_class 5427.1-d
+Curve [1, -1, 0, -3, 0]
+Conductor (-18*w+9)
+Isogeny_class 5427.1-e
+Curve [0, 0, 1, -111, 450]
+Conductor (-18*w+9)
+Isogeny_class 5427.1-f
+Curve [0, 0, 1, 15, -23]
+Conductor (-16*w+42)
+Isogeny_class 5444.2-a
+Curve [w, w - 1, 1, 2*w - 69, -66*w + 298]
+Conductor (-16*w-26)
+Isogeny_class 5444.1-a
+Curve [w + 1, w, 0, -10*w - 75, -3*w + 347]
+Conductor (-4*w+74)
+Isogeny_class 5452.3-a
+Curve [w, -w - 1, w, 4*w + 17, -7*w + 15]
+Conductor (-4*w+74)
+Isogeny_class 5452.3-b
+Curve [w + 1, 1, 1, 2, -w - 17]
+Conductor (-4*w+74)
+Isogeny_class 5452.3-c
+Curve [w + 1, 1, 0, -3*w + 1, 4*w + 21]
+Conductor (4*w+70)
+Isogeny_class 5452.2-a
+Curve [w + 1, 1, 0, -3*w + 4, 3*w + 12]
+Conductor (4*w+70)
+Isogeny_class 5452.2-b
+Curve [w, -w - 1, w + 1, 19, -20]
+Conductor (4*w+70)
+Isogeny_class 5452.2-c
+Curve [w, -w - 1, w, 4*w + 14, -8*w + 28]
+Conductor (18*w-15)
+Isogeny_class 5463.2-a
+Curve [0, w - 1, 1, w - 7, -2*w - 9]
+Conductor (-18*w+3)
+Isogeny_class 5463.1-a
+Curve [0, -w, 1, -w - 6, 2*w - 11]
+Conductor (-15*w+49)
+Isogeny_class 5491.6-a
+Curve [w, w + 1, 1, -349*w - 826, -6829*w + 3048]
+Conductor (-15*w-34)
+Isogeny_class 5491.1-a
+Curve [w + 1, w - 1, w + 1, 340*w - 1168, 5661*w - 8483]
+Conductor (7*w-72)
+Isogeny_class 5513.3-a
+Curve [w, -1, 0, -w + 10, w - 7]
+Conductor (7*w+65)
+Isogeny_class 5513.2-a
+Curve [w + 1, -w - 1, 0, w + 9, -w - 6]
+Conductor (-12*w+62)
+Isogeny_class 5548.3-a
+Curve [1, w - 1, 0, -w - 7, -w + 4]
+Conductor (12*w+50)
+Isogeny_class 5548.2-a
+Curve [1, -w, 0, w - 8, w + 3]
+Conductor (75)
+Isogeny_class 5625.1-a
+Curve [1, 0, 1, -1, 23]
+Conductor (75)
+Isogeny_class 5625.1-b
+Curve [0, 1, 1, -208, -1256]
+Conductor (75)
+Isogeny_class 5625.1-c
+Curve [0, -1, 1, -8, -7]
+Conductor (10*w-68)
+Isogeny_class 5644.2-a
+Curve [w + 1, -w + 1, w, -87*w - 139, 868*w - 461]
+Conductor (-10*w-58)
+Isogeny_class 5644.3-a
+Curve [w, 1, w + 1, 85*w - 225, -869*w + 407]
+Conductor (11*w-66)
+Isogeny_class 5687.2-a
+Curve [w, 1, 0, -w + 4, w - 1]
+Conductor (11*w+55)
+Isogeny_class 5687.1-a
+Curve [w + 1, -w + 1, 0, w + 3, -w]
+Conductor (76)
+Isogeny_class 5776.2-a
+Curve [0, -1, 0, -21, -31]
+Conductor (-4*w+77)
+Isogeny_class 5893.2-a
+Curve [w, -1, 0, 4*w - 4, -18*w + 13]
+Conductor (4*w+73)
+Isogeny_class 5893.3-a
+Curve [w + 1, -w - 1, 0, -4*w, 18*w - 5]
+Conductor (9*w-72)
+Isogeny_class 5913.2-a
+Curve [w, -w - 1, w, 4*w + 4, -7*w + 38]
+Conductor (9*w+63)
+Isogeny_class 5913.1-a
+Curve [w + 1, 1, 0, -3*w - 9, 3*w + 22]
+Conductor (77)
+Isogeny_class 5929.1-a
+Curve [0, 1, 1, -49, 600]
+Conductor (77)
+Isogeny_class 5929.1-b
+Curve [0, 0, 1, 2, 0]
+Conductor (77)
+Isogeny_class 5929.1-c
+Curve [1, 1, 0, 4, 11]
+Conductor (77)
+Isogeny_class 5929.1-d
+Curve [1, -w + 1, 1, -7, w]
+Conductor (77)
+Isogeny_class 5929.1-e
+Curve [1, w, 1, -7, -w + 1]
+Conductor (17*w-42)
+Isogeny_class 5963.1-a
+Curve [1, w, 1, 4*w - 4, 3*w - 3]
+Conductor (17*w+25)
+Isogeny_class 5963.2-a
+Curve [1, -w + 1, 1, -4*w, -3*w]
+Conductor (78)
+Isogeny_class 6084.1-a
+Curve [1, 1, 0, -19, 685]
+Conductor (79)
+Isogeny_class 6241.1-a
+Curve [1, 1, 1, -2, 0]
+Conductor (-18*w+38)
+Isogeny_class 6268.1-a
+Curve [1, -w + 1, w + 1, -9, 9]
+Conductor (18*w+20)
+Isogeny_class 6268.2-a
+Curve [1, w, w, -w - 8, -w + 10]
+Conductor (80)
+Isogeny_class 6400.1-a
+Curve [0, 0, 0, -7, 6]
+Conductor (80)
+Isogeny_class 6400.1-b
+Curve [0, 0, 0, -151, 76*w - 38]
+Conductor (80)
+Isogeny_class 6400.1-c
+Curve [0, 0, 0, -151, -76*w + 38]
+Conductor (80)
+Isogeny_class 6400.1-d
+Curve [0, -1, 0, 4, -4]
+Conductor (w-81)
+Isogeny_class 6497.3-a
+Curve [w + 1, -w + 1, w + 1, -w + 12, -w + 2]
+Conductor (w+80)
+Isogeny_class 6497.2-a
+Curve [w, 1, w, -w + 13, 2]
+Conductor (-14*w+64)
+Isogeny_class 6532.2-a
+Curve [w + 1, -w + 1, 0, w + 40, -25*w - 20]
+Conductor (-14*w-50)
+Isogeny_class 6532.3-a
+Curve [w, 1, 0, -w + 41, 25*w - 45]
+Conductor (-20*w+10)
+Isogeny_class 6700.1-a
+Curve [1, -1, 1, -13, 21]
+Conductor (-20*w+10)
+Isogeny_class 6700.1-b
+Curve [1, -1, 0, -524, -8920]
+Conductor (-20*w+10)
+Isogeny_class 6700.1-c
+Curve [1, 0, 1, 2, 6]
+Conductor (-20*w+10)
+Isogeny_class 6700.1-d
+Curve [1, 0, 0, 44, -624]
+Conductor (-20*w+10)
+Isogeny_class 6700.1-e
+Curve [w + 1, w - 1, w + 1, -4*w - 11, -5*w + 11]
+Conductor (-20*w+10)
+Isogeny_class 6700.1-f
+Curve [w, w + 1, 1, -5*w - 13, -6*w + 28]
+Conductor (20*w-14)
+Isogeny_class 6716.4-a
+Curve [w + 1, w + 1, w, -21*w + 27, 42*w - 93]
+Conductor (20*w-6)
+Isogeny_class 6716.1-a
+Curve [w, w, w, 14*w + 21, -29*w - 366]
+Conductor (82)
+Isogeny_class 6724.1-a
+Curve [w, -w + 1, 1, w, 1]
+Conductor (82)
+Isogeny_class 6724.1-b
+Curve [w + 1, 0, 1, -2*w + 1, 1]
+Conductor (82)
+Isogeny_class 6724.1-c
+Curve [1, 0, 1, -2, 0]
+Conductor (20*w-16)
+Isogeny_class 6736.2-a
+Curve [0, -w, 0, -6, w - 1]
+Conductor (-20*w+4)
+Isogeny_class 6736.1-a
+Curve [0, w - 1, 0, -6, -w]
+Conductor (14*w-66)
+Isogeny_class 6764.3-a
+Curve [w + 1, w, 1, -110*w - 827, 1288*w + 10594]
+Conductor (14*w+52)
+Isogeny_class 6764.2-a
+Curve [w, w - 1, 0, 102*w - 920, -2208*w + 10996]
+Conductor (12*w-72)
+Isogeny_class 6768.2-a
+Curve [0, w, 0, -17*w + 50, 19*w + 395]
+Conductor (12*w+60)
+Isogeny_class 6768.1-a
+Curve [0, -w + 1, 0, 17*w + 33, -19*w + 414]
+Conductor (83)
+Isogeny_class 6889.2-a
+Curve [1, 1, 1, 1, 0]
+Conductor (2*w-84)
+Isogeny_class 6956.3-a
+Curve [w, w + 1, 1, -w - 1, 0]
+Conductor (2*w+82)
+Isogeny_class 6956.2-a
+Curve [w + 1, w - 1, w + 1, -8*w + 5, 5*w + 41]
+Conductor (7*w-82)
+Isogeny_class 6983.1-a
+Curve [1, w + 1, 1, w - 4, -2]
+Conductor (7*w+75)
+Isogeny_class 6983.2-a
+Curve [1, -w - 1, 0, w - 4, 2]
+Conductor (16*w-60)
+Isogeny_class 6992.1-a
+Curve [0, -w + 1, 0, -w - 5, -8]
+Conductor (16*w-60)
+Isogeny_class 6992.1-b
+Curve [0, w - 1, 0, w - 3, -w - 6]
+Conductor (-16*w-44)
+Isogeny_class 6992.4-a
+Curve [0, w, 0, w - 6, -8]
+Conductor (-16*w-44)
+Isogeny_class 6992.4-b
+Curve [0, -w, 0, -w - 2, w - 7]
+Conductor (84)
+Isogeny_class 7056.1-a
+Curve [0, -1, 0, -1, -2]
+Conductor (84)
+Isogeny_class 7056.1-b
+Curve [0, 1, 0, 7, 0]
+Conductor (18*w-50)
+Isogeny_class 7108.1-a
+Curve [w + 1, 1, w + 1, -3*w + 9, 5]
+Conductor (18*w+32)
+Isogeny_class 7108.2-a
+Curve [w, -w - 1, 0, 3*w + 7, -3*w - 1]
+Conductor (85)
+Isogeny_class 7225.2-a
+Curve [1, 1, 0, -8, -13]
+Conductor (10*w-80)
+Isogeny_class 7300.2-a
+Curve [w, 1, 1, -7*w - 10, 11*w - 18]
+Conductor (10*w+70)
+Isogeny_class 7300.1-a
+Curve [w + 1, -w + 1, 1, 6*w - 17, -11*w - 7]
+Conductor (21*w-21)
+Isogeny_class 7497.2-a
+Curve [w, 0, 0, -2*w - 10, 5*w + 75]
+Conductor (-21*w)
+Isogeny_class 7497.1-a
+Curve [w + 1, -w, 0, 2*w - 17, -4*w + 68]
+Conductor (-21*w+24)
+Isogeny_class 7569.1-a
+Curve [0, w - 1, w, -48*w - 71, -278*w + 508]
+Conductor (-21*w+24)
+Isogeny_class 7569.1-b
+Curve [w + 1, 0, w + 1, -w + 5, -3*w - 25]
+Conductor (-21*w+24)
+Isogeny_class 7569.1-c
+Curve [0, -w - 1, w, 2*w - 12, 3*w + 10]
+Conductor (21*w+3)
+Isogeny_class 7569.3-a
+Curve [0, -w, w + 1, 48*w - 119, 277*w + 230]
+Conductor (21*w+3)
+Isogeny_class 7569.3-b
+Curve [w, -w + 1, w, -w + 6, 2*w - 27]
+Conductor (21*w+3)
+Isogeny_class 7569.3-c
+Curve [0, w + 1, w + 1, -11, -5*w + 2]
+Conductor (20*w-40)
+Isogeny_class 7600.2-a
+Curve [0, -w + 1, 0, -7*w + 32, w + 56]
+Conductor (20*w+20)
+Isogeny_class 7600.1-a
+Curve [0, w, 0, 7*w + 25, -w + 57]
+Conductor (88)
+Isogeny_class 7744.1-a
+Curve [0, 0, 0, -4, 4]
+Conductor (16*w-67)
+Isogeny_class 7769.4-a
+Curve [w, w - 1, w, -18*w - 53, 60*w + 346]
+Conductor (16*w+51)
+Isogeny_class 7769.1-a
+Curve [w + 1, w, w, 9*w - 79, -122*w + 181]
+Conductor (6*w-88)
+Isogeny_class 7828.4-a
+Curve [w + 1, -w + 1, w + 1, -2*w + 25, 3*w - 11]
+Conductor (-6*w-82)
+Isogeny_class 7828.1-a
+Curve [w, 1, w, 25, -4*w - 7]
+Conductor (89)
+Isogeny_class 7921.2-a
+Curve [1, 1, 1, -1, 0]
+Conductor (89)
+Isogeny_class 7921.2-b
+Curve [1, 1, 0, 4, 5]
+Conductor (20*w-46)
+Isogeny_class 7996.2-a
+Curve [w, -w + 1, 0, w - 2, 1]
+Conductor (20*w+26)
+Isogeny_class 7996.1-a
+Curve [w + 1, 0, 0, -w - 1, 1]
+Conductor (-4*w+90)
+Isogeny_class 8012.1-a
+Curve [w + 1, -1, w, -3*w + 18, w - 2]
+Conductor (4*w+86)
+Isogeny_class 8012.2-a
+Curve [w, -w, w + 1, w + 16, -2*w - 1]
+Conductor (12*w-81)
+Isogeny_class 8037.3-a
+Curve [w + 1, -w, w, -318*w - 501, -4614*w + 3677]
+Conductor (-12*w-69)
+Isogeny_class 8037.2-a
+Curve [w, 0, w + 1, 316*w - 818, 4613*w - 937]
+Conductor (5*w-90)
+Isogeny_class 8075.3-a
+Curve [w + 1, -1, w + 1, -4*w + 14, w + 2]
+Conductor (5*w+85)
+Isogeny_class 8075.2-a
+Curve [w, -w, w, 2*w + 12, -2*w + 4]
+Conductor (90)
+Isogeny_class 8100.1-a
+Curve [1, -1, 0, 6, 0]
+Conductor (90)
+Isogeny_class 8100.1-b
+Curve [1, -1, 1, 13, -61]
+Conductor (90)
+Isogeny_class 8100.1-c
+Curve [1, -1, 1, 52, -53]
+Conductor (-22*w+11)
+Isogeny_class 8107.1-a
+Curve [0, -1, 1, 406, -686]
+Conductor (6*w-90)
+Isogeny_class 8172.2-a
+Curve [w, w + 1, 1, -2*w - 3, 2]
+Conductor (6*w+84)
+Isogeny_class 8172.1-a
+Curve [w + 1, w - 1, w + 1, -7*w + 2, 2*w + 29]
+Conductor (12*w-82)
+Isogeny_class 8188.3-a
+Curve [w, -w + 1, w, 2*w + 7, -w + 11]
+Conductor (-12*w-70)
+Isogeny_class 8188.2-a
+Curve [w + 1, 0, w + 1, -4*w + 9, 10]
+Conductor (13*w-80)
+Isogeny_class 8233.2-a
+Curve [0, -w - 1, w, w - 8, w + 6]
+Conductor (13*w+67)
+Isogeny_class 8233.1-a
+Curve [0, w + 1, w + 1, w - 8, -2*w - 1]
+Conductor (-10*w+86)
+Isogeny_class 8236.1-a
+Curve [w, -w - 1, 1, 2*w + 7, -2*w - 2]
+Conductor (-10*w-76)
+Isogeny_class 8236.4-a
+Curve [w + 1, 1, w, -2*w + 9, 5]
+Conductor (91)
+Isogeny_class 8281.1-a
+Curve [0, 1, 1, -7, 5]
+Conductor (91)
+Isogeny_class 8281.1-b
+Curve [0, 0, 1, 1, 0]
+Conductor (91)
+Isogeny_class 8281.1-c
+Curve [0, 1, 1, -4*w - 18, -12*w - 28]
+Conductor (91)
+Isogeny_class 8281.1-d
+Curve [0, 1, 1, 4*w - 22, 12*w - 40]
+Conductor (7*w-90)
+Isogeny_class 8303.6-a
+Curve [1, -w - 1, 0, 53*w + 193, 118*w - 1774]
+Conductor (-7*w-83)
+Isogeny_class 8303.1-a
+Curve [1, w + 1, 1, -51*w + 245, -170*w - 1411]
+Conductor (92)
+Isogeny_class 8464.2-a
+Curve [0, 1, 0, 2, 1]
+Conductor (92)
+Isogeny_class 8464.2-b
+Curve [0, 0, 0, -1, 1]
+Conductor (9*w-89)
+Isogeny_class 8497.2-a
+Curve [w + 1, 1, w + 1, -3*w + 10, 4]
+Conductor (-9*w-80)
+Isogeny_class 8497.3-a
+Curve [w, -w - 1, 0, 3*w + 8, -3*w - 3]
+Conductor (94)
+Isogeny_class 8836.2-a
+Curve [1, -1, 1, 0, -1]
+Conductor (19*w-63)
+Isogeny_class 8909.2-a
+Curve [1, w + 1, w + 1, -w - 6, -8*w + 30]
+Conductor (19*w+44)
+Isogeny_class 8909.3-a
+Curve [1, -w - 1, w + 1, 2*w - 8, 5*w + 30]
+Conductor (-5*w+96)
+Isogeny_class 9161.1-a
+Curve [w, -w + 1, 0, 2*w, -w + 4]
+Conductor (5*w+91)
+Isogeny_class 9161.2-a
+Curve [w + 1, 0, 0, -2*w + 2, w + 3]
+Conductor (15*w-81)
+Isogeny_class 9171.2-a
+Curve [w + 1, w - 1, 0, -3*w - 52, -24*w - 57]
+Conductor (15*w+66)
+Isogeny_class 9171.1-a
+Curve [w, w + 1, w + 1, -5*w - 38, -20*w - 60]
+Conductor (22*w-44)
+Isogeny_class 9196.2-a
+Curve [w + 1, w, w, -w - 49, -49*w + 181]
+Conductor (22*w+22)
+Isogeny_class 9196.1-a
+Curve [w, w - 1, w, -8*w - 33, 7*w + 229]
+Conductor (14*w-84)
+Isogeny_class 9212.2-a
+Curve [w + 1, 1, w, -2*w + 11, 3]
+Conductor (14*w-84)
+Isogeny_class 9212.2-b
+Curve [w + 1, 0, 0, -32*w + 187, -99*w - 965]
+Conductor (14*w+70)
+Isogeny_class 9212.1-a
+Curve [w, -w - 1, 1, 2*w + 9, -2*w - 6]
+Conductor (14*w+70)
+Isogeny_class 9212.1-b
+Curve [w, -w + 1, 0, 32*w + 155, 99*w - 1064]
+Conductor (96)
+Isogeny_class 9216.1-a
+Curve [0, -w + 1, 0, w, 1]
+Conductor (96)
+Isogeny_class 9216.1-b
+Curve [0, w - 1, 0, w, -1]
+Conductor (96)
+Isogeny_class 9216.1-c
+Curve [0, -w + 1, 0, -3*w, -27]
+Conductor (96)
+Isogeny_class 9216.1-d
+Curve [0, w, 0, 3*w - 3, -27]
+Conductor (96)
+Isogeny_class 9216.1-e
+Curve [0, -w, 0, 3*w - 3, 27]
+Conductor (96)
+Isogeny_class 9216.1-f
+Curve [0, w - 1, 0, -3*w, 27]
+Conductor (96)
+Isogeny_class 9216.1-g
+Curve [0, w, 0, -w + 1, 1]
+Conductor (96)
+Isogeny_class 9216.1-h
+Curve [0, -w, 0, -w + 1, -1]
+Conductor (96)
+Isogeny_class 9216.1-i
+Curve [0, 1, 0, -2, 0]
+Conductor (96)
+Isogeny_class 9216.1-j
+Curve [0, -1, 0, -2, 0]
+Conductor (96)
+Isogeny_class 9216.1-k
+Curve [0, w + 1, 0, w + 4, -2*w + 3]
+Conductor (96)
+Isogeny_class 9216.1-l
+Curve [0, -w - 1, 0, w + 4, 2*w - 3]
+Conductor (w-97)
+Isogeny_class 9329.4-a
+Curve [0, w, w, -w - 6, w + 13]
+Conductor (w+96)
+Isogeny_class 9329.1-a
+Curve [0, -w + 1, w + 1, w - 7, -2*w + 14]
+Conductor (-14*w+85)
+Isogeny_class 9367.4-a
+Curve [1, -w, w, w - 3, -w + 1]
+Conductor (14*w+71)
+Isogeny_class 9367.5-a
+Curve [1, w - 1, w + 1, -2*w - 2, 0]
+Conductor (18*w-72)
+Isogeny_class 9396.2-a
+Curve [w, -w - 1, 1, -5*w - 45, 54*w + 182]
+Conductor (18*w+54)
+Isogeny_class 9396.1-a
+Curve [w + 1, 1, w, 5*w - 50, -49*w + 186]
+Conductor (10*w-93)
+Isogeny_class 9419.2-a
+Curve [w, w + 1, 1, -3*w - 5, 9]
+Conductor (10*w+83)
+Isogeny_class 9419.1-a
+Curve [w + 1, w - 1, w + 1, -6*w - 1, -w + 22]
+Conductor (98)
+Isogeny_class 9604.1-a
+Curve [1, 1, 0, -25, -111]
+Conductor (-20*w+64)
+Isogeny_class 9616.1-a
+Curve [0, w + 1, 0, w - 8, -2*w - 5]
+Conductor (20*w+44)
+Isogeny_class 9616.2-a
+Curve [0, -w - 1, 0, w - 8, 2*w + 1]
+Conductor (-24*w+12)
+Isogeny_class 9648.1-a
+Curve [0, 1, 0, 84, 36]
+Conductor (-24*w+12)
+Isogeny_class 9648.1-b
+Curve [0, -1, 0, -1373, -19191]
+Conductor (-24*w+12)
+Isogeny_class 9648.1-c
+Curve [0, -1, 0, -12, 24]
+Conductor (-24*w+12)
+Isogeny_class 9648.1-d
+Curve [0, -1, 0, 59, -122]
+Conductor (-17*w+78)
+Isogeny_class 9671.1-a
+Curve [w, 1, w + 1, -29*w + 57, 70*w - 517]
+Conductor (17*w+61)
+Isogeny_class 9671.4-a
+Curve [w + 1, -w + 1, w, 27*w + 29, -71*w - 446]
+Conductor (24*w-24)
+Isogeny_class 9792.2-a
+Curve [0, -w, 0, -2*w - 15, 11*w - 14]
+Conductor (-24*w)
+Isogeny_class 9792.1-a
+Curve [0, w - 1, 0, 2*w - 17, -11*w - 3]
+Conductor (99)
+Isogeny_class 9801.1-a
+Curve [1, -1, 0, -15, 8]
+Conductor (99)
+Isogeny_class 9801.1-b
+Curve [1, -1, 1, -2, 0]
+Conductor (99)
+Isogeny_class 9801.1-c
+Curve [1, -1, 1, -59, 186]
+Conductor (99)
+Isogeny_class 9801.1-d
+Curve [0, 0, 1, -3, -5]
+Conductor (-19*w+71)
+Isogeny_class 9829.2-a
+Curve [1, -w + 1, 0, w - 6, 2*w + 10]
+Conductor (-19*w-52)
+Isogeny_class 9829.1-a
+Curve [1, w, 0, -w - 5, -2*w + 12]
+Conductor (21*w-60)
+Isogeny_class 9837.2-a
+Curve [1, w + 1, 1, -8*w - 61, 16*w + 158]
+Conductor (-21*w-39)
+Isogeny_class 9837.1-a
+Curve [1, -w - 1, 0, 10*w - 70, -25*w + 244]
+Conductor (22*w-54)
+Isogeny_class 9956.2-a
+Curve [1, -w, 0, -7*w + 2, -59*w + 55]
+Conductor (22*w-54)
+Isogeny_class 9956.2-b
+Curve [w, -w - 1, w + 1, 0, 0]
+Conductor (22*w+32)
+Isogeny_class 9956.3-a
+Curve [1, w - 1, 0, 7*w - 5, 59*w - 4]
+Conductor (22*w+32)
+Isogeny_class 9956.3-b
+Curve [w + 1, 1, 1, -17, -w - 16]
+Conductor (100)
+Isogeny_class 10000.1-a
+Curve [0, -1, 0, -33, 62]
