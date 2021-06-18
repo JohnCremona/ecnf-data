@@ -427,8 +427,8 @@ def read_newform_data(bmf_filename, verbose=False):
     print("file has {} format".format('old' if old_fmt else 'new'))
     newforms = {}
     for L in bmf_file.readlines():
-        #if verbose:
-        #    print("raw input: %s" % L)
+        if verbose:
+            print("raw input: %s" % L)
         if old_fmt:
             label, gen, sfe, loverp, ALs, aplist = L.split()
             level, letter = label.split("-")

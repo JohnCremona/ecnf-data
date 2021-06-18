@@ -542,7 +542,9 @@ def make_isoclass_line(ec):
                                 'conductor_label': ec['conductor_label'],
                                 'iso_label': ec['iso_label']}).sort('number')
         Elist = [EllipticCurve([K.parse_NFelt(x) for x in c['ainvs']]) for c in curves]
-        cl = Elist[0].isogeny_class()
+        from sage.schemes.elliptic_curves.isogeny_class import IsogenyClass_EC_NumberField
+        cl = IsogenyClass_EC_NumberField(Elist[0], reducible_primes=None, algorithm='Billerey', minimal_models=True)
+        #cl = Elist[0].isogeny_class()
         perm = dict([(i, cl.index(E)) for i, E in enumerate(Elist)])
         mat = permute_mat(cl.matrix(), perm, True)
         mat = str([list(ri) for ri in mat.rows()]).replace(" ", "")

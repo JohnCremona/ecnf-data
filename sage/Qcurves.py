@@ -204,7 +204,9 @@ def is_Q_curve(E, maxp=100, certificate=False, verbose=False):
     # Step 5: compute the (partial) K-isogeny class of E and test the
     # set of j-invariants in the class:
 
-    C = E.isogeny_class(algorithm='heuristic', minimal_models=False)
+    from sage.schemes.elliptic_curves.isogeny_class import IsogenyClass_EC_NumberField
+    C = IsogenyClass_EC_NumberField(E, reducible_primes=None, algorithm='heuristic', minimal_models=False)
+    #C = E.isogeny_class(algorithm='heuristic', minimal_models=False)
     jC = [E2.j_invariant() for E2 in C]
     res, centrejpols = conjugacy_test(jC, verbose=verbose)
     if res:
@@ -258,7 +260,9 @@ def is_Q_curve(E, maxp=100, certificate=False, verbose=False):
         print("...all local tests pass for p<={}".format(xmaxp))
         print("We now compute the complete isogeny class...")
 
-    Cfull = E.isogeny_class(minimal_models=False)
+    from sage.schemes.elliptic_curves.isogeny_class import IsogenyClass_EC_NumberField
+    Cfull = IsogenyClass_EC_NumberField(E, reducible_primes=None, algorithm='Billerey', minimal_models=False)
+    #Cfull = E.isogeny_class(minimal_models=False)
     jCfull = [E2.j_invariant() for E2 in Cfull]
 
     if len(jC) == len(jCfull):

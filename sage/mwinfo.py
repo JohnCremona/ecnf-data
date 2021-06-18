@@ -198,7 +198,9 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
 
     A list of triples [rank_bounds, gens, analytic_rank], one for each class.
     """
-    Cl = curves[0].isogeny_class()
+    from sage.schemes.elliptic_curves.isogeny_class import IsogenyClass_EC_NumberField
+    Cl = IsogenyClass_EC_NumberField(curves[0], reducible_primes=None, algorithm='Billerey', minimal_models=True)
+    #Cl = curves[0].isogeny_class()
     MWI = MWInfo_class(Cl, HeightBound=HeightBound, test_saturation=test_saturation, verbose=verbose)
     # Now we must map the points to the correct curves!
 
