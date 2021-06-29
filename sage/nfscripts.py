@@ -815,7 +815,7 @@ def make_isogeny_class(curve, verbose=False, prec=None):
             D = 1
         else:
             if D in ZZ: # fairly common special case
-                D = D.abs()
+                D = ZZ(D).abs()
             else:
                 Dred = reduce_mod_units(D)
                 if len(str(Dred)) < len(str(D)):

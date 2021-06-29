@@ -37,6 +37,10 @@ def column_to_string(colname, col):
             col = col.replace("None", "null")
         if colname == 'galois_images':
             col = str(col.split()).replace("'",'"')
+        if colname == 'disc' and "." in col:
+            print("Old disc: {}".format(col))
+            col = "({})".format(ZZ(RR(col[1:-1])))
+            print("New disc: {}".format(col))
         return col
 
 def data_to_string(n, record, columns=None):

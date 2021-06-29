@@ -94,7 +94,12 @@ def parse_curves_line(L):
 
     record['ainvs'] = data[6]
     record['jinv'] = data[7]
-    record['disc'] = data[8]
+    record['disc'] = disc = data[8]
+    if "." in disc:
+        print("Old disc: {}".format(disc))
+        disc = "({})".format(ZZ(RR(disc[1:-1])))
+        print("New disc: {}".format(disc))
+        record['disc'] = disc
     record['normdisc'] = ZZ(data[9])
 
     eqn = data[10]
@@ -564,10 +569,13 @@ encoders = {'number': num_encoder,
             'Lvalue': rank_encoder,
             'reg': rank_encoder,
             'normdisc': num_encoder,
-            'ainvs': ainvs_to_string,
-            'jinv': NFelt,
+            'ainvs': rank_encoder,
+#            'ainvs': ainvs_to_string,
+            'jinv': rank_encoder,
+#            'jinv': NFelt,
             'heights': encode_int_list,
-           }
+            'equation': lambda x: x.replace("{","").replace("}","")
+}
 
 def get_encoder(col):
     return encoders.get(col, lambda x: x)
