@@ -543,6 +543,7 @@ def local_data_from_string(s):
 num_encoder = str
 bool_encoder = lambda b: str(int(b))
 string_list_encoder = lambda L: "[" + ",".join(L) + "]"
+string_encoder = lambda r: str(r).replace(" ", "") if r != None else '?'
 rank_encoder = lambda r: str(r) if r != None else '?'
 gal_im_encoder = " ".join
 
@@ -569,8 +570,8 @@ encoders = {'number': num_encoder,
             'Lvalue': rank_encoder,
             'reg': rank_encoder,
             'normdisc': num_encoder,
-            'ainvs': rank_encoder,
-#            'ainvs': ainvs_to_string,
+#            'ainvs': rank_encoder,
+            'ainvs': ainvs_to_string,
             'jinv': rank_encoder,
 #            'jinv': NFelt,
             'heights': encode_int_list,

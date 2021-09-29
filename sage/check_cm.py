@@ -1,7 +1,8 @@
 # Check that the CM discriminants in curves files are correct
 
+import os
+from sage.all import cm_j_invariants_and_orders
 from fields import nf_lookup
-from schemas import all_file_types
 from codec import parse_curves_line, encoders
 from files import ECNF_DIR, all_ftypes
 

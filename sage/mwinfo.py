@@ -4,7 +4,7 @@ r"""Functions to find ranks and generators of elliptic curves by
 
 """
 from __future__ import print_function
-from sage.all import union, RealField, QQ, ZZ
+from sage.all import union, RealField, ZZ
 from nfscripts import torsion_data, global_period
 
 AR_DEGREE_BOUND = 5 # do not compute analytic ranks over field of degree larger than this

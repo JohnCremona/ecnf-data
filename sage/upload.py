@@ -1,6 +1,6 @@
 import os
 import sys
-from sage.all import Set
+from sage.all import Set, ZZ, RR
 from files import ECNF_DIR, ECNF_UPLOAD_DIR, all_ftypes, read_all_field_data
 from schemas import ec_nfcurves_schema, keys_and_types, ec_nfcurves_extra_columns, extra_keys_and_types
 

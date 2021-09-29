@@ -1,7 +1,7 @@
 from sys import stdout
 import os
-from sage.all import Magma, EllipticCurve
-from fields import get_field_label, get_IQF_info, get_field_name, ideal_from_IQF_label, nf_table, nf_lookup
+from sage.all import Magma, EllipticCurve, NumberField, ZZ, QQ, polygen
+from fields import get_field_label, get_IQF_info, get_field_name, ideal_from_IQF_label
 from files import read_newform_data, read_missing_levels, BIANCHI_DATA_DIR
 from psort import ideal_label, ideal_from_label, primes_iter
 from codec import ideal_to_string, old_ideal_label
@@ -125,6 +125,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         K, Plist = get_IQF_info(field_info_filename, 200, verbose)
     else:
         field_label = "2.0.{}.1".format(field)
+        x = polygen(QQ)
         if field%4==3:
             K = NumberField(x**2-x+(field+1)//4, 'w')
         else:
