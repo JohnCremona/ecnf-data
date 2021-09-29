@@ -30,3 +30,28 @@ def rewrite_ainvs(base_dir, field_label):
                 L = " ".join(data)
                 print("New line: {}\n".format(L))
             newcurves.write(L+"\n")
+
+def rewrite_jinv(base_dir, field_label):
+    """If we have created a curves file whose jinv field looks like
+    773243804465483/78364164096*a-2224704505657277/78364164096 instead
+    of 16289221995/142234,5723741423/71117 then this function will
+    read it and convert that field and rewrite it.
+    """
+    curves_filename_old = os.path.join(base_dir, 'curves.{}'.format(field_label))
+    curves_filename_new = os.path.join(base_dir, 'curves.{}.new'.format(field_label))
+    print("Reading from {}, writing to {}".format(curves_filename_old, curves_filename_new))
+    R = PolynomialRing(QQ, 'a')
+    K = nf_lookup(field_label)
+
+    with open(curves_filename_old) as curves, open(curves_filename_new, 'w') as newcurves:
+        for L in curves:
+            data = L.split()
+            jinv = data[7]
+            if ";" not in jinv:
+                print("Old line: {}".format(L))
+                # convert to a number field elt and hence to one string
+                jinv = NFelt(K(R(jinv)))
+                data[7] = jinv
+                L = " ".join(data)
+                print("New line: {}\n".format(L))
+            newcurves.write(L+"\n")

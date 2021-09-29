@@ -547,6 +547,12 @@ string_encoder = lambda r: str(r).replace(" ", "") if r != None else '?'
 rank_encoder = lambda r: str(r) if r != None else '?'
 gal_im_encoder = " ".join
 
+# NB When outputting computed values, 'ainvs' and 'jinv' need to be
+# encoded using ainvs_to_string and NFelt respectively, but when
+# rewriting raw data files where both 'ainvs' and 'jinv' are the
+# strings read in, they need no encoding (and using those encodings
+# creates nonsense).  This should be handled automatically.
+
 encoders = {'number': num_encoder,
             'conductor_norm': num_encoder,
             'cm': num_encoder,
@@ -572,8 +578,8 @@ encoders = {'number': num_encoder,
             'normdisc': num_encoder,
 #            'ainvs': rank_encoder,
             'ainvs': ainvs_to_string,
-            'jinv': rank_encoder,
-#            'jinv': NFelt,
+#            'jinv': rank_encoder,
+            'jinv': NFelt,
             'heights': encode_int_list,
             'equation': lambda x: x.replace("{","").replace("}","")
 }
