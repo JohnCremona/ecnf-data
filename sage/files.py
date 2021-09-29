@@ -281,7 +281,7 @@ def read_curves_magma(infile):
             data = L.strip().split(maxsplit=1)
             if len(data) == 0:
                 continue
-            assert len(data) == 2, "Line {} has more than two fields".format(L)
+            assert len(data) == 2, "Line '{}' does not have two fields".format(L)
             if data[0] == 'Field':
                 field_label = data[1]
                 # reset the record for a new curve

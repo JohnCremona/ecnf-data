@@ -1,9 +1,9 @@
 from sys import stdout
 import os
 from sage.all import Magma, EllipticCurve
-from fields import get_field_label, get_IQF_info, get_field_name, ideal_from_IQF_label
+from fields import get_field_label, get_IQF_info, get_field_name, ideal_from_IQF_label, nf_table, nf_lookup
 from files import read_newform_data, read_missing_levels, BIANCHI_DATA_DIR
-from psort import ideal_label
+from psort import ideal_label, ideal_from_label, primes_iter
 from codec import ideal_to_string, old_ideal_label
 
 def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
@@ -77,13 +77,15 @@ def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
         mag.quit()
     return Elist
 
+class_number_one_fields = [1, 2, 3, 7, 11, 19, 43, 67, 163]
+
 def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, effort=1000, verbose=False):
     r"""
     Uses Magma via EllipticCurveSearch() to search for missing curves (over IQFs given some BMFs).
 
     INPUT:
 
-    - ``field`` (integer) -- 1, 2, 3, 7, 11 or 19 (so far).
+    - ``field`` (integer) -- 1, 2, 3, 7, 11;  or 19, 43, 67, 163; or 23, 31 (so far).
 
     - ``missing_label_file`` (string) -- filename of file containing
       labels of missing isogeny classes.  If absent, assumes all
@@ -115,17 +117,26 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             outfile.write(L)
         if verbose:
             stdout.write(L)
-    if field_info_filename==None:
-        field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
-        if verbose:
-            print("Using {} for field info".format(field_info_filename))
+    if field in class_number_one_fields:
+        if field_info_filename==None:
+            field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
+            if verbose:
+                print("Using {} for field info".format(field_info_filename))
+        K, Plist = get_IQF_info(field_info_filename, 200, verbose)
+    else:
+        field_label = "2.0.{}.1".format(field)
+        if field%4==3:
+            K = NumberField(x**2-x+(field+1)//4, 'w')
+        else:
+            K = NumberField(x**2+field, 'w')
+        print("Field {} = {}".format(field_label, K))
+        Plist = list(primes_iter(K,maxnorm=ZZ(200)))
     if bmf_filename==None:
         print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
     else:
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
 
-    K, Plist = get_IQF_info(field_info_filename, 200, verbose)
     field_lab = get_field_label(K)
     if outfilename:
         outfile=open(outfilename, mode="a")
@@ -142,7 +153,10 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
 
     mag=Magma()
     for level in read_missing_levels(open(missing_label_file)):
-        N = ideal_from_IQF_label(K, level)
+        if "." in level:
+            N = ideal_from_label(K, level)
+        else:
+            N = ideal_from_IQF_label(K, level)
         NN = N.norm()
         if min_norm and NN<min_norm:
             continue
