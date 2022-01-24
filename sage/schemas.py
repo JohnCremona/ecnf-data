@@ -35,7 +35,7 @@ ec_nfcurves_schema = {
     'text', 'iso_label': 'text', 'degree': 'smallint', 'non_min_p':
     'jsonb', 'q_curve': 'boolean', 'short_label': 'text',
     'short_class_label': 'text', 'isogeny_matrix': 'jsonb',
-    'torsion_order': 'smallint', 'non-surjective_primes': 'jsonb',
+    'torsion_order': 'smallint', 'nonmax_primes': 'smallint', 'nonmax_rad': 'integer',
     'equation': 'text', 'gens': 'jsonb', 'ngens': 'smallint',
     'signature': 'jsonb', 'trace_hash': 'bigint', 'heights': 'numeric[]',
     'isodeg': 'integer[]', 'omega': 'numeric',
@@ -85,7 +85,8 @@ keys_and_types = {'field_label':  str_type,
                   'isogeny_matrix': list_type, # of lists of ints
                   'isodeg': list_type, # of ints
                   'class_deg': int_type,
-                  'non-surjective_primes': list_type, # of ints
+                  'nonmax_primes': list_type, # of ints
+                  'nonmax_rad': int_type,
                   'galois_images': list_type, # of strings
                   'equation': str_type,
                   'local_data': list_type, # of dicts

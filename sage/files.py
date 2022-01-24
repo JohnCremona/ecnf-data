@@ -252,9 +252,9 @@ def read_curves_new(infile, only_one=False, ncurves=0):
 def read_curves_magma(infile):
     r""" Iterator to loop through lines of a file containing output from a
     Magma search.  (Nothing in this function really relates to Magma.)
-    For each curve there are 4 lines in the file, with prefix
+    For each curve there are 3 or 4 lines in the file, with prefixes
 
-    Field
+    Field (only needed once at the top if all curves are over the same field)
     Conductor
     Isogeny_class
     Curve

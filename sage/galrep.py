@@ -42,10 +42,10 @@ def galrep_data_from_magma(E, mag):
 #
 # EC/Q           EC/NF
 #
-# galois_images  galois_images         (the same: one, possibly empty, string)
-# modp_images    -                     (possibly empty list of strings)
-# nonmax_primes  non-surjective_primes (list of non-maximal primes)
-# nonmax_rad     -                     (product of non-maximal primes)
+# galois_images  galois_images  (the same: one, possibly empty, string)
+# modp_images    -              (possibly empty list of strings)
+# nonmax_primes  nonmax_primes  (list of non-maximal primes)
+# nonmax_rad     nonmax_rad     (product of non-maximal primes)
 
 
 def parse_galrep_data_string(galois_images, verbose=False):
@@ -55,8 +55,8 @@ def parse_galrep_data_string(galois_images, verbose=False):
     pr = [int(split_galois_image_code(s)[0]) for s in image_codes]
     record = {'galois_images': galois_images,
               #'modp_images': image_codes,
-              'non-surjective_primes': pr,
-              #'nonmax_rad': prod(pr),
+              'nonmax_primes': pr,
+              'nonmax_rad': prod(pr),
              }
     if verbose:
         print("galrep data: {}".format(record))
