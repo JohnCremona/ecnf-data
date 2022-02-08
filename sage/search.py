@@ -123,6 +123,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             if verbose:
                 print("Using {} for field info".format(field_info_filename))
         K, Plist = get_IQF_info(field_info_filename, 200, verbose)
+        field_label = get_field_label(K)
     else:
         field_label = "2.0.{}.1".format(field)
         x = polygen(QQ)
@@ -138,12 +139,11 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
 
-    field_lab = get_field_label(K)
     if outfilename:
         outfile=open(outfilename, mode="a")
         if verbose:
             print("Using {} for output".format(outfilename))
-    output("Field {}\n".format(field_lab))
+    output("Field {}\n".format(field_label))
     newforms = read_newform_data(bmf_filename)
     if verbose:
         print("...read newform data finished")
@@ -267,6 +267,7 @@ def output_magma_field(field_label, K, Plist, outfilename=None, verbose=False):
     output("Qx<x> := PolynomialRing(RationalField());\n")
     output("K<%s> := NumberField(%s);\n" % (name, pol))
     output("OK := Integers(K);\n")
+    print("Defining {} prime ideals".format(len(Plist)))
     output("Plist := [];\n")
     for P in Plist:
         Pgens = P.gens_reduced()
@@ -330,16 +331,28 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
             outfile.write(L)
         if verbose:
             stdout.write(L)
-    if field_info_filename==None:
-        field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
     if bmf_filename==None:
         print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
     else:
         if verbose:
             print("Using {} for newform input".format(bmf_filename))
 
-    K, Plist = get_IQF_info(field_info_filename, 200, verbose)
-    field_lab = get_field_label(K)
+    if field in class_number_one_fields:
+        if field_info_filename==None:
+            field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
+        if verbose:
+            print("Using {} for field info".format(field_info_filename))
+        K, Plist = get_IQF_info(field_info_filename, 200, verbose)
+        field_lab = get_field_label(K)
+    else:
+        field_lab = "2.0.{}.1".format(field)
+        x = polygen(QQ)
+        if field%4==3:
+            K = NumberField(x**2-x+(field+1)//4, 'w')
+        else:
+            K = NumberField(x**2+field, 'w')
+        print("Field {} = {}".format(field_lab, K))
+        Plist = list(primes_iter(K,maxnorm=ZZ(200)))
     if outfilename:
         output_magma_field(field_lab,K,Plist,outfilename)
         if verbose:
@@ -355,10 +368,14 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
         missing_label_file = bmf_filename
 
     for level in read_missing_levels(open(missing_label_file)):
-        N = ideal_from_IQF_label(K, level)
+        if "." in level:
+            N = ideal_from_label(K, level)
+        else:
+            N = ideal_from_IQF_label(K, level)
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
         if verbose:
             print("Missing level %s = %s" % (level,N))
+            print("{} good primes".format(len(goodP)))
         nfs = newforms[level]
         for id in nfs.keys():
             nf = nfs[id]
@@ -372,6 +389,8 @@ def magma_search_script(field, missing_label_file=None, field_info_filename=None
             output("goodP := [P: P in Plist | Valuation(N,P) eq 0];\n")
             # Create the array of traces for good primes in Magma:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
+            print("aplist has length {}".format(len(aplist)));
+            print("nf[ap] has length {}".format(len(nf['ap'])));
             output("aplist := %s;\n" % str(aplist))
             output("goodP := [goodP[i]: i in [1..#(aplist)]];\n")
             # Do the search in Magma:

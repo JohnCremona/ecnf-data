@@ -35,7 +35,7 @@ ec_nfcurves_schema = {
     'text', 'iso_label': 'text', 'degree': 'smallint', 'non_min_p':
     'jsonb', 'q_curve': 'boolean', 'short_label': 'text',
     'short_class_label': 'text', 'isogeny_matrix': 'jsonb',
-    'torsion_order': 'smallint', 'nonmax_primes': 'smallint', 'nonmax_rad': 'integer',
+    'torsion_order': 'smallint', 'nonmax_primes': 'smallint[]', 'nonmax_rad': 'integer',
     'equation': 'text', 'gens': 'jsonb', 'ngens': 'smallint',
     'signature': 'jsonb', 'trace_hash': 'bigint', 'heights': 'numeric[]',
     'isodeg': 'integer[]', 'omega': 'numeric',
@@ -44,6 +44,7 @@ ec_nfcurves_schema = {
     'torsion_primes': 'integer[]', 'n_bad_primes': 'integer',
     'reducible_primes': 'integer[]', 'semistable': 'boolean', 'disc':
     'text', 'normdisc': 'numeric', 'conductor_norm_factors': 'integer[]',
+    'non-surjective_primes': 'jsonb',
 }
 
 # Python types of the columns in ec_nfcurves:
@@ -85,6 +86,7 @@ keys_and_types = {'field_label':  str_type,
                   'isogeny_matrix': list_type, # of lists of ints
                   'isodeg': list_type, # of ints
                   'class_deg': int_type,
+                  'non-surjective_primes': list_type, # of ints
                   'nonmax_primes': list_type, # of ints
                   'nonmax_rad': int_type,
                   'galois_images': list_type, # of strings

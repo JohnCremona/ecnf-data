@@ -7,7 +7,10 @@ from schemas import ec_nfcurves_schema, keys_and_types, ec_nfcurves_extra_column
 # Any columns in ec_nfcurves which are lists must be in this list so
 # that the upload file uses "{...}" instead of "[...]":
 
-postgres_array_cols = ['heights', 'isodeg', 'torsion_primes', 'reducible_primes', 'conductor_norm_factors']
+postgres_array_cols = [k for k,v in ec_nfcurves_schema.items() if '[' in v]
+
+# ['nonmax_primes', 'heights', 'isodeg', 'torsion_primes', 'reducible_primes', 'conductor_norm_factors']
+
 
 def get_column_names_and_types():
     t = ec_nfcurves_schema
@@ -115,6 +118,7 @@ def make_upload_file(ftypes=all_ftypes, fields=None, xfields=None, columns=None,
     id = 0
     for label in sorted(alldata):
         id += 1
+        alldata[label]['non-surjective_primes'] = alldata[label]['nonmax_primes']
         outfile.write(data_to_string(id, alldata[label], columns=columns))
         outfile.write("\n")
     if outfilename:

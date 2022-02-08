@@ -1,7 +1,7 @@
 # Sage interface to Sutherland's Magma script for Galois images
 
 import re
-#from sage.all import prod
+from sage.all import prod
 
 GALREP_SCRIPT_DIR = "/home/jec/galrep"
 

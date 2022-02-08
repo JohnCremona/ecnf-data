@@ -187,6 +187,7 @@ def cmj_key(E):
     # may not be minimal, and some adjustment is necessary:
     k = c.valuation(P)
     if k > 0:
+        w = ZZ(w)
         assert w.divides(k)
         pi = K.uniformizer(P, others='negative')
         c = c/pi**(k//w) # still integral everywhere

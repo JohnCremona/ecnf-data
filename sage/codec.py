@@ -581,7 +581,8 @@ encoders = {'number': num_encoder,
 #            'jinv': rank_encoder,
             'jinv': NFelt,
             'heights': encode_int_list,
-            'equation': lambda x: x.replace("{","").replace("}","")
+            # don't use the next line, it messes up rational coefficients!
+            #            'equation': lambda x: x.replace("{","").replace("}","")
 }
 
 def get_encoder(col):

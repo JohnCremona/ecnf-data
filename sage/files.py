@@ -249,7 +249,7 @@ def read_curves_new(infile, only_one=False, ncurves=0):
             record['ainvs'] = ainvs_from_string(K, data[6])
             yield record
 
-def read_curves_magma(infile):
+def read_curves_magma(infile, min_norm=1, max_norm=None):
     r""" Iterator to loop through lines of a file containing output from a
     Magma search.  (Nothing in this function really relates to Magma.)
     For each curve there are 3 or 4 lines in the file, with prefixes
@@ -273,6 +273,8 @@ def read_curves_magma(infile):
     Output: yields records with keys
 
     field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
+
+    (omitting any whose conductor_norm is not within the bounds given, if any)
     """
     from sage.all import EllipticCurve, ZZ
     record = {}
@@ -303,9 +305,11 @@ def read_curves_magma(infile):
                 record['ainvs'] = ainvs = [K(ai) for ai in ainvs]
                 E = EllipticCurve(K, ainvs)
                 EN = E.conductor()
-                assert EN.norm() == record['conductor_norm']
+                N_norm = record['conductor_norm']
+                assert EN.norm() == N_norm
                 assert EN == N
-                yield record
+                if N_norm >= min_norm and (max_norm is None or N_norm <= max_norm):
+                    yield record
             else:
                 print("Unrecognised line prefix {}, skipping this line".format(data[0]))
                 continue
@@ -926,17 +930,18 @@ def add_analytic_ranks_new(curves_filename, mwdata_filename, suffix='x', verbose
             else:
                 mw_out.write(L)
 
-def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR):
+def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR, append=False):
     """
     data is a dict whose values are curve records.
 
-    Outputs files basedir/field_type/<ft>.field_name
+    Outputs to files basedir/field_type/<ft>.field_name, either appending or overwriting.
     """
     from schemas import column_names
+    mode = 'a' if append else 'w'
     for ft in file_types:
-        new_file = os.path.join(base_dir, field_type, "{}.{}".format(ft, field_label))
+        new_file = os.path.join(base_dir, field_type, "{}.{}.part".format(ft, field_label))
         cols = column_names[ft]
-        with open(new_file, 'w') as outfile:
+        with open(new_file, mode) as outfile:
             n = 0
             for label, record in data.items():
                 if ft=='isoclass' and record['number']!=1:
@@ -975,3 +980,35 @@ def make_all_data_files(raw_curves, file_types=all_file_types,
     data = make_isogeny_classes(raw_curves, verbose=verbose, prec=prec)
     write_data_files(data, file_types, field_type, field_label, base_dir)
     return data
+
+def make_all_data_files1(raw_curves, file_types=all_file_types,
+                        field_type=None, field_label='test', base_dir=ECNF_DIR, verbose=0,
+                        prec=None):
+    """raw_curves is a generator yielding short 'raw' curve dicts with
+    fields (as in read_curves_magma()):
+
+    field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
+
+    This computes isogeny classes and all curve data for all curves in
+    each class, writing the result to files
+    <base_dir>/<field_type>/<ft>.<field_label> for each file typ ft
+    (default: all, i.e. curves, isoclass, local_data, mwdata, galrep)
+
+    prec controls the bit precision of heights, special L-value, etc.
+    If None (the default) is uses standard 53-bit precision.
+
+    Unlike make_all_data_files() which calls make_isogeny_classes just
+    once and only outputs right at the end, this one callas
+    make_isogeny_class() for each raw curve and outputs as it goes
+    along.  This guards against sage/magma/pari crashing in the middle
+    of a long run.
+
+    """
+    from nfscripts import make_isogeny_class
+    for curve in raw_curves:
+        label = "{}.{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
+        print("working on class {}".format(label))
+        data = make_isogeny_class(curve, verbose=verbose, prec=prec)
+        write_data_files(data, file_types, field_type, field_label, base_dir, append=True)
+        print("output for class {} complete".format(label))
+        print("====================================")
