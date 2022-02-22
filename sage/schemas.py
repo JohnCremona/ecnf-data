@@ -24,7 +24,7 @@ all_file_types = list(column_names.keys())
 
 ec_nfcurves_schema = {
     'id': 'bigint', 'torsion_structure': 'jsonb', 'ainvs': 'text', 'cm':
-    'integer', 'torsion_gens': 'jsonb', 'number': 'smallint', 'rank':
+    'integer', 'cm_type': 'smallint', 'torsion_gens': 'jsonb', 'number': 'smallint', 'rank':
     'smallint', 'field_label': 'text', 'galois_images': 'jsonb',
     'conductor_norm': 'bigint', 'abs_disc': 'bigint', 'iso_nlabel':
     'smallint', 'rank_bounds': 'jsonb', 'conductor_ideal': 'text',
@@ -45,6 +45,7 @@ ec_nfcurves_schema = {
     'reducible_primes': 'integer[]', 'semistable': 'boolean', 'disc':
     'text', 'normdisc': 'numeric', 'conductor_norm_factors': 'integer[]',
     'non-surjective_primes': 'jsonb',
+    'root_analytic_conductor': 'double precision',
 }
 
 # Python types of the columns in ec_nfcurves:
@@ -75,6 +76,7 @@ keys_and_types = {'field_label':  str_type,
                   'ainvs': str_type,
                   'jinv': str_type,
                   'cm': int_type,
+                  'cm_type': int_type,
                   'ngens': int_type,
                   'rank': int_type,
                   'rank_bounds': list_type, # 2 ints
@@ -102,6 +104,7 @@ keys_and_types = {'field_label':  str_type,
                   'base_change': list_type, # of strings
                   'trace_hash': hash_type,
                   'conductor_norm_factors': list_type,
+                  'root_analytic_conductor': float_type,
 }
 
 ec_nfcurves_extra_columns = ['omega', 'potential_good_reduction', 'semistable', 'tamagawa_product', 'bad_primes', 'Lvalue', 'sha', 'torsion_primes', 'n_bad_primes', 'reducible_primes']

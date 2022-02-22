@@ -101,6 +101,9 @@ def parse_curves_line(L):
         print("New disc: {}".format(disc))
         record['disc'] = disc
     record['normdisc'] = ZZ(data[9])
+    from sage.all import sqrt
+    record['root_analytic_conductor'] = sqrt(0.00798504020212804*float(N)**(1.0/float(record['degree']))*float(record['abs_disc']))
+    print('root_analytic_conductor = {}'.format(record['root_analytic_conductor']))
 
     eqn = data[10]
     # the reason for doing the following is for the unique field
@@ -112,10 +115,15 @@ def parse_curves_line(L):
     record['equation'] = eqn
 
     record['cm'] = cm = ZZ(data[11]) if data[11] != '?' else '?'
-    # The 'cm' column for a curve with rational (as opposed to only
-    # potential) CM holds |D| where D<0 is the CM discriminant:
-    if 'CM' in label:
-        record['cm'] = cm.abs()
+    # The 'cm_type' column  holds +1 for a curve with rational, -1 for
+    # potential, 0 if no CM
+    if cm:
+        if 'CM' in label:
+            record['cm_type'] = +1
+        else:
+            record['cm_type'] = -1
+    else:
+        record['cm_type'] = 0
     bc = data[12][1:-1]
     record['base_change'] = [str(lab) for lab in bc.split(",")] if bc else []
     record['q_curve'] = (data[13] == '1')
