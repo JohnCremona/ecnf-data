@@ -307,7 +307,6 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                 EN = E.conductor()
                 N_norm = record['conductor_norm']
                 assert EN.norm() == N_norm
-                assert EN == N
                 if N_norm >= min_norm and (max_norm is None or N_norm <= max_norm):
                     yield record
             else:

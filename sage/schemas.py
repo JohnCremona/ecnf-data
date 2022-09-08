@@ -44,7 +44,7 @@ ec_nfcurves_schema = {
     'torsion_primes': 'integer[]', 'n_bad_primes': 'integer',
     'reducible_primes': 'integer[]', 'semistable': 'boolean', 'disc':
     'text', 'normdisc': 'numeric', 'conductor_norm_factors': 'integer[]',
-    'non-surjective_primes': 'jsonb',
+    #'non-surjective_primes': 'jsonb',
     'root_analytic_conductor': 'double precision',
 }
 
@@ -88,7 +88,7 @@ keys_and_types = {'field_label':  str_type,
                   'isogeny_matrix': list_type, # of lists of ints
                   'isodeg': list_type, # of ints
                   'class_deg': int_type,
-                  'non-surjective_primes': list_type, # of ints
+                  #'non-surjective_primes': list_type, # of ints
                   'nonmax_primes': list_type, # of ints
                   'nonmax_rad': int_type,
                   'galois_images': list_type, # of strings

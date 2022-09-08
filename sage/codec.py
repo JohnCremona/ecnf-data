@@ -103,7 +103,7 @@ def parse_curves_line(L):
     record['normdisc'] = ZZ(data[9])
     from sage.all import sqrt
     record['root_analytic_conductor'] = sqrt(0.00798504020212804*float(N)**(1.0/float(record['degree']))*float(record['abs_disc']))
-    print('root_analytic_conductor = {}'.format(record['root_analytic_conductor']))
+    #print('root_analytic_conductor = {}'.format(record['root_analytic_conductor']))
 
     eqn = data[10]
     # the reason for doing the following is for the unique field

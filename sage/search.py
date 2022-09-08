@@ -85,7 +85,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
 
     INPUT:
 
-    - ``field`` (integer) -- 1, 2, 3, 7, 11;  or 19, 43, 67, 163; or 23, 31 (so far).
+    - ``field`` (integer) -- 1, 2, 3, 7, 11;  or 19, 43, 67, 163; or 23, 31, ..., 5, ...
 
     - ``missing_label_file`` (string) -- filename of file containing
       labels of missing isogeny classes.  If absent, assumes all
@@ -125,12 +125,13 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         K, Plist = get_IQF_info(field_info_filename, 200, verbose)
         field_label = get_field_label(K)
     else:
-        field_label = "2.0.{}.1".format(field)
         x = polygen(QQ)
         if field%4==3:
             K = NumberField(x**2-x+(field+1)//4, 'w')
+            field_label = "2.0.{}.1".format(field)
         else:
             K = NumberField(x**2+field, 'w')
+            field_label = "2.0.{}.1".format(4*field)
         print("Field {} = {}".format(field_label, K))
         Plist = list(primes_iter(K,maxnorm=ZZ(200)))
     if bmf_filename==None:
