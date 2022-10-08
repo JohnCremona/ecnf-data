@@ -173,7 +173,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             nf = nfs[id]
             class_label = "%s-%s" % (level_label,id)
             if verbose:
-                print("\nWorking on form %s" % class_label)
+                print("Working on form %s" % class_label)
             # Create the array of traces for good primes:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
             # Do the search:
