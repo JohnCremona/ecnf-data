@@ -5,7 +5,23 @@
 from sage.all import QQ, ZZ, PolynomialRing, NumberField, cm_j_invariants_and_orders
 from psort import primes_iter
 
+# nf_table is a dict with a field label as key and value the
+# associated number field.  It is created by the function
+# read_all_fields() which reads from a text file, default
+# 'ecnf_fields' which has one field per line, the label then a space
+# then the list of ciefficients of the standard defining polynomial.
+
+# NB to process curves over a new field it is essential that the field
+# is assed to the ecnf_fields file.
+
 nf_table = {}
+
+# subfield_table is a dict with a field label as key and value a list
+# of (proper, nontrivial) subfield labels, possibly empty. It can be
+# created using make_subfields() or read from a file (default
+# 'ecnf_subfields').
+
+subfield_table = {}
 
 special_names = {'2.0.4.1': 'i',
                  '2.2.5.1': 'phi',
@@ -37,6 +53,7 @@ def read_all_fields(ffilename='ecnf_fields'):
         K = NumberField(poly, gen_name)
         nf_table[label] = K
     ffile.close()
+    read_subfields()
 
 def nf_lookup(label, verbose=False):
     r"""
@@ -81,13 +98,13 @@ def get_field_label(K, verbose=False, exact=True):
 # function to make a dict with field labels as keys and values lists
 # of labels of subfields, excluding Q and the field itself.
 def make_subfields():
-    if not nf_table:
-        read_all_fields()
-    subfields = {}
+    global subfield_table
+    if subfield_table:
+        return
 
     for label,K in nf_table.items():
         n = K.degree()
-        subfields[label] = []
+        subfield_table[label] = []
         if n not in [4,6]:
             continue
         for k,a,b in K.subfields():
@@ -96,28 +113,25 @@ def make_subfields():
                 continue
             sublabel = get_field_label(k, exact=False)
             assert sublabel # will fail if k not isomorphic to a field in the table
-            subfields[label].append(sublabel)
-        # if not subfields[label]:
-        #     subfields.pop(label)
-    return subfields
+            subfield_table[label].append(sublabel)
 
-def store_subfields():
-    subfields = make_subfields()
-    with open('ecnf_subfields', 'w') as outfile:
-        for label, sublabels in subfields.items():
+def store_subfields(sffilename='ecnf_subfields'):
+    make_subfields()
+    with open(sffilename, 'w') as outfile:
+        for label, sublabels in subfield_table.items():
             outfile.write(label)
             outfile.write(":")
             outfile.write(";".join(sublabels))
             outfile.write("\n")
 
-def read_subfields():
-    subfields = {}
-    with open('ecnf_subfields') as infile:
+def read_subfields(sffilename='ecnf_subfields'):
+    global subfield_table
+    subfield_table = {}
+    with open(sffilename) as infile:
         for line in infile.readlines():
             k, subs = line.strip().split(":")
             subs = [] if subs=='' else subs.split(";")
-            subfields[k] = subs
-    return subfields
+            subfield_table[k] = subs
 
 field_data = {} # dict whose keys are fields k and values are dicts holding:
 
