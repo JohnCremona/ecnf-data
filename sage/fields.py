@@ -60,7 +60,7 @@ def nf_lookup(label, verbose=False):
             print("We do not have it!")
         return None
 
-def get_field_label(K, verbose=False):
+def get_field_label(K, verbose=False, exact=True):
     r"""
     Return the label of field K (or None if it is not in nf_table)
     """
@@ -73,7 +73,51 @@ def get_field_label(K, verbose=False):
             print("read {} fields".format(len(nf_table)))
     if verbose:
         print("Looking up label of number field {}".format(K))
-    return next((lab for lab in nf_table if nf_table[lab]==K), '')
+    if exact:
+        return next((lab for lab in nf_table if K==nf_table[lab]), '')
+    else:
+        return next((lab for lab in nf_table if K.is_isomorphic(nf_table[lab])), '')
+
+# function to make a dict with field labels as keys and values lists
+# of labels of subfields, excluding Q and the field itself.
+def make_subfields():
+    if not nf_table:
+        read_all_fields()
+    subfields = {}
+
+    for label,K in nf_table.items():
+        n = K.degree()
+        subfields[label] = []
+        if n not in [4,6]:
+            continue
+        for k,a,b in K.subfields():
+            d = k.degree()
+            if d==1 or d==n:
+                continue
+            sublabel = get_field_label(k, exact=False)
+            assert sublabel # will fail if k not isomorphic to a field in the table
+            subfields[label].append(sublabel)
+        # if not subfields[label]:
+        #     subfields.pop(label)
+    return subfields
+
+def store_subfields():
+    subfields = make_subfields()
+    with open('ecnf_subfields', 'w') as outfile:
+        for label, sublabels in subfields.items():
+            outfile.write(label)
+            outfile.write(":")
+            outfile.write(";".join(sublabels))
+            outfile.write("\n")
+
+def read_subfields():
+    subfields = {}
+    with open('ecnf_subfields') as infile:
+        for line in infile.readlines():
+            k, subs = line.strip().split(":")
+            subs = [] if subs=='' else subs.split(";")
+            subfields[k] = subs
+    return subfields
 
 field_data = {} # dict whose keys are fields k and values are dicts holding:
 
