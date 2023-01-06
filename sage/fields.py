@@ -95,6 +95,18 @@ def get_field_label(K, verbose=False, exact=True):
     else:
         return next((lab for lab in nf_table if K.is_isomorphic(nf_table[lab])), '')
 
+# from a field label return 'IQF', 'RQF', 'cubics', 'quartcs',
+# quintics', or 'sextics':
+def get_field_type_from_label(label):
+    if label == '3.1.23.1':
+        return 'gunnells'
+    n,r,d,i = label.split(".")
+    n = int(n) # degree
+    r = int(r) # number of real embeddings
+    if n==2:
+        return ['IQF',None,'RQF'][r]
+    return [None, None, None, 'cubics', 'quartics', 'quintics', 'sextics'][n]
+
 # function to make a dict with field labels as keys and values lists
 # of labels of subfields, excluding Q and the field itself.
 def make_subfields():
@@ -132,6 +144,13 @@ def read_subfields(sffilename='ecnf_subfields'):
             k, subs = line.strip().split(":")
             subs = [] if subs=='' else subs.split(";")
             subfield_table[k] = subs
+
+# Given a field label, return a list of the labels of its proper subfields (excluding Q)
+def subfield_labels(label):
+    if not subfield_table:
+        read_all_fields() # also rads subfield data
+    return subfield_table.get(label, [])
+
 
 field_data = {} # dict whose keys are fields k and values are dicts holding:
 
