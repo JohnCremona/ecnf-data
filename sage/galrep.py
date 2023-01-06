@@ -1,9 +1,11 @@
 # Sage interface to Sutherland's Magma script for Galois images
 
 import re
+import os
 from sage.all import prod
 
-GALREP_SCRIPT_DIR = "/home/jec/galrep"
+HOME = os.getenv("HOME")
+GALREP_SCRIPT_DIR = os.path.join(HOME, "galrep")
 
 def init_galrep(mag, script_dir=GALREP_SCRIPT_DIR):
     """

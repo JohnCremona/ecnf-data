@@ -667,7 +667,8 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     # compute omega
 
     # find scaling factor in case we don't have a global minimal model
-    minD = Edata['minD'].replace('w', 'a')
+    from fields import special_names
+    minD = Edata['minD'].replace('w', special_names.get(Edata['field_label'], 'a'))
     minD = K.ideal([K(s) for s in minD[1:-1].split(",")])
     minDnorm = minD.norm()
     modelDnorm = E.discriminant().norm().abs()
