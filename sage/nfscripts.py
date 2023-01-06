@@ -584,7 +584,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     else:
         R = RealField(prec)
         # log(2)/log(10) =  0.301029995663981
-        magma_prec = (prec*0.301029995663981).round()
+        magma_prec = R(prec*0.301029995663981).round()
 
     from fields import nf_lookup
     K = nf_lookup(Edata['field_label'])
@@ -667,7 +667,9 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     # compute omega
 
     # find scaling factor in case we don't have a global minimal model
-    minDnorm = ZZ(Edata['minD'][1:].split(",")[0]).abs()
+    minD = Edata['minD'].replace('w', 'a')
+    minD = K.ideal([K(s) for s in minD[1:-1].split(",")])
+    minDnorm = minD.norm()
     modelDnorm = E.discriminant().norm().abs()
     fac = (modelDnorm/minDnorm).nth_root(12) # will be exact
     if fac != 1 and verbose:
