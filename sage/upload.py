@@ -38,8 +38,6 @@ def column_to_string(colname, col):
             #col = ''.join(['"', col, '"'])
         if colname == 'local_data':
             col = col.replace("None", "null")
-        if colname == 'galois_images':
-            col = str(col.split()).replace("'",'"')
         if colname == 'disc' and "." in col:
             print("Old disc: {}".format(col))
             col = "({})".format(ZZ(RR(col[1:-1])))

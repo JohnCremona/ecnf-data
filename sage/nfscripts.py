@@ -2,25 +2,117 @@
 #
 # Functions for computing elliptic curve data
 #
+from os import path
 from sage.all import (polygen, ZZ, QQ, latex,
                       EllipticCurve, primes, flatten, Primes,
                       legendre_symbol, prod, RealField,
                       PowerSeriesRing, O, Integer, srange, sign, copy)
 
-from fields import (add_field, field_data, cm_j_dict)
+from files import ECNF_DIR
+
+from fields import (add_field, field_data, cm_j_dict, get_field_label, get_field_type_from_label, nf_lookup, subfield_labels)
 
 from codec import (ainvs_to_string, ainvs_from_string,
                    curve_from_string, curve_from_strings,
                    ideal_to_string, ideal_from_string, parse_point,
-                   encode_points, decode_points_one2many)
+                   parse_curves_line, encode_points, decode_points_one2many)
 
 from magma import get_magma
 
-def get_label(EQ):
+def get_Q_label(EQ):
     try:
         return EQ.label()
     except LookupError:
         return "{}.?.?".format(EQ.conductor())
+
+# Given an elliptic curve, find it in the (text file) database and
+# return its label.  Note that we can filter by field_label and
+# conductor_norm, but not by conductor_label, since the curves in the
+# database over totally real fields get their conductor label from the
+# associated HMF label, which comes from Magma and is *not* in general
+# the standard LMFDB label foe the ideal.
+def get_label(E):
+    K = E.base_field()
+    if K.degree()==1:
+        return get_Q_label(E)
+    field_label = get_field_label(K)
+    field_type = get_field_type_from_label(field_label)
+    cond = E.conductor()
+    cond_norm = cond.norm()
+    curves_file = path.join(ECNF_DIR, field_type, "curves."+field_label)
+    #print("Looking for {}".format(E.ainvs()))
+    #print("curves file: {}".format(curves_file))
+    with open(curves_file) as infile:
+        for line in infile.readlines():
+            label, data = parse_curves_line(line)
+            if data['conductor_norm'] != cond_norm:
+                continue
+            #print(" - testing against {} = {}".format(label, data['ainvs']))
+            E1 = curve_from_string(K, data['ainvs'])
+            if E.is_isomorphic(E1):
+                #print("Success! Label is {}".format(label))
+                return label
+    from psort import ideal_label
+    cond_label = ideal_label(cond)
+    lab = "-".join([field_label, cond_label, "?", "?"])
+    #print("*************** {} not found, returning {}".format(E.ainvs(), lab))
+    return lab
+
+# return a list of labels of elliptic curves over proper subfields
+# whose base-change to this curve's base field is this curve.  When
+# one or more of the curves over subfields is not in the database, the
+# label will have '?' for the isogeny class label and the number
+# within the class (though the latter could be computed).
+def get_base_change_labels(E):
+    K = E.base_field()
+    degK = K.degree()
+    fromQ = [get_Q_label(E0) for E0 in E.descend_to(QQ)]
+    # if fromQ:
+    #     return fromQ
+    if degK==1 or degK.is_prime():
+        return fromQ
+    field_label = get_field_label(K, exact=False) # allow isomorphism
+    sub_labels = subfield_labels(field_label)
+    return fromQ+flatten([[get_label(E0) for E0 in E.descend_to(nf_lookup(lab))] for lab in sub_labels])
+
+def get_all_base_change(outfile=None, ncurves=0):
+    from fields import nf_table
+    if (outfile):
+        out = open(outfile, 'w')
+        out.write("label|base_change\n")
+        out.write("text|jsonb\n\n")
+    bc_dict = {}
+    for field_label, K in nf_table.items():
+        if K.degree().is_prime():
+            continue # silently skip fields of degree 2,3,5
+        sf = subfield_labels(field_label)
+        if not sf:
+            print("Skipping {} as it has no nontrivial proper subfields".format(field_label))
+            continue
+        with open(path.join(ECNF_DIR, get_field_type_from_label(field_label), "curves.{}".format(field_label))) as infile:
+            print("Processing {} with nontrivial proper subfields {}".format(field_label, sf))
+            nc = 0
+            for L in infile.readlines():
+                label, data = parse_curves_line(L)
+                E = curve_from_string(K, data['ainvs'])
+                bc_labels = get_base_change_labels(E)
+                if bc_labels:
+                  bc_dict[label] = bc_labels
+                  print("Curve {} is bc of {}".format(label, bc_labels))
+                  if (outfile):
+                      out.write("{}|{}\n".format(label, bc_labels))
+                nc +=1
+                if nc%1000==0:
+                  print("checked {} curves over {} so far".format(nc, field_label))
+                if ncurves and nc==ncurves:
+                    if (outfile):
+                        out.close()
+                    return bc_dict
+
+            print("Finished checking {} curves over {}".format(nc, field_label))
+    if (outfile):
+        out.close()
+    return bc_dict
 
 def torsion_data(E):
     T = E.torsion_subgroup()
@@ -492,7 +584,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     else:
         R = RealField(prec)
         # log(2)/log(10) =  0.301029995663981
-        magma_prec = (prec*0.301029995663981).round()
+        magma_prec = R(prec*0.301029995663981).round()
 
     from fields import nf_lookup
     K = nf_lookup(Edata['field_label'])
@@ -575,7 +667,9 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     # compute omega
 
     # find scaling factor in case we don't have a global minimal model
-    minDnorm = ZZ(Edata['minD'][1:].split(",")[0]).abs()
+    minD = Edata['minD'].replace('w', 'a')
+    minD = K.ideal([K(s) for s in minD[1:-1].split(",")])
+    minDnorm = minD.norm()
     modelDnorm = E.discriminant().norm().abs()
     fac = (modelDnorm/minDnorm).nth_root(12) # will be exact
     if fac != 1 and verbose:
@@ -836,7 +930,7 @@ def make_isogeny_class(curve, verbose=False, prec=None):
             if verbose:
                 print("curves     over Q: {}".format([E.ainvs() for E in EEQ]))
                 print("conductors over Q: {}".format([E.conductor() for E in EEQ]))
-        record['base_change'] = [get_label(cQ) for cQ in c.descend_to(QQ)]
+        record['base_change'] = [get_Q_label(cQ) for cQ in c.descend_to(QQ)]
 
         # local_data (keys 'local_data', 'non_min_p', 'minD', 'bad_primes'):
         ld = local_data(c)

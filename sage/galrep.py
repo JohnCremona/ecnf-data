@@ -53,7 +53,7 @@ def parse_galrep_data_string(galois_images, verbose=False):
         print("galois images = {}".format(galois_images))
     image_codes = galois_images.split() # list of strings
     pr = [int(split_galois_image_code(s)[0]) for s in image_codes]
-    record = {'galois_images': galois_images,
+    record = {'galois_images': image_codes,
               #'modp_images': image_codes,
               'nonmax_primes': pr,
               'nonmax_rad': prod(pr),

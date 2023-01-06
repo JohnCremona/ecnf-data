@@ -292,8 +292,8 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                 K.__gens_dict().update({'w':K.gen()})
             elif data[0] == 'Conductor':
                 record['conductor_ideal'] = data[1]
-                cond = data[1].replace("[", "").replace("]", "").replace("(", "").replace(")", "")
-                N = K.ideal([K(a) for a in cond.split(",")])
+                #cond = data[1].replace("[", "").replace("]", "").replace("(", "").replace(")", "")
+                #N = K.ideal([K(a) for a in cond.split(",")])
             elif data[0] == 'Isogeny_class':
                 conductor_label, iso_label = data[1].split("-")
                 record['conductor_norm'] = ZZ(conductor_label.split(".")[0])
@@ -840,45 +840,8 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
             except RuntimeError as e:
                 print("caught RuntimeError: {}".format(e))
 
+
 def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=False):
-    r"""Retrieves curves from a curves file and mwdata from the mwdata
-     file.  Computes analytic ranks and rewrites the mwdata file
-     adding the suffix to its filename.
-
-    This is a one-off since the orginal mwdata file code forgot to
-    compute and output analytic ranks.
-    """
-    from magma import get_magma
-    ar_table = {}
-    n = 0
-    for cl in read_classes_new(curves_filename):
-        class_label = "-".join([cl['field_label'],cl['conductor_label'],cl['iso_label']])
-        magma = get_magma()
-        ar = int(magma(cl['curves'][0]).AnalyticRank())
-        ar_table[class_label] = ar
-        if verbose:
-            print("Processing class {}: analytic rank = {}".format(class_label, ar))
-        n += 1
-    print("Finished computing analytic ranks for {} classes".format(n))
-    #print(ar_table)
-    with open(mwdata_filename) as mw_in, open(mwdata_filename+suffix, 'w', 1) as mw_out:
-        for L in mw_in.readlines():
-            label, record = parse_mwdata_line(L)
-            if record['analytic_rank'] is None:
-                class_label = record['class_label']
-                ar = ar_table[class_label]
-                if verbose:
-                    print("Updating analytic rank of {} to {}".format(class_label,ar))
-                data = L.split()
-                data[6] = str(ar)
-                L = " ".join(data)
-                if verbose:
-                    print("New mwdata line: {}".format(L))
-                mw_out.write(L + "\n")
-            else:
-                mw_out.write(L)
-
-def add_analytic_ranks_new(curves_filename, mwdata_filename, suffix='x', verbose=False):
     r"""Retrieves curves from a curves file and mwdata from the mwdata
      file.  Computes analytic ranks and rewrites the mwdata file
      adding the suffix to its filename.
@@ -928,6 +891,56 @@ def add_analytic_ranks_new(curves_filename, mwdata_filename, suffix='x', verbose
                 mw_out.write(L + "\n")
             else:
                 mw_out.write(L)
+
+def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = None, prec=None, verbose=0):
+    r"""
+    Reads curves and local data files.
+    Computes: analytic rank and L-value using Magma;
+     omega (global period);
+     heights and regulator;
+     analytic Sha (rounded);
+    Rewrites mwdata.
+
+    The prec parameter affects the precision to which the L-value and
+    global period is computed.  It is bit precision.  Magma's default
+    is 6dp or 20 bits for the L-value and the running time increases
+    rapidly.
+
+    The real work is done in the function extend_mwdata_one() from
+    nfscripts.py.  This function is similar to extend_mwdata().
+
+    """
+    from magma import get_magma
+    from nfscripts import extend_mwdata_one
+
+    data = read_all_field_data(base_dir, field_label, check_cols=False)
+    classdata = {} # will hold isogeny-invariant values keyed by class label
+    Kfactors = {} # BSD factor depending only on the field K
+
+    if one_label:
+        mwoutfile = base_dir+'/mwdata.'+suffix+"."+one_label
+    else:
+        mwoutfile = base_dir+'/mwdata.'+field_label+suffix
+
+    with open(mwoutfile, 'w', 1) as mwdata:
+        for label, Edata in data.items():
+            class_label = Edata['class_label']
+            if one_label and one_label!=class_label:
+                continue
+            N = Edata['conductor_norm']
+            if (minN and N<minN) or (maxN and N>maxN):
+                continue
+            print("Processing {}".format(label))
+            if not class_label in classdata:
+                # then this is a new isogeny class, so we'll use magma in extend_mwdata_one
+                magma = get_magma()
+
+            Edata = extend_mwdata_one(Edata, classdata, Kfactors, magma,
+                                      max_sat_prime = max_sat_prime, prec=prec, verbose=verbose)
+            line = file_line('mwdata', Edata)
+            if verbose>1:
+                print("New mwdata line: {}".format(line))
+            mwdata.write(line + "\n")
 
 def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR, append=False):
     """

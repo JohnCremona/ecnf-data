@@ -380,8 +380,10 @@ def ainvs_to_string(ainvs):
     substrings separated by semicolons, each substring being a
     comma-separated list of strings representing rational numbers
     representing the NF element with respect to its (power) basis.
+
+    Do nothing if this is already a string.
     """
-    return ";".join([NFelt(ai) for ai in ainvs])
+    return ainvs if type(ainvs)==type('') else ";".join([NFelt(ai) for ai in ainvs])
 
 def ainvs_from_string(K, ainvs):
     r"""Reverse of the previous function: converts a string, representing a
@@ -463,14 +465,15 @@ def convert_conductor_label(field_label, label):
 ######################################################
 
 def encode_point(P):
-    r"""
-    Encodes a point on an elliptic curve over a field of degree d as a string representing a 3-list of d-lists of rationals
+    r"""Encodes a point on an elliptic curve over a field of degree d as a
+    string representing a 3-list of d-lists of rationals.  Do nothing
+    if already a string.
     """
-    return str([list(c) for c in P]).replace(" ", "")
+    return P if type(P)==type('') else str([list(c) for c in P]).replace(" ", "")
 
 def encode_points(Plist):
-    r"""
-    Converts a list of points into a string encoding a list of 3-lists of d-lists of rationals
+    r"""Converts a list of points into a string encoding a list of 3-lists
+    of d-lists of rationals.
     """
     return '[' + ','.join([encode_point(P) for P in Plist]) + ']'
 

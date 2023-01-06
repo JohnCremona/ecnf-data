@@ -5,7 +5,23 @@
 from sage.all import QQ, ZZ, PolynomialRing, NumberField, cm_j_invariants_and_orders
 from psort import primes_iter
 
+# nf_table is a dict with a field label as key and value the
+# associated number field.  It is created by the function
+# read_all_fields() which reads from a text file, default
+# 'ecnf_fields' which has one field per line, the label then a space
+# then the list of ciefficients of the standard defining polynomial.
+
+# NB to process curves over a new field it is essential that the field
+# is assed to the ecnf_fields file.
+
 nf_table = {}
+
+# subfield_table is a dict with a field label as key and value a list
+# of (proper, nontrivial) subfield labels, possibly empty. It can be
+# created using make_subfields() or read from a file (default
+# 'ecnf_subfields').
+
+subfield_table = {}
 
 special_names = {'2.0.4.1': 'i',
                  '2.2.5.1': 'phi',
@@ -37,6 +53,7 @@ def read_all_fields(ffilename='ecnf_fields'):
         K = NumberField(poly, gen_name)
         nf_table[label] = K
     ffile.close()
+    read_subfields()
 
 def nf_lookup(label, verbose=False):
     r"""
@@ -60,7 +77,7 @@ def nf_lookup(label, verbose=False):
             print("We do not have it!")
         return None
 
-def get_field_label(K, verbose=False):
+def get_field_label(K, verbose=False, exact=True):
     r"""
     Return the label of field K (or None if it is not in nf_table)
     """
@@ -73,7 +90,67 @@ def get_field_label(K, verbose=False):
             print("read {} fields".format(len(nf_table)))
     if verbose:
         print("Looking up label of number field {}".format(K))
-    return next((lab for lab in nf_table if nf_table[lab]==K), '')
+    if exact:
+        return next((lab for lab in nf_table if K==nf_table[lab]), '')
+    else:
+        return next((lab for lab in nf_table if K.is_isomorphic(nf_table[lab])), '')
+
+# from a field label return 'IQF', 'RQF', 'cubics', 'quartcs',
+# quintics', or 'sextics':
+def get_field_type_from_label(label):
+    if label == '3.1.23.1':
+        return 'gunnells'
+    n,r,d,i = label.split(".")
+    n = int(n) # degree
+    r = int(r) # number of real embeddings
+    if n==2:
+        return ['IQF',None,'RQF'][r]
+    return [None, None, None, 'cubics', 'quartics', 'quintics', 'sextics'][n]
+
+# function to make a dict with field labels as keys and values lists
+# of labels of subfields, excluding Q and the field itself.
+def make_subfields():
+    global subfield_table
+    if subfield_table:
+        return
+
+    for label,K in nf_table.items():
+        n = K.degree()
+        subfield_table[label] = []
+        if n not in [4,6]:
+            continue
+        for k,a,b in K.subfields():
+            d = k.degree()
+            if d==1 or d==n:
+                continue
+            sublabel = get_field_label(k, exact=False)
+            assert sublabel # will fail if k not isomorphic to a field in the table
+            subfield_table[label].append(sublabel)
+
+def store_subfields(sffilename='ecnf_subfields'):
+    make_subfields()
+    with open(sffilename, 'w') as outfile:
+        for label, sublabels in subfield_table.items():
+            outfile.write(label)
+            outfile.write(":")
+            outfile.write(";".join(sublabels))
+            outfile.write("\n")
+
+def read_subfields(sffilename='ecnf_subfields'):
+    global subfield_table
+    subfield_table = {}
+    with open(sffilename) as infile:
+        for line in infile.readlines():
+            k, subs = line.strip().split(":")
+            subs = [] if subs=='' else subs.split(";")
+            subfield_table[k] = subs
+
+# Given a field label, return a list of the labels of its proper subfields (excluding Q)
+def subfield_labels(label):
+    if not subfield_table:
+        read_all_fields() # also rads subfield data
+    return subfield_table.get(label, [])
+
 
 field_data = {} # dict whose keys are fields k and values are dicts holding:
 
