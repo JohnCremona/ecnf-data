@@ -593,26 +593,32 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     # a Magma curve once per isogeny class.
     E = curve_from_string(K, Edata['ainvs'])
 
-    # find analytic rank and L-value:
+    # find analytic rank and L-value (if degree<6):
 
     class_label = Edata['class_label']
     if class_label not in classdata: # then we need to compute analytic rank and L-value
-        mE = magma(E)
-        if verbose:
-            print("Calling Magma's AnalyticRank()")
-        ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-        if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
+        if K.degree() < 6:
+            mE = magma(E)
             if verbose:
-                print("Special CM case: E = {}".format(E.ainvs()))
-                print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
-            ar *= 2
-            old_lval = lval
-            lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
+                print("Calling Magma's AnalyticRank()")
+            ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
+            if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
+                if verbose:
+                    print("Special CM case: E = {}".format(E.ainvs()))
+                    print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
+                ar *= 2
+                old_lval = lval
+                lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
+                if verbose:
+                    print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
+                    print(" (compare square of old lval:       {})".format(old_lval**2))
+            lval = R(lval)
+            ar = int(ar)
+        else:
             if verbose:
-                print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
-                print(" (compare square of old lval:       {})".format(old_lval**2))
-        lval = R(lval)
-        ar = int(ar)
+                print("Not computing analytic_rank or Lvalue as degree > 5")
+            ar = lval = None
+
         classdata[class_label] = (ar, lval)
     else:
         ar, lval = classdata[class_label]
