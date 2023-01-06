@@ -11,9 +11,9 @@ echo field: ${field}
 echo precision: ${prec}
 echo verbosity: ${verbose}
 echo output file: ${sage_out}
-cline="from files import recompute_real_data as rrd; rrd(${field_type}, ${field}, prec=${prec}, verbose=${verbose})"
+cline="from files import recompute_real_data as rrd; rrd('../${field_type}', '${field}', prec=${prec}, verbose=${verbose})"
 echo command line: ${cline}
-echo ${cline} | sagedev -q > ${sage_out}
+echo ${cline} | sage -q > ${sage_out}
 
 # Use with parallel as follows:
 #
