@@ -549,7 +549,7 @@ def global_period(E, scale=None, prec=None):
     """
     # In Sage 9.1 there's a bug in
     # E.period_lattice(e).omega(prec=prec) for complex places where
-    # the prec parameter is *not* sassed onto the period computation.
+    # the prec parameter is *not* passed onto the period computation.
     #
     # Otherwise this would just be
     # return prod(E.period_lattice(e).omega(prec=prec) for e in K.places())
@@ -567,27 +567,51 @@ def global_period(E, scale=None, prec=None):
     return om
 
 def extend_mwdata_one(Edata, classdata, Kfactors, magma,
-                      max_sat_prime=None, prec=None, verbose=False):
-    r"""
-    Computes analytic rank and L-value using Magma, and omega (global period).
-    Computes analytic Sha (rounded).
+                      max_sat_prime=None, prec=None, Lprec=None, verbose=False):
+    r"""Computes analytic rank and L-value using Magma, and omega (global
+    period), heights and regulator using Sage.  Computes analytic Sha
+    (rounded).
 
-    The prec parameter affects the precision to which the L-value and
-    global period is computed.  It is bit precision.  Magma's default
-    is 6dp or 20 bits for the L-value and the running time increases
-    rapidly.
+    The prec parameter controls the precision to which the heights,
+    regulator and global period is computed.  It is bit precision.
+    The Lprec parameter (also bit precision) controls the precision
+    used for the L-value in Magma, where the default is 6dp or 20 bits
+    for the L-value and the running time increases rapidly.
+
+        # prec (bits) magma_prec (decimal)
+        15-18 5
+        19-21 6
+        22-24 7
+        25-28 8
+        29-31 9
+        32-34 10
+        35-38 11
+        39-41 12
+        42-44 13
+        45-48 14
+        49-51 15
+        52-54 16
+        55-58 17
+        59-61 18
+        62-64 19
+        65-68 20
+       128-131 39
+
     """
+    from fields import nf_lookup
+    K = nf_lookup(Edata['field_label'])
+
     if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
         R = RealField()
         prec = R.precision()
-        magma_prec = 16
     else:
         R = RealField(prec)
+    if Lprec is None:
+        magma_prec = 6
+    else:
         # log(2)/log(10) =  0.301029995663981
-        magma_prec = R(prec*0.301029995663981).round()
+        magma_prec = R(Lprec*0.301029995663981).round()
 
-    from fields import nf_lookup
-    K = nf_lookup(Edata['field_label'])
     # We need to construct every E as a Sage EllipticCurve in
     # order to compute omega, but we only need construct it as
     # a Magma curve once per isogeny class.
@@ -653,7 +677,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     Edata['heights'] = str(heights).replace(" ", "")
     if verbose:
         print("heights = {}".format(heights))
-    reg = E.regulator_of_points(gens, precision=prec)
+    reg = E.regulator_of_points(gens, precision=prec) if gens else 1
     Edata['reg'] = str(reg) if ar else '1'
     if verbose:
         print("regulator (of known points) = {}".format(reg))

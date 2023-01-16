@@ -892,7 +892,7 @@ def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=Fal
             else:
                 mw_out.write(L)
 
-def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = None, prec=None, verbose=0):
+def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = None, prec=None, Lprec=None, verbose=0):
     r"""
     Reads curves and local data files.
     Computes: analytic rank and L-value using Magma;
@@ -901,10 +901,30 @@ def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None,
      analytic Sha (rounded);
     Rewrites mwdata.
 
-    The prec parameter affects the precision to which the L-value and
-    global period is computed.  It is bit precision.  Magma's default
-    is 6dp or 20 bits for the L-value and the running time increases
-    rapidly.
+    The prec parameter controls the precision to which the heights,
+    regulator and global period is computed.  It is bit precision.
+    The Lprec parameter (also bit precision) controls the precision
+    used for the L-value in Magma: note that the running time increases
+    rapidly!
+
+        # prec (bits) magma_prec (decimal)
+        15-18 5
+        19-21 6
+        22-24 7
+        25-28 8
+        29-31 9
+        32-34 10
+        35-38 11
+        39-41 12
+        42-44 13
+        45-48 14
+        49-51 15
+        52-54 16
+        55-58 17
+        59-61 18
+        62-64 19
+        65-68 20
+       128-131 39
 
     The real work is done in the function extend_mwdata_one() from
     nfscripts.py.  This function is similar to extend_mwdata().
@@ -936,7 +956,8 @@ def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None,
                 magma = get_magma()
 
             Edata = extend_mwdata_one(Edata, classdata, Kfactors, magma,
-                                      max_sat_prime = max_sat_prime, prec=prec, verbose=verbose)
+                                      max_sat_prime = max_sat_prime,
+                                      prec=prec, Lprec=Lprec, verbose=verbose)
             line = file_line('mwdata', Edata)
             if verbose>1:
                 print("New mwdata line: {}".format(line))
