@@ -611,10 +611,12 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     else:
         R = RealField(prec)
     if Lprec is None:
+        Lprec = 20 # so decimal precision = 6
         magma_prec = 6
     else:
         # log(2)/log(10) =  0.301029995663981
         magma_prec = R(Lprec*0.301029995663981).round()
+    RL = RealField(Lprec)
 
     # We need to construct every E as a Sage EllipticCurve in
     # order to compute omega, but we only need construct it as
@@ -640,7 +642,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
                 if verbose:
                     print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
                     print(" (compare square of old lval:       {})".format(old_lval**2))
-            lval = R(lval)
+            lval = RL(lval)
             ar = int(ar)
         else:
             if verbose:
@@ -730,10 +732,11 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
         print("Tamagawa product = {}".format(tamagawa_product))
 
     if NTreg:
-        Rsha = lval * nt**2  / (NTreg * tamagawa_product * omega)
+        # NB we may have computed lval to lower precision than NTreg and omega
+        Rsha = lval * nt**2  / RL(NTreg * tamagawa_product * omega)
 
         if K not in Kfactors:
-            Kfactors[K] = R(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+            Kfactors[K] = RL(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
         if verbose:
             print("Field factor = {}".format(Kfactors[K]))
 

@@ -3,7 +3,8 @@
 field_type=$1
 field=$2
 prec=128
-verbose=0
+Lprec=34
+verbose=1
 sage_out="sage.out.$1.$2"
 
 echo field type: ${field_type}
@@ -11,7 +12,7 @@ echo field: ${field}
 echo precision: ${prec}
 echo verbosity: ${verbose}
 echo output file: ${sage_out}
-cline="from files import recompute_real_data as rrd; rrd('../${field_type}', '${field}', prec=${prec}, verbose=${verbose})"
+cline="from files import recompute_real_data as rrd; rrd('../${field_type}', '${field}', prec=${prec}, Lprec=${Lprec}, verbose=${verbose})"
 echo command line: ${cline}
 echo ${cline} | sage -q > ${sage_out}
 
