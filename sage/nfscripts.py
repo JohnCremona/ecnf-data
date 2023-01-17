@@ -579,6 +579,10 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
     for the L-value and the running time increases rapidly.
 
         # prec (bits) magma_prec (decimal)
+        2-4 1
+        5-8 2
+        9-11 3
+        12-14 4
         15-18 5
         19-21 6
         22-24 7
