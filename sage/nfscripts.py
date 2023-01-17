@@ -623,10 +623,10 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 
     class_label = Edata['class_label']
     if class_label not in classdata: # then we need to compute analytic rank and L-value
-        if K.degree() < 6:
+        if True: # K.degree() < 6:
             mE = magma(E)
             if verbose:
-                print("Calling Magma's AnalyticRank()")
+                print("Calling Magma's AnalyticRank() with decimal precision {}".format(magma_prec))
             ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
             if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
                 if verbose:
@@ -637,7 +637,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
                 lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
                 if verbose:
                     print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
-                    print(" (compare square of old lval:       {})".format(old_lval**2))
+
             lval = RL(lval)
             ar = int(ar)
         else:
@@ -744,6 +744,9 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             if not verbose:
                 print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
             print("****************************Not good! 0 or non-square or not close to a positive integer!")
+            if not ZZ(sha).is_square():
+                print("Not keeping this Sha value")
+                sha = None
 
     else:
         if verbose:
