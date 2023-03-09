@@ -646,11 +646,13 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             ar = int(ar)
         else:
             if verbose:
-                print("Not computing analytic_rank or Lvalue as degree > 5")
+                print("Not computing analytic_rank or Lvalue")
             ar = lval = None
 
         classdata[class_label] = (ar, lval)
     else:
+        if verbose:
+            print("ar and Lval already computed for sogeny class {}: {}".format(class_label, classdata[class_label]))
         ar, lval = classdata[class_label]
     Edata['analytic_rank'] = ar
     Edata['Lvalue'] = lval
