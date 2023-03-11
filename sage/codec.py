@@ -236,14 +236,15 @@ def parse_new_mwdata_line(L):
     record['ngens'] = int(data[7])
     record['gens'] = decode_points_one2many(data[8])
     record['heights'] = data[9]
-    record['reg'] = decode_col(data[10], RR) if record['ngens'] else 1
+    record['reg'] = decode_col(data[10], RealNumber) if record['ngens'] else 1
+    #record['reg'] = data[10] if record['ngens'] else 1
     record['torsion_order'] = nt = int(data[11])
     record['torsion_primes'] = ZZ(nt).prime_divisors()
     record['torsion_structure'] = decode_int_list(data[12])
     record['torsion_gens'] = decode_points_one2many(data[13])
     if len(data) == 17:
-        record['omega'] = decode_col(data[14], RR)
-        record['Lvalue'] = decode_col(data[15], RR)
+        record['omega'] = decode_col(data[14], RealNumber)
+        record['Lvalue'] = decode_col(data[15], RealNumber)
         record['sha'] = decode_col(data[16], int)
     else:
         record['omega'] = None
