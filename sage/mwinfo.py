@@ -263,16 +263,6 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
         if verbose:
             print("Calling Magma's AnalyticRank()")
         ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-        if False:#'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
-            if verbose:
-                print("Special CM case: E = {}".format(E.ainvs()))
-                print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
-            ar *= 2
-            old_lval = lval
-            lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
-            if verbose:
-                print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
-                print(" (compare square of old lval:       {})".format(old_lval**2))
         lval = RR(lval)
         ar = int(ar)
         if verbose:

@@ -632,16 +632,6 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             if verbose:
                 print("Calling Magma's AnalyticRank() with decimal precision {}".format(magma_prec))
             ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-            if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
-                if verbose:
-                    print("Special CM case: E = {}".format(E.ainvs()))
-                    print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
-                ar *= 2
-                old_lval = lval
-                lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
-                if verbose:
-                    print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
-
             lval = RL(lval)
             ar = int(ar)
         else:
