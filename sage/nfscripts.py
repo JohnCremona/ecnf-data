@@ -627,30 +627,22 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 
     class_label = Edata['class_label']
     if class_label not in classdata: # then we need to compute analytic rank and L-value
-        if K.degree() < 6:
+        if True: # K.degree() < 6:
             mE = magma(E)
             if verbose:
-                print("Calling Magma's AnalyticRank()")
+                print("Calling Magma's AnalyticRank() with decimal precision {}".format(magma_prec))
             ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-            if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
-                if verbose:
-                    print("Special CM case: E = {}".format(E.ainvs()))
-                    print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
-                ar *= 2
-                old_lval = lval
-                lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
-                if verbose:
-                    print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
-                    print(" (compare square of old lval:       {})".format(old_lval**2))
             lval = RL(lval)
             ar = int(ar)
         else:
             if verbose:
-                print("Not computing analytic_rank or Lvalue as degree > 5")
+                print("Not computing analytic_rank or Lvalue")
             ar = lval = None
 
         classdata[class_label] = (ar, lval)
     else:
+        if verbose:
+            print("ar and Lval already computed for sogeny class {}: {}".format(class_label, classdata[class_label]))
         ar, lval = classdata[class_label]
     Edata['analytic_rank'] = ar
     Edata['Lvalue'] = lval
@@ -748,6 +740,9 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             if not verbose:
                 print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
             print("****************************Not good! 0 or non-square or not close to a positive integer!")
+            if not ZZ(sha).is_square():
+                print("Not keeping this Sha value")
+                sha = None
 
     else:
         if verbose:

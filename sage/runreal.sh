@@ -3,7 +3,7 @@
 field_type=$1
 field=$2
 prec=128
-Lprec=34
+Lprec=128
 verbose=1
 sage_out="sage.out.$1.$2"
 
