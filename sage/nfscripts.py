@@ -457,7 +457,7 @@ def isog_class_cmp1(k, I, J):
     raise NotImplementedError("Bound on primes is too small to determine...")
 
 
-def isModular(E):
+def isModular_magma(E):
     # Create a new magma instance for each curve:
     mag = get_magma()
     # read in Samir Siksek's code:
