@@ -1,6 +1,7 @@
 # Functions for coding/decoding data to/from strings
 
 from sage.all import ZZ, QQ, RR, EllipticCurve, prod, KodairaSymbol
+from sage.rings.real_mpfr import RealNumber
 from psort import ideal_label
 from fields import nf_lookup
 from schemas import column_names
@@ -236,16 +237,18 @@ def parse_new_mwdata_line(L):
     record['ngens'] = int(data[7])
     record['gens'] = decode_points_one2many(data[8])
     record['heights'] = data[9]
-    record['reg'] = decode_col(data[10], RealNumber) if record['ngens'] else 1
-    #record['reg'] = data[10] if record['ngens'] else 1
+    #record['reg'] = decode_col(data[10], RealNumber) if record['ngens'] else 1
+    record['reg'] = data[10] if record['ngens'] else 1
     record['torsion_order'] = nt = int(data[11])
     record['torsion_primes'] = ZZ(nt).prime_divisors()
     record['torsion_structure'] = decode_int_list(data[12])
     record['torsion_gens'] = decode_points_one2many(data[13])
     if len(data) == 17:
-        record['omega'] = decode_col(data[14], RealNumber)
-        record['Lvalue'] = decode_col(data[15], RealNumber)
+        #record['omega'] = decode_col(data[14], RealNumber)
+        #record['Lvalue'] = decode_col(data[15], RealNumber)
         record['sha'] = decode_col(data[16], int)
+        record['omega'] = data[14]
+        record['Lvalue'] = data[15]
     else:
         record['omega'] = None
         record['Lvalue'] = None
