@@ -596,6 +596,7 @@ encoders = {'number': num_encoder,
 #            'jinv': rank_encoder,
             'jinv': NFelt,
             'heights': encode_int_list,
+            'galois_images': gal_im_encoder,
             # don't use the next line, it messes up rational coefficients!
             #            'equation': lambda x: x.replace("{","").replace("}","")
 }
