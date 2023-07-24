@@ -13,6 +13,7 @@ from codec import (curve_from_string, curve_from_strings,
 
 from fields import nf_lookup
 from schemas import all_file_types
+from modularitycheck import isModular
 
 HOME = os.getenv("HOME")
 BIANCHI_DATA_DIR = os.path.join(HOME, "bianchi-data")
@@ -193,7 +194,7 @@ def read_curves(infile, only_one=False, ncurves=0):
     with open(infile) as file:
         for L in file.readlines():
             data = L.split()
-            if len(data)!=13:
+            if len(data)!=14:
                 print("line {} does not have 13 fields, skipping".format(L))
                 continue
             if only_one and data[3]!='1':
@@ -207,7 +208,7 @@ def read_curves(infile, only_one=False, ncurves=0):
             iso_label = data[2]
             c_num = data[3]
             conductor_ideal = data[4]
-            E = curve_from_strings(K, data[6:11])
+            E = curve_from_string(K, data[6])
             yield (field_label,conductor_label,conductor_ideal,iso_label,c_num,E)
 
 def read_curves_new(infile, only_one=False, ncurves=0):
@@ -795,6 +796,40 @@ def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
                     else:
                         print("No Q-curves")
 
+all_tr_ftypes = ['cubics', 'quartics', 'quintics', 'sextics']
+
+# RQF omitted since we know all curves over those ields are modular
+
+def modularity_check(ftypes=all_tr_ftypes, fields=None, verbose=2):
+    for ftype in ftypes:
+        if verbose:
+            print("Checking curves over fields in {}".format(ftype))
+        if fields:
+            field_list = fields
+        else:
+            with open("{}/{}/fields.txt".format(ECNF_DIR,ftype)) as field_file:
+                field_list = [f[:-1] for f in field_file.readlines()]
+
+        for fname in field_list:
+            if verbose>1:
+                print("Checking curves over field {}".format(fname))
+            K = nf_lookup(fname)
+            n = 0
+            curves_filename = "{}/{}/curves.{}".format(ECNF_DIR,ftype,fname)
+
+            for (field_label,conductor_label,conductor_ideal,iso_label,c_num,E) in read_curves(curves_filename):
+                n += 1
+                lab = "{}-{}-{}{}".format(field_label, conductor_label, iso_label, c_num)
+                if verbose>2:
+                    print("Checking modularity of {}:".format(lab), end=" ")
+                res = isModular(E)
+                if res:
+                    if verbose>2:
+                        print("OK")
+                else:
+                    print("Modularity check failed for {}".format(lab))
+                if n%1000==0 and verbose>1:
+                    print("Checked {} curves...".format(n))
 
 def make_mwdata(curves_filename, mwdata_filename, label=None,
                 min_cond_norm=None, max_cond_norm=None,
