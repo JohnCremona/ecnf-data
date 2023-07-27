@@ -6,6 +6,7 @@ import sys
 from codec import (curve_from_string, curve_from_strings,
                    ainvs_from_strings, ainvs_from_string,
                    convert_ideal_label, decode_points_one2many,
+                   decode_int_list,
                    encode_points, file_line, parse_curves_line,
                    parse_isoclass_line, parse_local_data_line,
                    parse_mwdata_line, parse_new_mwdata_line,
@@ -445,8 +446,8 @@ def read_newform_data(bmf_filename, verbose=False):
         nfs[letter] = nf = {}
         nf['gen_str'] = gen[1:-1]
         nf['sign'] = int(sfe)
-        nf['aq'] = [int(e) for e in ALs[1:-1].split(",")]
-        nf['ap'] = [int(e) for e in aplist[1:-1].split(",")]
+        nf['aq'] = decode_int_list(ALs)
+        nf['ap'] = decode_int_list(aplist)
         if verbose:
             print("newform data: %s" % L)
 

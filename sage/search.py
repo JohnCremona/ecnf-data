@@ -153,6 +153,9 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if verbose:
             print("Using {} for missing labels".format(missing_label_file))
 
+    nforms = 0
+    ncurves_found = 0
+    ncurves_not_found = 0
     mag=Magma()
     for level in read_missing_levels(open(missing_label_file)):
         if "." in level:
@@ -174,6 +177,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             class_label = "%s-%s" % (level_label,id)
             if verbose:
                 print("Working on form %s" % class_label)
+            nforms += 1
             # Create the array of traces for good primes:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
             # Do the search:
@@ -186,9 +190,11 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             if curves:
                 print("Found {} curves matching {}: {}".format(len(curves),class_label," ".join([str(E.ainvs()) for E in curves])))
                 E = curves[0]
+                ncurves_found += 1
             else:
                 print("**********No curve found to match newform {}*************".format(class_label))
                 E = None
+                ncurves_not_found += 1
             # output 3 lines per curve, as expected by the function read_curves_magma:
             output("Conductor {}\n".format(ideal_to_string(N)))
             output("Isogeny_class {}\n".format(class_label))
@@ -199,6 +205,12 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
                 output("No curve found\n")
             if outfilename:
                 outfile.flush()
+    assert ncurves_found + ncurves_not_found == nforms
+    if ncurves_not_found:
+        print(f"No curve found for {ncurves_not_found} newforms out of {nforms}")
+        print(f"Curve(s) found for {ncurves_found} newforms out of {nforms}")
+    else:
+        print(f"Curve(s) found for all {nforms} newforms")
 
 def make_ec_dict(E):
     K = E.base_field()
