@@ -252,7 +252,7 @@ def read_curves_new(infile, only_one=False, ncurves=0):
             yield record
 
 def read_curves_magma(infile, min_norm=1, max_norm=None):
-    r""" Iterator to loop through lines of a file containing output from a
+    r"""Iterator to loop through lines of a file containing output from a
     Magma search.  (Nothing in this function really relates to Magma.)
     For each curve there are 3 or 4 lines in the file, with prefixes
 
@@ -277,6 +277,11 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
     field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
 
     (omitting any whose conductor_norm is not within the bounds given, if any)
+
+    NB If the search failed to find a curve with given conductor,
+    instead of a line starting "Curve " there will be a line "No curve
+    found".
+
     """
     from sage.all import EllipticCurve, ZZ
     record = {}
@@ -311,6 +316,9 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                 assert EN.norm() == N_norm
                 if N_norm >= min_norm and (max_norm is None or N_norm <= max_norm):
                     yield record
+            elif data[0] == 'No':
+                print("No curve for this class, skipping")
+                continue
             else:
                 print("Unrecognised line prefix {}, skipping this line".format(data[0]))
                 continue
@@ -845,16 +853,16 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
     curves (isogeny classes) in the in put file are processed.
 
     """
-    from nfscripts import get_generators
-    from codec import make_mwdata_lines
+    from mwinfo import get_generators
+    from codec import file_line
     with open(mwdata_filename, 'w', 1) as mw_out:
         for cl in read_classes_new(curves_filename):
             short_class_label = "-".join([cl['conductor_label'],cl['iso_label']])
             class_label = "-".join([cl['field_label'],cl['conductor_label'],cl['iso_label']])
             if label:
                 if label!=short_class_label:
-                    if verbose:
-                        print("Skipping {}".format(short_class_label))
+                    # if verbose:
+                    #     print("Skipping {}".format(short_class_label))
                     continue
             NN = cl['conductor_norm']
             if min_cond_norm and NN<min_cond_norm:
@@ -869,7 +877,8 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
             print("Processing class {}".format(class_label))
             try:
                 cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
-                mwlines = make_mwdata_lines(cl)
+                #mwlines = make_mwdata_lines(cl)
+                line = file_line('mwdata', cl)
                 if verbose:
                     print(mwlines)
                 mw_out.write(mwlines+"\n")
@@ -1075,7 +1084,7 @@ def make_all_data_files1(raw_curves, file_types=all_file_types,
     """
     from nfscripts import make_isogeny_class
     for curve in raw_curves:
-        label = "{}.{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
+        label = "{}-{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
         print("working on class {}".format(label))
         data = make_isogeny_class(curve, verbose=verbose, prec=prec)
         write_data_files(data, file_types, field_type, field_label, base_dir, append=True)

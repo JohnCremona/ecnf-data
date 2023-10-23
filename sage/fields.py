@@ -65,16 +65,28 @@ def nf_lookup(label, verbose=False):
             print("reading field data from file")
         read_all_fields()
         if verbose:
-            print("read {} fields".format(len(nf_table)))
+            print(f"read {len(nf_table)} fields")
     if verbose:
-        print("Looking up number field with label {}".format(label))
+        print(f"Looking up number field with label {label}")
     if label in nf_table:
         K = nf_table[label]
-        if verbose: print("We have it: {}".format(K))
+        if verbose: print(f"We have it: {K}")
         return K
     else:
         if verbose:
             print("We do not have it!")
+        # for quadratic fields we can do this manually
+        deg, s, absD, num = [ZZ(x) for x in label.split(".")]
+        if deg==2:
+            D = absD if s else -absD
+            x = polygen(QQ)
+            pol = x**2 - x + (1-D)//4 if D%2 else x**2 - D//4
+            K = NumberField(pol, 'a')
+            assert K.discriminant()==D
+            nf_table[label] = K
+            if verbose:
+                print(f"Adding quadratic field {K}")
+            return K
         return None
 
 def get_field_label(K, verbose=False, exact=True):

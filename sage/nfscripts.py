@@ -660,9 +660,9 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 
     if max_sat_prime and ngens:
         if max_sat_prime is None:
-            new_gens, index, _ = E.saturation(gens, verbose=verbose)
+            new_gens, index, _ = E.saturation(gens, verbose=0)
         else:
-            new_gens, index, _ = E.saturation(gens, max_prime=max_sat_prime, verbose=verbose)
+            new_gens, index, _ = E.saturation(gens, max_prime=max_sat_prime, verbose=0)
         if index > 1:
             print("Original gens were not saturated, index = {} (using max_prime {})".format(index, max_sat_prime))
             gens = new_gens

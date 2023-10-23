@@ -63,10 +63,15 @@ def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
     rank_bounds = MWSI[0].sage()
     gens = [convert_point(P) for P in MWSI[1]]
     sha_bounds = dict(MWSI[2].sage())
-    if gens and test_saturation:
+    if gens:
+        maxp = 0 if test_saturation else 100
         if verbose:
-            print("testing that Magma's generators are saturated...")
-        newgens, index, _ = E.saturation(gens, verbose)
+            print("testing that Magma's generators are saturated", end="")
+            if maxp:
+                print(f" (at primes up to {maxp} only)...")
+            else:
+                print("...")
+        newgens, index, _ = E.saturation(gens, verbose=0, max_prime=maxp)
         if index > 1:
             # Must print this even if not verbose!
             print("Magma's generators for curve %s were not saturated!  index = %s" % (E.ainvs(), index))
@@ -108,6 +113,10 @@ def map_points(maps, source, Plist, verbose=False):
                     # print("Mapping from %s to %s at step %s" % (i,j,nstep))
                     phi = maps[i][j]
                     p = phi.degree()  # a prime
+                    # Fix Sage bug
+                    for P in Qlists[i]:
+                        if hasattr(P, '_order'):
+                            del P.__dict__['_order']
                     Qlists[j] = [maps[i][j](P) for P in Qlists[i]]
                     # now do p-saturation (if possible)
                     try:
