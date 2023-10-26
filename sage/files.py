@@ -186,7 +186,8 @@ def read_curves(infile, only_one=False, ncurves=0):
     r"""
     Iterator to loop through lines of a curves.* file each
     containing 13 data fields as defined the in the ecnf-format.txt file,
-    yielding its curves as EllipticCurve objects.
+    yielding its curves as EllipticCurve objects and other data:
+       (field_label,conductor_label,conductor_ideal,iso_label,c_num,E)
 
     If only_one is True, skips curves whose 4th data field is
     *not* 1, hence only yielding one curve per isogeny class.
@@ -204,7 +205,7 @@ def read_curves(infile, only_one=False, ncurves=0):
             if ncurves and count>ncurves:
                 return
             field_label = data[0]
-            K = nf_lookup(field_label)
+            K = nf_lookup(field_label).change_names('w')
             conductor_label = data[1]
             iso_label = data[2]
             c_num = data[3]
@@ -317,7 +318,7 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                 if N_norm >= min_norm and (max_norm is None or N_norm <= max_norm):
                     yield record
             elif data[0] == 'No':
-                print("No curve for this class, skipping")
+                print(f"No curve for class {record['conductor_label']}{record['iso_label']}, skipping")
                 continue
             else:
                 print("Unrecognised line prefix {}, skipping this line".format(data[0]))
@@ -1008,7 +1009,7 @@ def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None,
                 print("New mwdata line: {}".format(line))
             mwdata.write(line + "\n")
 
-def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR, append=False):
+def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR, append=False, suffix='part'):
     """
     data is a dict whose values are curve records.
 
@@ -1017,7 +1018,7 @@ def write_data_files(data, file_types=all_file_types, field_type=None, field_lab
     from schemas import column_names
     mode = 'a' if append else 'w'
     for ft in file_types:
-        new_file = os.path.join(base_dir, field_type, "{}.{}.part".format(ft, field_label))
+        new_file = os.path.join(base_dir, field_type, f"{ft}.{field_label}.{suffix}")
         cols = column_names[ft]
         with open(new_file, mode) as outfile:
             n = 0

@@ -90,7 +90,8 @@ def add_curve_to_cache(E):
         curve_cache[K] = {}
     if N not in curve_cache[K]:
         curve_cache[K][N] = []
-    curve_cache[K][N].append(E)
+    if E not in curve_cache[K][N]:
+        curve_cache[K][N].append(E)
 
 def add_curves_to_cache(E):
     """
@@ -105,6 +106,29 @@ def add_curves_to_cache(E):
             Eds = EllipticCurve([s(a) for a in Ed.ainvs()]).global_minimal_model(semi_global=True)
             add_curve_to_cache(Eds)
 
+def add_curves_to_cache_from_file(infile, K, verbose=1):
+    """
+    Read curves from a curves file and add them all to the cache (with conjugates and twists).
+    """
+    from files import read_curves
+    n = 0
+    for field_label,conductor_label,conductor_ideal,iso_label,c_num,E in read_curves(infile, only_one=True):
+        KE = E.base_field()
+        if K != KE:
+            iso = KE.embeddings(K)[0]
+            E = EllipticCurve([iso(a) for a in E.ainvs()])
+            if verbose>2:
+                print(f" - switching field of definition from {KE} to {K}")
+        Klabel = field_label
+        if verbose>1:
+            print(f" - adding {field_label}-{conductor_label}-{iso_label}{c_num}: {E.ainvs()}")
+        add_curve_to_cache(E)
+        n+=1
+    if verbose:
+        print(f"After reading {n} curves from {infile}, ",end="")
+        n = sum((len(curve_cache[K][N]) for N in curve_cache[K]))
+        print(f"field {Klabel} now has {n} curves")
+
 def check_curve_aP(E, aPdict):
     return all(E.reduction(P).trace_of_frobenius()==aP for P,aP in aPdict.items())
 
@@ -118,7 +142,7 @@ def find_matching_curve(K, N, aPdict):
             return E
     return None
 
-def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, effort=1000, verbose=False):
+def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, old_curves_file=None, effort=1000, verbose=False):
     r"""
     Uses Magma via EllipticCurveSearch() to search for missing curves (over IQFs given some BMFs).
 
@@ -192,6 +216,10 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         if verbose:
             print(f"Using {missing_label_file} for missing labels")
 
+    if old_curves_file:
+        print(f"Reading existing curves from {old_curves_file}")
+        add_curves_to_cache_from_file(old_curves_file, K, verbose=verbose)
+
     nforms = 0
     ncurves_found = 0
     ncurves_not_found = 0
@@ -223,6 +251,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             apdict = dict([(P,nf['ap'][i]) for i,P in goodP if i<len(nf['ap'])])
 
             # See if a curve in the cache matches:
+            #print(f"Looking for a curve matching {N=}, {apdict=}")
             E = find_matching_curve(K, N, apdict)
             if E:
                 if verbose:

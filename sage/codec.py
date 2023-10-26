@@ -271,8 +271,10 @@ def NFelt(a):
     commas, with no spaces.
 
     For example the element (3+4*w)/2 in Q(w) gives '3/2,2'.
+
+    If a is already a string, do nothing!
     """
-    return ",".join([str(c) for c in list(a)])
+    return a if type(a)==type('') else  ",".join([str(c) for c in list(a)])
 
 def ideal_from_string(K, s, IQF_format=False):
     r"""Returns the ideal of K defined by the string s.  If IQF_format is
@@ -562,12 +564,6 @@ string_encoder = lambda r: str(r).replace(" ", "") if r != None else '?'
 rank_encoder = lambda r: str(r) if r != None else '?'
 gal_im_encoder = " ".join
 
-# NB When outputting computed values, 'ainvs' and 'jinv' need to be
-# encoded using ainvs_to_string and NFelt respectively, but when
-# rewriting raw data files where both 'ainvs' and 'jinv' are the
-# strings read in, they need no encoding (and using those encodings
-# creates nonsense).  This should be handled automatically.
-
 encoders = {'number': num_encoder,
             'conductor_norm': num_encoder,
             'cm': num_encoder,
@@ -591,9 +587,7 @@ encoders = {'number': num_encoder,
             'Lvalue': rank_encoder,
             'reg': rank_encoder,
             'normdisc': num_encoder,
-#            'ainvs': rank_encoder,
             'ainvs': ainvs_to_string,
-#            'jinv': rank_encoder,
             'jinv': NFelt,
             'heights': encode_int_list,
             'galois_images': gal_im_encoder,
