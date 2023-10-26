@@ -1,6 +1,7 @@
 # Functions for coding/decoding data to/from strings
 
 from sage.all import ZZ, QQ, RR, EllipticCurve, prod, KodairaSymbol
+from sage.rings.real_mpfr import RealNumber
 from psort import ideal_label
 from fields import nf_lookup
 from schemas import column_names
@@ -236,15 +237,18 @@ def parse_new_mwdata_line(L):
     record['ngens'] = int(data[7])
     record['gens'] = decode_points_one2many(data[8])
     record['heights'] = data[9]
-    record['reg'] = decode_col(data[10], RR) if record['ngens'] else 1
+    #record['reg'] = decode_col(data[10], RealNumber) if record['ngens'] else 1
+    record['reg'] = data[10] if record['ngens'] else 1
     record['torsion_order'] = nt = int(data[11])
     record['torsion_primes'] = ZZ(nt).prime_divisors()
     record['torsion_structure'] = decode_int_list(data[12])
     record['torsion_gens'] = decode_points_one2many(data[13])
     if len(data) == 17:
-        record['omega'] = decode_col(data[14], RR)
-        record['Lvalue'] = decode_col(data[15], RR)
+        #record['omega'] = decode_col(data[14], RealNumber)
+        #record['Lvalue'] = decode_col(data[15], RealNumber)
         record['sha'] = decode_col(data[16], int)
+        record['omega'] = data[14]
+        record['Lvalue'] = data[15]
     else:
         record['omega'] = None
         record['Lvalue'] = None
@@ -267,8 +271,10 @@ def NFelt(a):
     commas, with no spaces.
 
     For example the element (3+4*w)/2 in Q(w) gives '3/2,2'.
+
+    If a is already a string, do nothing!
     """
-    return ",".join([str(c) for c in list(a)])
+    return a if type(a)==type('') else  ",".join([str(c) for c in list(a)])
 
 def ideal_from_string(K, s, IQF_format=False):
     r"""Returns the ideal of K defined by the string s.  If IQF_format is
@@ -558,12 +564,6 @@ string_encoder = lambda r: str(r).replace(" ", "") if r != None else '?'
 rank_encoder = lambda r: str(r) if r != None else '?'
 gal_im_encoder = " ".join
 
-# NB When outputting computed values, 'ainvs' and 'jinv' need to be
-# encoded using ainvs_to_string and NFelt respectively, but when
-# rewriting raw data files where both 'ainvs' and 'jinv' are the
-# strings read in, they need no encoding (and using those encodings
-# creates nonsense).  This should be handled automatically.
-
 encoders = {'number': num_encoder,
             'conductor_norm': num_encoder,
             'cm': num_encoder,
@@ -587,11 +587,10 @@ encoders = {'number': num_encoder,
             'Lvalue': rank_encoder,
             'reg': rank_encoder,
             'normdisc': num_encoder,
-#            'ainvs': rank_encoder,
             'ainvs': ainvs_to_string,
-#            'jinv': rank_encoder,
             'jinv': NFelt,
             'heights': encode_int_list,
+            'galois_images': gal_im_encoder,
             # don't use the next line, it messes up rational coefficients!
             #            'equation': lambda x: x.replace("{","").replace("}","")
 }

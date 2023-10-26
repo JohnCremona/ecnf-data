@@ -79,7 +79,70 @@ def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
 
 class_number_one_fields = [1, 2, 3, 7, 11, 19, 43, 67, 163]
 
-def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, effort=1000, verbose=False):
+curve_cache = {}
+twists_cache = {}
+
+def add_curve_to_cache(E):
+    global curve_cache
+    N = E.conductor()
+    K = E.base_field()
+    if K not in curve_cache:
+        curve_cache[K] = {}
+    if N not in curve_cache[K]:
+        curve_cache[K][N] = []
+    if E not in curve_cache[K][N]:
+        curve_cache[K][N].append(E)
+
+def add_curves_to_cache(E):
+    """
+    Adds E with its unramified twists and Galois conjugates
+    """
+    K = E.base_field()
+    if K not in twists_cache:
+        twists_cache[K] = list(K.selmer_group_iterator([],2))
+    for d in twists_cache[K]:
+        Ed = E.quadratic_twist(d)
+        for s in K.automorphisms():
+            Eds = EllipticCurve([s(a) for a in Ed.ainvs()]).global_minimal_model(semi_global=True)
+            add_curve_to_cache(Eds)
+
+def add_curves_to_cache_from_file(infile, K, verbose=1):
+    """
+    Read curves from a curves file and add them all to the cache (with conjugates and twists).
+    """
+    from files import read_curves
+    n = 0
+    for field_label,conductor_label,conductor_ideal,iso_label,c_num,E in read_curves(infile, only_one=True):
+        KE = E.base_field()
+        if K != KE:
+            iso = KE.embeddings(K)[0]
+            E = EllipticCurve([iso(a) for a in E.ainvs()])
+            if verbose>2:
+                print(f" - switching field of definition from {KE} to {K}")
+        Klabel = field_label
+        if verbose>1:
+            print(f" - adding {field_label}-{conductor_label}-{iso_label}{c_num}: {E.ainvs()}")
+        add_curve_to_cache(E)
+        n+=1
+    if verbose:
+        print(f"After reading {n} curves from {infile}, ",end="")
+        n = sum((len(curve_cache[K][N]) for N in curve_cache[K]))
+        print(f"field {Klabel} now has {n} curves")
+
+def check_curve_aP(E, aPdict):
+    return all(E.reduction(P).trace_of_frobenius()==aP for P,aP in aPdict.items())
+
+def find_matching_curve(K, N, aPdict):
+    if K not in curve_cache:
+        return None
+    if N not in curve_cache[K]:
+        return None
+    for E in curve_cache[K][N]:
+        if check_curve_aP(E, aPdict):
+            return E
+    return None
+
+def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, old_curves_file=None, effort=1000, verbose=False):
     r"""
     Uses Magma via EllipticCurveSearch() to search for missing curves (over IQFs given some BMFs).
 
@@ -119,40 +182,47 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             stdout.write(L)
     if field in class_number_one_fields:
         if field_info_filename==None:
-            field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", "fieldinfo-{}".format(field))
+            field_info_filename = os.path.join(BIANCHI_DATA_DIR, "fieldinfo", f"fieldinfo-{field}")
             if verbose:
-                print("Using {} for field info".format(field_info_filename))
+                print(f"Using {field_info_filename} for field info")
         K, Plist = get_IQF_info(field_info_filename, 200, verbose)
         field_label = get_field_label(K)
     else:
         x = polygen(QQ)
         if field%4==3:
             K = NumberField(x**2-x+(field+1)//4, 'w')
-            field_label = "2.0.{}.1".format(field)
+            field_label = f"2.0.{field}.1"
         else:
             K = NumberField(x**2+field, 'w')
-            field_label = "2.0.{}.1".format(4*field)
-        print("Field {} = {}".format(field_label, K))
+            field_label = f"2.0.{4*field}.1"
+        print(f"Field {field_label} = {K}")
         Plist = list(primes_iter(K,maxnorm=ZZ(200)))
     if bmf_filename==None:
-        print("Must supply name of a file containing BMFs over {} in {}".format(field, BIANCHI_DATA_DIR))
+        print(f"Must supply name of a file containing BMFs over {field} in {BIANCHI_DATA_DIR}")
     else:
         if verbose:
-            print("Using {} for newform input".format(bmf_filename))
+            print(f"Using {bmf_filename} for newform input")
 
     if outfilename:
         outfile=open(outfilename, mode="a")
         if verbose:
-            print("Using {} for output".format(outfilename))
-    output("Field {}\n".format(field_label))
+            print(f"Using {outfilename} for output")
+    output(f"Field {field_label}\n")
     newforms = read_newform_data(bmf_filename)
     if verbose:
         print("...read newform data finished")
     if missing_label_file==None:
         missing_label_file = bmf_filename
         if verbose:
-            print("Using {} for missing labels".format(missing_label_file))
+            print(f"Using {missing_label_file} for missing labels")
 
+    if old_curves_file:
+        print(f"Reading existing curves from {old_curves_file}")
+        add_curves_to_cache_from_file(old_curves_file, K, verbose=verbose)
+
+    nforms = 0
+    ncurves_found = 0
+    ncurves_not_found = 0
     mag=Magma()
     for level in read_missing_levels(open(missing_label_file)):
         if "." in level:
@@ -167,38 +237,62 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
         level_label = ideal_label(N)
         if verbose:
-            print("Missing conductor %s = %s" % (level_label,N))
+            print(f"Missing conductor {level_label} = {N}")
         nfs = newforms[level]
         for id in nfs.keys():
             nf = nfs[id]
-            class_label = "%s-%s" % (level_label,id)
+            class_label = f"{level_label}-{id}"
             if verbose:
-                print("Working on form %s" % class_label)
+                print(f"Working on form {field_label}-{class_label}")
+            nforms += 1
             # Create the array of traces for good primes:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
-            # Do the search:
-            try:
-                curves = EllipticCurveSearch(K, Plist, N, aplist, effort, mag)
-            except RuntimeError:
-                # Magma throws a run-time error if it finds no curves
-                # with the correct traces
-                curves = []
-            if curves:
-                print("Found {} curves matching {}: {}".format(len(curves),class_label," ".join([str(E.ainvs()) for E in curves])))
-                E = curves[0]
+            # and corresponding dict:
+            apdict = dict([(P,nf['ap'][i]) for i,P in goodP if i<len(nf['ap'])])
+
+            # See if a curve in the cache matches:
+            #print(f"Looking for a curve matching {N=}, {apdict=}")
+            E = find_matching_curve(K, N, apdict)
+            if E:
+                if verbose:
+                    print(f"Found a curve in the cache matching {field_label}-{class_label}: {E.ainvs()}")
+                ncurves_found += 1
             else:
-                print("**********No curve found to match newform {}*************".format(class_label))
-                E = None
+                if verbose:
+                    print(f"No curve in the cache matches {field_label}-{class_label}")
+                # Do the search:
+                try:
+                    curves = EllipticCurveSearch(K, Plist, N, aplist, effort, mag)
+                except RuntimeError:
+                    # Magma throws a run-time error if it finds no curves
+                    # with the correct traces
+                    curves = []
+                if curves:
+                    s = " ".join([str(E.ainvs()) for E in curves])
+                    print(f"Found {len(curves)} curve(s) matching {field_label}-{class_label}: {s}")
+                    E = curves[0]
+                    ncurves_found += 1
+                    add_curves_to_cache(E)
+                else:
+                    print(f"**********No curve found to match newform {field_label}-{class_label}*************")
+                    E = None
+                    ncurves_not_found += 1
             # output 3 lines per curve, as expected by the function read_curves_magma:
-            output("Conductor {}\n".format(ideal_to_string(N)))
-            output("Isogeny_class {}\n".format(class_label))
+            output(f"Conductor {ideal_to_string(N)}\n")
+            output(f"Isogeny_class {class_label}\n")
             if E!=None:
                 ainvs = str(list(E.ainvs())).replace("a", "w")
-                output("Curve {}\n".format(ainvs))
+                output(f"Curve {ainvs}\n")
             else:
                 output("No curve found\n")
             if outfilename:
                 outfile.flush()
+    assert ncurves_found + ncurves_not_found == nforms
+    if ncurves_not_found:
+        print(f"No curve found for {ncurves_not_found} newforms out of {nforms}")
+        print(f"Curve(s) found for {ncurves_found} newforms out of {nforms}")
+    else:
+        print(f"Curve(s) found for all {nforms} newforms")
 
 def make_ec_dict(E):
     K = E.base_field()

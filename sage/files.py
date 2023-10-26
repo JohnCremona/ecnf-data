@@ -6,6 +6,7 @@ import sys
 from codec import (curve_from_string, curve_from_strings,
                    ainvs_from_strings, ainvs_from_string,
                    convert_ideal_label, decode_points_one2many,
+                   decode_int_list,
                    encode_points, file_line, parse_curves_line,
                    parse_isoclass_line, parse_local_data_line,
                    parse_mwdata_line, parse_new_mwdata_line,
@@ -13,6 +14,7 @@ from codec import (curve_from_string, curve_from_strings,
 
 from fields import nf_lookup
 from schemas import all_file_types
+from modularitycheck import isModular
 
 HOME = os.getenv("HOME")
 BIANCHI_DATA_DIR = os.path.join(HOME, "bianchi-data")
@@ -184,7 +186,8 @@ def read_curves(infile, only_one=False, ncurves=0):
     r"""
     Iterator to loop through lines of a curves.* file each
     containing 13 data fields as defined the in the ecnf-format.txt file,
-    yielding its curves as EllipticCurve objects.
+    yielding its curves as EllipticCurve objects and other data:
+       (field_label,conductor_label,conductor_ideal,iso_label,c_num,E)
 
     If only_one is True, skips curves whose 4th data field is
     *not* 1, hence only yielding one curve per isogeny class.
@@ -193,7 +196,7 @@ def read_curves(infile, only_one=False, ncurves=0):
     with open(infile) as file:
         for L in file.readlines():
             data = L.split()
-            if len(data)!=13:
+            if len(data)!=14:
                 print("line {} does not have 13 fields, skipping".format(L))
                 continue
             if only_one and data[3]!='1':
@@ -202,12 +205,12 @@ def read_curves(infile, only_one=False, ncurves=0):
             if ncurves and count>ncurves:
                 return
             field_label = data[0]
-            K = nf_lookup(field_label)
+            K = nf_lookup(field_label).change_names('w')
             conductor_label = data[1]
             iso_label = data[2]
             c_num = data[3]
             conductor_ideal = data[4]
-            E = curve_from_strings(K, data[6:11])
+            E = curve_from_string(K, data[6])
             yield (field_label,conductor_label,conductor_ideal,iso_label,c_num,E)
 
 def read_curves_new(infile, only_one=False, ncurves=0):
@@ -250,7 +253,7 @@ def read_curves_new(infile, only_one=False, ncurves=0):
             yield record
 
 def read_curves_magma(infile, min_norm=1, max_norm=None):
-    r""" Iterator to loop through lines of a file containing output from a
+    r"""Iterator to loop through lines of a file containing output from a
     Magma search.  (Nothing in this function really relates to Magma.)
     For each curve there are 3 or 4 lines in the file, with prefixes
 
@@ -275,6 +278,11 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
     field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
 
     (omitting any whose conductor_norm is not within the bounds given, if any)
+
+    NB If the search failed to find a curve with given conductor,
+    instead of a line starting "Curve " there will be a line "No curve
+    found".
+
     """
     from sage.all import EllipticCurve, ZZ
     record = {}
@@ -309,6 +317,9 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                 assert EN.norm() == N_norm
                 if N_norm >= min_norm and (max_norm is None or N_norm <= max_norm):
                     yield record
+            elif data[0] == 'No':
+                print(f"No curve for class {record['conductor_label']}{record['iso_label']}, skipping")
+                continue
             else:
                 print("Unrecognised line prefix {}, skipping this line".format(data[0]))
                 continue
@@ -444,8 +455,8 @@ def read_newform_data(bmf_filename, verbose=False):
         nfs[letter] = nf = {}
         nf['gen_str'] = gen[1:-1]
         nf['sign'] = int(sfe)
-        nf['aq'] = [int(e) for e in ALs[1:-1].split(",")]
-        nf['ap'] = [int(e) for e in aplist[1:-1].split(",")]
+        nf['aq'] = decode_int_list(ALs)
+        nf['ap'] = decode_int_list(aplist)
         if verbose:
             print("newform data: %s" % L)
 
@@ -795,6 +806,40 @@ def Q_curve_check(ftypes=all_ftypes, fields=None, certs=False, Detail=1):
                     else:
                         print("No Q-curves")
 
+all_tr_ftypes = ['cubics', 'quartics', 'quintics', 'sextics']
+
+# RQF omitted since we know all curves over those ields are modular
+
+def modularity_check(ftypes=all_tr_ftypes, fields=None, verbose=2):
+    for ftype in ftypes:
+        if verbose:
+            print("Checking curves over fields in {}".format(ftype))
+        if fields:
+            field_list = fields
+        else:
+            with open("{}/{}/fields.txt".format(ECNF_DIR,ftype)) as field_file:
+                field_list = [f[:-1] for f in field_file.readlines()]
+
+        for fname in field_list:
+            if verbose>1:
+                print("Checking curves over field {}".format(fname))
+            K = nf_lookup(fname)
+            n = 0
+            curves_filename = "{}/{}/curves.{}".format(ECNF_DIR,ftype,fname)
+
+            for (field_label,conductor_label,conductor_ideal,iso_label,c_num,E) in read_curves(curves_filename):
+                n += 1
+                lab = "{}-{}-{}{}".format(field_label, conductor_label, iso_label, c_num)
+                if verbose>2:
+                    print("Checking modularity of {}:".format(lab), end=" ")
+                res = isModular(E)
+                if res:
+                    if verbose>2:
+                        print("OK")
+                else:
+                    print("Modularity check failed for {}".format(lab))
+                if n%1000==0 and verbose>1:
+                    print("Checked {} curves...".format(n))
 
 def make_mwdata(curves_filename, mwdata_filename, label=None,
                 min_cond_norm=None, max_cond_norm=None,
@@ -809,16 +854,16 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
     curves (isogeny classes) in the in put file are processed.
 
     """
-    from nfscripts import get_generators
-    from codec import make_mwdata_lines
+    from mwinfo import get_generators
+    from codec import file_line
     with open(mwdata_filename, 'w', 1) as mw_out:
         for cl in read_classes_new(curves_filename):
             short_class_label = "-".join([cl['conductor_label'],cl['iso_label']])
             class_label = "-".join([cl['field_label'],cl['conductor_label'],cl['iso_label']])
             if label:
                 if label!=short_class_label:
-                    if verbose:
-                        print("Skipping {}".format(short_class_label))
+                    # if verbose:
+                    #     print("Skipping {}".format(short_class_label))
                     continue
             NN = cl['conductor_norm']
             if min_cond_norm and NN<min_cond_norm:
@@ -833,7 +878,8 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
             print("Processing class {}".format(class_label))
             try:
                 cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
-                mwlines = make_mwdata_lines(cl)
+                #mwlines = make_mwdata_lines(cl)
+                line = file_line('mwdata', cl)
                 if verbose:
                     print(mwlines)
                 mw_out.write(mwlines+"\n")
@@ -963,7 +1009,7 @@ def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None,
                 print("New mwdata line: {}".format(line))
             mwdata.write(line + "\n")
 
-def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR, append=False):
+def write_data_files(data, file_types=all_file_types, field_type=None, field_label='test', base_dir=ECNF_DIR, append=False, suffix='part'):
     """
     data is a dict whose values are curve records.
 
@@ -972,7 +1018,7 @@ def write_data_files(data, file_types=all_file_types, field_type=None, field_lab
     from schemas import column_names
     mode = 'a' if append else 'w'
     for ft in file_types:
-        new_file = os.path.join(base_dir, field_type, "{}.{}.part".format(ft, field_label))
+        new_file = os.path.join(base_dir, field_type, f"{ft}.{field_label}.{suffix}")
         cols = column_names[ft]
         with open(new_file, mode) as outfile:
             n = 0
@@ -1039,7 +1085,7 @@ def make_all_data_files1(raw_curves, file_types=all_file_types,
     """
     from nfscripts import make_isogeny_class
     for curve in raw_curves:
-        label = "{}.{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
+        label = "{}-{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
         print("working on class {}".format(label))
         data = make_isogeny_class(curve, verbose=verbose, prec=prec)
         write_data_files(data, file_types, field_type, field_label, base_dir, append=True)

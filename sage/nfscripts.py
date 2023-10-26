@@ -457,7 +457,7 @@ def isog_class_cmp1(k, I, J):
     raise NotImplementedError("Bound on primes is too small to determine...")
 
 
-def isModular(E):
+def isModular_magma(E):
     # Create a new magma instance for each curve:
     mag = get_magma()
     # read in Samir Siksek's code:
@@ -632,25 +632,17 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
             if verbose:
                 print("Calling Magma's AnalyticRank() with decimal precision {}".format(magma_prec))
             ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-            if 'CM' in class_label and all(ai in QQ for ai in E.ainvs()): # avoid Magma bug
-                if verbose:
-                    print("Special CM case: E = {}".format(E.ainvs()))
-                    print("AnalyticRank's ar={}, lval = {}".format(ar, lval))
-                ar *= 2
-                old_lval = lval
-                lval = mE.LSeries().Evaluate(1, Derivative=ar) / magma.Factorial(ar)
-                if verbose:
-                    print("ar doubled to {}, lval recomputed to {}".format(ar, lval))
-
             lval = RL(lval)
             ar = int(ar)
         else:
             if verbose:
-                print("Not computing analytic_rank or Lvalue as degree > 5")
+                print("Not computing analytic_rank or Lvalue")
             ar = lval = None
 
         classdata[class_label] = (ar, lval)
     else:
+        if verbose:
+            print("ar and Lval already computed for sogeny class {}: {}".format(class_label, classdata[class_label]))
         ar, lval = classdata[class_label]
     Edata['analytic_rank'] = ar
     Edata['Lvalue'] = lval
@@ -668,9 +660,9 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 
     if max_sat_prime and ngens:
         if max_sat_prime is None:
-            new_gens, index, _ = E.saturation(gens, verbose=verbose)
+            new_gens, index, _ = E.saturation(gens, verbose=0)
         else:
-            new_gens, index, _ = E.saturation(gens, max_prime=max_sat_prime, verbose=verbose)
+            new_gens, index, _ = E.saturation(gens, max_prime=max_sat_prime, verbose=0)
         if index > 1:
             print("Original gens were not saturated, index = {} (using max_prime {})".format(index, max_sat_prime))
             gens = new_gens
