@@ -553,6 +553,11 @@ def global_period(E, scale=None, prec=None):
     #
     # Otherwise this would just be
     # return prod(E.period_lattice(e).omega(prec=prec) for e in K.places())
+    #
+    # This was fixed in later versions.  Also,
+
+    # E.period_lattice(e).omega() now has a parameter bsd_normalise, False by default
+    # and ignored for real places, which multiplies by 2 for complex places.
 
     def omega(L):
         if L.is_real():
@@ -566,57 +571,69 @@ def global_period(E, scale=None, prec=None):
         om *= scale
     return om
 
-def extend_mwdata_one(Edata, classdata, Kfactors, magma,
-                      max_sat_prime=None, prec=None, Lprec=None, verbose=False):
+def analytic_rank_and_lvalue_magma(E, prec=None, verbose=False):
+    from magma import get_magma
+    mag = get_magma()
+    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
+        R = RealField()
+        magma_prec = 6
+    else:
+        R = RealField(prec)
+        magma_prec = R(prec*0.301029995663981).round()
+    if verbose:
+        print(f"Calling Magma's AnalyticRank() with decimal precision {magma_prec}")
+    ar, lval = mag(E).AnalyticRank(Precision=magma_prec, nvals=2)
+    if verbose:
+        print(f"Magma returns {ar=}, {lval=}")
+    return int(ar), R(lval)
+
+def analytic_rank_and_lvalue_pari(E, prec=None, rmax=4, verbose=False):
+    from sage.all import pari, factorial
+    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
+        R = RealField()
+        prec = R.precision()
+    else:
+        R = RealField(prec)
+    rmax1 = rmax+1
+    pE = pari(E)
+    keep_prec = pari.default('realbitprecision')
+    pari.set_real_precision_bits(prec)
+    assert pari.default('realbitprecision')==prec
+    if verbose:
+        print(f"Calling Pari's lfun(1+x+O(x^{rmax1})) with bit precision {prec}")
+    v = pE.lfun(f'1+x+O(x^{rmax1})', precision=prec)
+    ar = next(i for i in range(4) if v.polcoef(i))
+    lval = R(v.polcoef(ar)) / factorial(ar)
+    if verbose:
+        print(f"Pari returns {v} so {ar=}, {lval=}")
+    pari.set_real_precision_bits(keep_prec)
+    return ar, lval
+
+def analytic_rank_and_lvalue(E, prec=128, backend='Magma', verbose=False):
+    if backend=='Magma':
+        return analytic_rank_and_lvalue_magma(E, prec=128, verbose=verbose)
+    if backend=='pari':
+        return analytic_rank_and_lvalue_pari(E, prec=128, verbose=verbose)
+    raise ValueError("backend value must be 'Magma' or 'pari'")
+
+
+def extend_mwdata_one(Edata, classdata, Kfactors,
+                      max_sat_prime=None, prec=None, backend='Magma', verbose=False):
     r"""Computes analytic rank and L-value using Magma, and omega (global
     period), heights and regulator using Sage.  Computes analytic Sha
     (rounded).
 
     The prec parameter controls the precision to which the heights,
     regulator and global period is computed.  It is bit precision.
-    The Lprec parameter (also bit precision) controls the precision
-    used for the L-value in Magma, where the default is 6dp or 20 bits
-    for the L-value and the running time increases rapidly.
-
-        # prec (bits) magma_prec (decimal)
-        2-4 1
-        5-8 2
-        9-11 3
-        12-14 4
-        15-18 5
-        19-21 6
-        22-24 7
-        25-28 8
-        29-31 9
-        32-34 10
-        35-38 11
-        39-41 12
-        42-44 13
-        45-48 14
-        49-51 15
-        52-54 16
-        55-58 17
-        59-61 18
-        62-64 19
-        65-68 20
-       128-131 39
-
     """
     from fields import nf_lookup
     K = nf_lookup(Edata['field_label'])
 
-    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
+    if prec is None:
         R = RealField()
         prec = R.precision()
     else:
         R = RealField(prec)
-    if Lprec is None:
-        Lprec = 20 # so decimal precision = 6
-        magma_prec = 6
-    else:
-        # log(2)/log(10) =  0.301029995663981
-        magma_prec = R(Lprec*0.301029995663981).round()
-    RL = RealField(Lprec)
 
     # We need to construct every E as a Sage EllipticCurve in
     # order to compute omega, but we only need construct it as
@@ -627,22 +644,11 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 
     class_label = Edata['class_label']
     if class_label not in classdata: # then we need to compute analytic rank and L-value
-        if True: # K.degree() < 6:
-            mE = magma(E)
-            if verbose:
-                print("Calling Magma's AnalyticRank() with decimal precision {}".format(magma_prec))
-            ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-            lval = RL(lval)
-            ar = int(ar)
-        else:
-            if verbose:
-                print("Not computing analytic_rank or Lvalue")
-            ar = lval = None
-
+        ar, lval = analytic_rank_and_lvalue(E, prec=prec, backend=backend, verbose=verbose)
         classdata[class_label] = (ar, lval)
     else:
         if verbose:
-            print("ar and Lval already computed for sogeny class {}: {}".format(class_label, classdata[class_label]))
+            print("ar and Lval already computed for isogeny class {}: {}".format(class_label, classdata[class_label]))
         ar, lval = classdata[class_label]
     Edata['analytic_rank'] = ar
     Edata['Lvalue'] = lval
@@ -725,10 +731,10 @@ def extend_mwdata_one(Edata, classdata, Kfactors, magma,
 
     if NTreg:
         # NB we may have computed lval to lower precision than NTreg and omega
-        Rsha = lval * nt**2  / RL(NTreg * tamagawa_product * omega)
+        Rsha = lval * nt**2  / R(NTreg * tamagawa_product * omega)
 
         if K not in Kfactors:
-            Kfactors[K] = RL(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+            Kfactors[K] = R(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
         if verbose:
             print("Field factor = {}".format(Kfactors[K]))
 
@@ -873,7 +879,7 @@ def simplify_ideal_strings(K, record):
     record['normdisc'] = Dnorm
     return record
 
-def make_isogeny_class(curve, verbose=False, prec=None):
+def make_isogeny_class(curve, verbose=False, prec=None, backend='Magma'):
     """curve is a dict with keys
 
     field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs

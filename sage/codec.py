@@ -1,7 +1,6 @@
 # Functions for coding/decoding data to/from strings
 
 from sage.all import ZZ, QQ, RR, EllipticCurve, prod, KodairaSymbol
-from sage.rings.real_mpfr import RealNumber
 from psort import ideal_label
 from fields import nf_lookup
 from schemas import column_names
@@ -222,6 +221,7 @@ def parse_new_mwdata_line(L):
     r"""
     Parse one line from an mwdata file (with extra columns omega, lvalue, sha)
     """
+    #from sage.rings.real_mpfr import RealNumber
     data = L.split()
     if len(data) != len(column_names['mwdata']):
         print("mwdata line {} has only {} fields, skipping".format(L, len(data)))
