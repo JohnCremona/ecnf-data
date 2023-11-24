@@ -1,3 +1,5 @@
 *~
 *.pyc
+rawcurves*
 sage/curves.*
+sage/sage.out.*
