@@ -17,7 +17,7 @@ def fix(D):
     ncnew = db.ec_nfcurves.count({'field_label': field_label})
     print(f" - done, now {ncnew} curves exist for field {field_label}")
     if nc!=ncnew:
-       print(f" *********** numbers are not the same!")
+       print(" *********** numbers are not the same!")
 
     # replace the forms (no need to replace the dims):
     d = D if D%2 else D//4
@@ -33,5 +33,5 @@ def fix(D):
     nfnew = db.bmf_forms.count({'field_label': field_label})
     print(f" - done, now {nfnew} forms exist for field {field_label}")
     if nf!=nfnew:
-       print(f" *********** numbers are not the same!")
+       print(" *********** numbers are not the same!")
 

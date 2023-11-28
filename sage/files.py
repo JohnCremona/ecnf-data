@@ -501,8 +501,6 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
     classdata = {} # will hold isogeny-invariant values keyed by class label
     Kfactors = {} # BSD factor depending only on the field K
 
-    from magma import get_magma
-
     if one_label:
         mwoutfile = base_dir+'/mwdata.'+suffix+"."+one_label
     else:
@@ -521,10 +519,7 @@ def extend_mwdata(base_dir, field_label, suffix='x', minN=None, maxN=None, one_l
                 print("Processing {}".format(label))
                 #print(Edata)
 
-            if not class_label in classdata: # we'll use magma in extend_mwdata_one
-                magma = get_magma()
-
-            Edata = extend_mwdata_one(Edata, classdata, Kfactors, magma,
+            Edata = extend_mwdata_one(Edata, classdata, Kfactors,
                                       max_sat_prime = max_sat_prime, prec=prec, verbose=verbose)
             line = file_line('mwdata', Edata)
             if verbose:
@@ -823,7 +818,7 @@ def modularity_check(ftypes=all_tr_ftypes, fields=None, verbose=2):
         for fname in field_list:
             if verbose>1:
                 print("Checking curves over field {}".format(fname))
-            K = nf_lookup(fname)
+            #K = nf_lookup(fname)
             n = 0
             curves_filename = "{}/{}/curves.{}".format(ECNF_DIR,ftype,fname)
 
@@ -843,7 +838,7 @@ def modularity_check(ftypes=all_tr_ftypes, fields=None, verbose=2):
 
 def make_mwdata(curves_filename, mwdata_filename, label=None,
                 min_cond_norm=None, max_cond_norm=None,
-                test_saturation=False, verbose=False):
+                test_saturation=False, backend='Magma', verbose=False):
     r"""Retrieves curves from a curves file
     with conductor norm between given bounds (optional), finds their
     ranks (or bounds) and generators, and outputs an mwdata file.
@@ -877,68 +872,16 @@ def make_mwdata(curves_filename, mwdata_filename, label=None,
 
             print("Processing class {}".format(class_label))
             try:
-                cl = get_generators(cl, test_saturation=test_saturation, verbose=verbose)
+                cl = get_generators(cl, test_saturation=test_saturation, backend=backend, verbose=verbose)
                 #mwlines = make_mwdata_lines(cl)
                 line = file_line('mwdata', cl)
                 if verbose:
-                    print(mwlines)
-                mw_out.write(mwlines+"\n")
+                    print(line+"\n")
+                mw_out.write(line+"\n")
             except RuntimeError as e:
                 print("caught RuntimeError: {}".format(e))
 
-
-def add_analytic_ranks(curves_filename, mwdata_filename, suffix='x', verbose=False):
-    r"""Retrieves curves from a curves file and mwdata from the mwdata
-     file.  Computes analytic ranks and rewrites the mwdata file
-     adding the suffix to its filename.
-
-    This is a one-off since the orginal mwdata file code forgot to
-    compute and output analytic ranks.
-    """
-    from magma import get_magma
-    curve_table = {}
-    n = 0
-    with open(curves_filename) as curves:
-        for L in curves.readlines():
-            label, record = parse_curves_line(L)
-            if label:
-                n += 1
-                curve_table[label] = record
-    print("Read {} curves from {}".format(n,curves_filename))
-
-    ar_table = {}
-
-    def AnalyticRank(Edata):
-        nonlocal verbose
-        class_label = "-".join([Edata['field_label'],Edata['conductor_label'],Edata['iso_label']])
-        if class_label in ar_table:
-            return ar_table[class_label]
-        if verbose:
-            print("Computing analytic rank of {}".format(class_label))
-        K = nf_lookup(Edata['field_label'])
-        E = curve_from_string(K, Edata['ainvs'])
-        magma = get_magma()
-        ar = int(magma(E).AnalyticRank())
-        ar_table[class_label] = ar
-        return ar
-
-    with open(mwdata_filename) as mw_in, open(mwdata_filename+suffix, 'w', 1) as mw_out:
-        for L in mw_in.readlines():
-            label, record = parse_mwdata_line(L)
-            if record['analytic_rank'] is None:
-                ar = AnalyticRank(curve_table[label])
-                if verbose:
-                    print("Updating analytic rank of {} to {}".format(label,ar))
-                data = L.split()
-                data[6] = str(ar)
-                L = " ".join(data)
-                if verbose:
-                    print("New mwdata line: {}".format(L))
-                mw_out.write(L + "\n")
-            else:
-                mw_out.write(L)
-
-def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = None, prec=None, Lprec=None, verbose=0):
+def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None, one_label=None, max_sat_prime = None, prec=None, backend='Magma', verbose=0):
     r"""
     Reads curves and local data files.
     Computes: analytic rank and L-value using Magma;
@@ -949,34 +892,13 @@ def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None,
 
     The prec parameter controls the precision to which the heights,
     regulator and global period is computed.  It is bit precision.
-    The Lprec parameter (also bit precision) controls the precision
-    used for the L-value in Magma: note that the running time increases
-    rapidly!
 
-        # prec (bits) magma_prec (decimal)
-        15-18 5
-        19-21 6
-        22-24 7
-        25-28 8
-        29-31 9
-        32-34 10
-        35-38 11
-        39-41 12
-        42-44 13
-        45-48 14
-        49-51 15
-        52-54 16
-        55-58 17
-        59-61 18
-        62-64 19
-        65-68 20
-       128-131 39
+    backend is 'Magma' or 'pari' and controls who computes analytic rank and L-value.
 
     The real work is done in the function extend_mwdata_one() from
     nfscripts.py.  This function is similar to extend_mwdata().
 
     """
-    from magma import get_magma
     from nfscripts import extend_mwdata_one
 
     data = read_all_field_data(base_dir, field_label, check_cols=False)
@@ -997,13 +919,10 @@ def recompute_real_data(base_dir, field_label, suffix='x', minN=None, maxN=None,
             if (minN and N<minN) or (maxN and N>maxN):
                 continue
             print("Processing {}".format(label))
-            if not class_label in classdata:
-                # then this is a new isogeny class, so we'll use magma in extend_mwdata_one
-                magma = get_magma()
 
-            Edata = extend_mwdata_one(Edata, classdata, Kfactors, magma,
+            Edata = extend_mwdata_one(Edata, classdata, Kfactors,
                                       max_sat_prime = max_sat_prime,
-                                      prec=prec, Lprec=Lprec, verbose=verbose)
+                                      prec=prec, backend=backend, verbose=verbose)
             line = file_line('mwdata', Edata)
             if verbose>1:
                 print("New mwdata line: {}".format(line))
@@ -1038,7 +957,7 @@ def write_data_files(data, file_types=all_file_types, field_type=None, field_lab
 
 def make_all_data_files(raw_curves, file_types=all_file_types,
                         field_type=None, field_label='test', base_dir=ECNF_DIR, verbose=0,
-                        prec=None):
+                        prec=None, backend='Magma'):
     """raw_curves is a generator yielding short 'raw' curve dicts with
     fields (as in read_curves_magma()):
 
@@ -1054,15 +973,17 @@ def make_all_data_files(raw_curves, file_types=all_file_types,
     prec controls the bit precision of heights, special L-value, etc.
     If None (the default) is uses standard 53-bit precision.
 
+    backend is 'Magma' or 'pari' and controls who computes analytic rank and L-value.
+
     """
     from nfscripts import make_isogeny_classes
-    data = make_isogeny_classes(raw_curves, verbose=verbose, prec=prec)
+    data = make_isogeny_classes(raw_curves, verbose=verbose, prec=prec, backend=backend)
     write_data_files(data, file_types, field_type, field_label, base_dir)
     return data
 
 def make_all_data_files1(raw_curves, file_types=all_file_types,
                         field_type=None, field_label='test', base_dir=ECNF_DIR, verbose=0,
-                        prec=None):
+                        prec=None, backend='Magma'):
     """raw_curves is a generator yielding short 'raw' curve dicts with
     fields (as in read_curves_magma()):
 
@@ -1076,6 +997,8 @@ def make_all_data_files1(raw_curves, file_types=all_file_types,
     prec controls the bit precision of heights, special L-value, etc.
     If None (the default) is uses standard 53-bit precision.
 
+    backend is 'Magma' or 'pari' and controls who computes analytic rank and L-value.
+
     Unlike make_all_data_files() which calls make_isogeny_classes just
     once and only outputs right at the end, this one callas
     make_isogeny_class() for each raw curve and outputs as it goes
@@ -1087,7 +1010,7 @@ def make_all_data_files1(raw_curves, file_types=all_file_types,
     for curve in raw_curves:
         label = "{}-{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
         print("working on class {}".format(label))
-        data = make_isogeny_class(curve, verbose=verbose, prec=prec)
+        data = make_isogeny_class(curve, verbose=verbose, prec=prec, backend=backend)
         write_data_files(data, file_types, field_type, field_label, base_dir, append=True)
         print("output for class {} complete".format(label))
         print("====================================")

@@ -6,8 +6,14 @@ from files import read_newform_data, read_missing_levels, BIANCHI_DATA_DIR
 from psort import ideal_label, ideal_from_label, primes_iter
 from codec import ideal_to_string, old_ideal_label
 
-def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
-    r""" Call Magma's own EllipticCurveSearch() function to find and
+magma_commands_string = "";
+def output_magma_commands(magma_commands_string, magma_commands_file):
+    with open(magma_commands_file, 'w') as f:
+        f.write(magma_commands_string)
+    print(f"Complete Magma commands written to {magma_commands_file}")
+
+def EllipticCurveSearch(full_class_label, K, Plist, N, aplist, effort=1000, mag=None):
+    r"""Call Magma's own EllipticCurveSearch() function to find and
     elliptic curve E defined over K with conductor N and ap as in the
     list.
 
@@ -22,56 +28,71 @@ def EllipticCurveSearch(K, Plist, N, aplist, effort=1000, mag=None):
 
     A list (possibly empty) of elliptic curves defined over K with
     conductor N and traces of Frobenius given by the a(P).
+
+    If there is a RuntimeError, or if no curves are found, then the
+    Magma script used is output to a file.
     """
     # Create a new magma instance for each search:
     local_magma = int(mag is None)
     if local_magma:
         mag = Magma()
+
+    global magma_commands_string
+    magma_commands_string = "";
+    magma_commands_file = "search_"+full_class_label+".m"
+
+    def magma_command(s):
+        global magma_commands_string
+        magma_commands_string += s;
+        mag.eval(s)
+
     # Define the number field in Magma and the list of primes
-    mag.eval("SetGRH();\n")
-    mag.eval('SetVerbose("ECSearch",3);\n')
-    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
+    magma_command("SetGRH();\n")
+    magma_command('SetVerbose("ECSearch",3);\n')
+    magma_command("Qx<x> := PolynomialRing(RationalField());\n")
     name = K.gen()
     pol = K.defining_polynomial()
-    mag.eval("Qx<x> := PolynomialRing(RationalField());\n")
-    mag.eval("K<%s> := NumberField(%s);\n" % (name, pol))
-    mag.eval("OK := Integers(K);\n")
-    mag.eval("Plist := [];\n")
+    magma_command("Qx<x> := PolynomialRing(RationalField());\n")
+    magma_command(f"K<{name}> := NumberField({pol});\n")
+    magma_command("OK := Integers(K);\n")
+    magma_command("Plist := [];\n")
     for P in Plist:
         Pgens = P.gens_reduced()
-        Pmagma = "(%s)*OK" % Pgens[0]
+        Pmagma = f"({Pgens[0]})*OK"
         if len(Pgens) > 1:
-            Pmagma += "+(%s)*OK" % Pgens[1]
-        mag.eval("Append(~Plist,%s);\n" % Pmagma)
+            Pmagma += f"+({Pgens[1]})*OK"
+        magma_command(f"Append(~Plist,{Pmagma});\n")
 
-    mag.eval('SetColumns(0);\n')
-    mag.eval('effort := %s;\n' % effort)
+    magma_command('SetColumns(0);\n')
+    magma_command(f'effort := {effort};\n')
 
     Ngens = N.gens_reduced()
-    Nmagma = "(%s)*OK" % Ngens[0]
+    Nmagma = f"({Ngens[0]})*OK"
     if len(Ngens) > 1:
-        Nmagma += "+(%s)*OK" % Ngens[1]
-    mag.eval('N := %s;' % Nmagma)
-    mag.eval('aplist := %s;' % aplist)
-    mag.eval('goodP := [P: P in Plist | Valuation(N,P) eq 0];\n')
-    mag.eval('goodP := [goodP[i]: i in [1..#(aplist)]];\n')
+        Nmagma += f"+({Ngens[1]})*OK"
+    magma_command(f'N := {Nmagma};')
+    magma_command(f'aplist := {aplist};')
+    magma_command('goodP := [P: P in Plist | Valuation(N,P) eq 0];\n')
+    magma_command('goodP := [goodP[i]: i in [1..#(aplist)]];\n')
     try:
-        mag.eval('curves := EllipticCurveSearch(N,effort : Primes:=goodP, Traces:=aplist);\n')
-        mag.eval('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
-        mag.eval('ncurves := #curves;')
+        magma_command('curves := EllipticCurveSearch(N,effort : Primes:=goodP, Traces:=aplist);\n')
+        magma_command('curves := [E: E in curves | &and[TraceOfFrobenius(E,goodP[i]) eq aplist[i] : i in [1..#(aplist)]]];\n')
+        magma_command('ncurves := #curves;')
         ncurves = mag('ncurves;').sage()
     except RuntimeError as arg:
-        print("RuntimError in Magma: {}".format(arg))
+        print("RuntimeError in Magma: {}".format(arg))
         if local_magma:
             mag.quit()
+        output_magma_commands(magma_commands_string, magma_commands_file)
         return []
     if ncurves==0:
         if local_magma:
             mag.quit()
+        output_magma_commands(magma_commands_string, magma_commands_file)
         return []
     Elist = [0 for i in range(ncurves)]
     for i in range(ncurves):
-        mag.eval('E := curves[%s];\n' % (i+1))
+        magma_command(f'E := curves[{i+1}];\n')
         Elist[i] = EllipticCurve(mag('aInvariants(E);\n').sage()).global_minimal_model(semi_global=True)
     if local_magma:
         mag.quit()
@@ -122,7 +143,7 @@ def add_curves_to_cache_from_file(infile, K, verbose=1):
         Klabel = field_label
         if verbose>1:
             print(f" - adding {field_label}-{conductor_label}-{iso_label}{c_num}: {E.ainvs()}")
-        add_curve_to_cache(E)
+        add_curves_to_cache(E)
         n+=1
     if verbose:
         print(f"After reading {n} curves from {infile}, ",end="")
@@ -242,8 +263,9 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         for id in nfs.keys():
             nf = nfs[id]
             class_label = f"{level_label}-{id}"
+            full_class_label = f"{field_label}-{class_label}"
             if verbose:
-                print(f"Working on form {field_label}-{class_label}")
+                print(f"Working on form {full_class_label}")
             nforms += 1
             # Create the array of traces for good primes:
             aplist = [nf['ap'][i] for i,P in goodP if i<len(nf['ap'])]
@@ -255,26 +277,26 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             E = find_matching_curve(K, N, apdict)
             if E:
                 if verbose:
-                    print(f"Found a curve in the cache matching {field_label}-{class_label}: {E.ainvs()}")
+                    print(f"Found a curve in the cache matching {full_class_label}: {E.ainvs()}")
                 ncurves_found += 1
             else:
                 if verbose:
-                    print(f"No curve in the cache matches {field_label}-{class_label}")
+                    print(f"No curve in the cache matches {full_class_label}")
                 # Do the search:
                 try:
-                    curves = EllipticCurveSearch(K, Plist, N, aplist, effort, mag)
+                    curves = EllipticCurveSearch(full_class_label, K, Plist, N, aplist, effort, mag)
                 except RuntimeError:
                     # Magma throws a run-time error if it finds no curves
                     # with the correct traces
                     curves = []
                 if curves:
                     s = " ".join([str(E.ainvs()) for E in curves])
-                    print(f"Found {len(curves)} curve(s) matching {field_label}-{class_label}: {s}")
+                    print(f"Found {len(curves)} curve(s) matching {full_class_label}: {s}")
                     E = curves[0]
                     ncurves_found += 1
                     add_curves_to_cache(E)
                 else:
-                    print(f"**********No curve found to match newform {field_label}-{class_label}*************")
+                    print(f"**********No curve found to match newform {full_class_label}*************")
                     E = None
                     ncurves_not_found += 1
             # output 3 lines per curve, as expected by the function read_curves_magma:
@@ -289,10 +311,10 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
                 outfile.flush()
     assert ncurves_found + ncurves_not_found == nforms
     if ncurves_not_found:
-        print(f"No curve found for {ncurves_not_found} newforms out of {nforms}")
-        print(f"Curve(s) found for {ncurves_found} newforms out of {nforms}")
+        print(f"No curve found for {ncurves_not_found} newforms out of {nforms} over {field_label}")
+        print(f"Curve(s) found for {ncurves_found} newforms out of {nforms} over {field_label}")
     else:
-        print(f"Curve(s) found for all {nforms} newforms")
+        print(f"Curve(s) found for all {nforms} newforms over {field_label}")
 
 def make_ec_dict(E):
     K = E.base_field()

@@ -79,6 +79,7 @@ def nf_lookup(label, verbose=False):
         deg, s, absD, num = [ZZ(x) for x in label.split(".")]
         if deg==2:
             D = absD if s else -absD
+            from sage.all import polygen
             x = polygen(QQ)
             pol = x**2 - x + (1-D)//4 if D%2 else x**2 - D//4
             K = NumberField(pol, 'a')

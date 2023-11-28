@@ -5,9 +5,9 @@ r"""Functions to find ranks and generators of elliptic curves by
 """
 from __future__ import print_function
 from sage.all import union, RealField, ZZ
-from nfscripts import torsion_data, global_period
+from nfscripts import torsion_data, global_period, analytic_rank_and_lvalue
 
-AR_DEGREE_BOUND = 5 # do not compute analytic ranks over field of degree larger than this
+AR_DEGREE_BOUND = 6 # do not compute analytic ranks over field of degree larger than this
 
 # cache values of  RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
 
@@ -228,9 +228,11 @@ def MWInfo_curves(curves, HeightBound=None, test_saturation=False, verbose=False
     assert all([all([P in curves[i] for P in fixed_MWI[i][1]]) for i in range(n)])
     return fixed_MWI
 
-def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
+def compute_mwdata(iso_class, test_saturation=False, backend='Magma', verbose=False, prec=None):
     r"""Given an isogeny class, finds the rank (or bounds) and
     generators and torsion data for each curve in the class.
+
+    backend is 'Magma' or 'pari' and controls who computes analytic rank and L-value.
 
     iso_class is a dict as yielded by the read_classes() function, with keys:
     field_label, conductor_label, conductor_ideal, iso_label, curves
@@ -244,16 +246,11 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
     - The analytic rank and L-value are only computed if the base field has degree at most AR_DEGREE_BOUND.
 
     """
-    from magma import get_magma
-
-    if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
+    if prec is None:
         RR = RealField()
         prec = RR.precision()
-        magma_prec = 16
     else:
         RR = RealField(prec)
-        # log(2)/log(10) =  0.301029995663981
-        magma_prec = RR(prec*0.301029995663981).round()
 
     class_label = "-".join([iso_class['field_label'], iso_class['conductor_label'], iso_class['iso_label']])
     Es = iso_class['curves']
@@ -265,18 +262,9 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
     if verbose:
         print("MW data: %s" % mwi)
 
-    # anayltic rank (for degree<6 only):
+    # analytic rank (for small degree only):
     if K.degree() <= AR_DEGREE_BOUND:
-        magma = get_magma()
-        mE = magma(E)
-        if verbose:
-            print("Calling Magma's AnalyticRank()")
-        ar, lval = mE.AnalyticRank(Precision=magma_prec, nvals=2)
-        lval = RR(lval)
-        ar = int(ar)
-        if verbose:
-            print("analytic rank = {}".format(ar))
-            print("Special L-value = {}".format(lval))
+        ar, lval = analytic_rank_and_lvalue(E, prec=prec, backend=backend, verbose=verbose)
     else:
         ar = lval = None
 
@@ -365,9 +353,11 @@ def compute_mwdata(iso_class, test_saturation=False, verbose=False, prec=None):
 
     return mwdata
 
-def get_generators(iso_class, test_saturation=False, verbose=False, prec=None):
+def get_generators(iso_class, test_saturation=False, backend='Magma', verbose=False, prec=None):
     r"""Given an isogeny class, finds the rank (or bounds) and
     generators and torsion data for each curve in the class.
+
+    backend is 'Magma' or 'pari' and controls who computes analytic rank and L-value.
 
     iso_class is a dict as yielded by the read_classes() function, with keys:
     field_label, conductor_label, conductor_ideal, iso_label, curves
