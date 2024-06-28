@@ -4,7 +4,7 @@ r"""Functions to find ranks and generators of elliptic curves by
 
 """
 from __future__ import print_function
-from sage.all import union, RealField, ZZ
+from sage.all import RealField, ZZ
 from nfscripts import torsion_data, global_period, analytic_rank_and_lvalue
 
 AR_DEGREE_BOUND = 6 # do not compute analytic ranks over field of degree larger than this
@@ -186,7 +186,7 @@ def find_source(maps):
     for _ in range(n):  # upper bound for number if iterations needed
         for i in range(n):
             for j in children[i]:
-                children[i] = union(children[i], children[j])
+                children[i] = list(Set(children[i]).union(Set(children[j])))
                 if len(children[i]) == n:
                     # print("source = %s" % i)
                     return i

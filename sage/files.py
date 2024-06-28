@@ -243,7 +243,7 @@ def read_curves_new(infile, only_one=False, ncurves=0):
             record = {}
             record['field_label'] = field_label = data[0]
             K = nf_lookup(field_label)
-            K.__gens_dict().update({'w':K.gen()})
+            K.gens_dict(copy=False).update({'w':K.gen()})
             record['conductor_label'] = data[1]
             record['iso_label'] = data[2]
             record['number'] = data[3]
@@ -297,7 +297,7 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                 # reset the record for a new curve
                 record = {'field_label': field_label}
                 K = nf_lookup(field_label)
-                K.__gens_dict().update({'w':K.gen()})
+                K.gens_dict(copy=False).update({'w':K.gen()})
             elif data[0] == 'Conductor':
                 record['conductor_ideal'] = data[1]
                 #cond = data[1].replace("[", "").replace("]", "").replace("(", "").replace(")", "")
