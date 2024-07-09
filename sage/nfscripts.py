@@ -542,29 +542,17 @@ def global_period(E, scale=None, prec=None):
 
     The factor at each v is E.period_lattice(v).omega().  This
     includes a factor 2 at real places where the discriminant is
-    positive, i.e. the number ofc onnected components.
+    positive, i.e. the number of connected components.
 
     The correction factor is the (rational) 12th root of the norm of
     E.discriminant()/E.minimal_discriminant_ideal().
     """
-    # In Sage 9.1 there's a bug in
-    # E.period_lattice(e).omega(prec=prec) for complex places where
-    # the prec parameter is *not* passed onto the period computation.
-    #
-    # Otherwise this would just be
-    # return prod(E.period_lattice(e).omega(prec=prec) for e in K.places())
-    #
-    # This was fixed in later versions.  Also,
 
     # E.period_lattice(e).omega() now has a parameter bsd_normalise, False by default
     # and ignored for real places, which multiplies by 2 for complex places.
 
     def omega(L):
-        if L.is_real():
-            return L.omega(prec) if prec else L.omega()
-        else:
-            w1, w2 = L.basis(prec) if prec else L.basis()
-            return (w1*w2.conjugate()).imag().abs()
+        return L.omega(prec, bsd_normalise=True)
 
     om = prod(omega(E.period_lattice(e)) for e in E.base_field().places())
     if scale:
@@ -588,32 +576,34 @@ def analytic_rank_and_lvalue_magma(E, prec=None, verbose=False):
     return int(ar), R(lval)
 
 def analytic_rank_and_lvalue_pari(E, prec=None, rmax=4, verbose=False):
-    from sage.all import pari, factorial
+    from sage.all import pari
     if prec is None:  # Magma's precision variable is decimal, 53 bits is 16 digits
         R = RealField()
         prec = R.precision()
     else:
         R = RealField(prec)
+    eps = R(2)**(1-prec)
     rmax1 = rmax+1
     pE = pari(E)
     keep_prec = pari.default('realbitprecision')
     pari.set_real_precision_bits(prec)
     assert pari.default('realbitprecision')==prec
     if verbose:
-        print(f"Calling Pari's lfun(1+x+O(x^{rmax1})) with bit precision {prec}")
+        print(f"Calling Pari's lfun at 1+x+O(x^{rmax1}), with bit precision {prec}")
     v = pE.lfun(f'1+x+O(x^{rmax1})', precision=prec)
-    ar = next(i for i in range(4) if v.polcoef(i))
-    lval = R(v.polcoef(ar)) / factorial(ar)
+    vc = [R(v.polcoef(i)) for i in range(rmax+1)]
+    ar = next(i for i in range(rmax+1) if vc[i].abs() > eps)
+    lval = vc[ar]
     if verbose:
-        print(f"Pari returns {v} so {ar=}, {lval=}")
+        print(f"Pari returns coefficients {vc}\n so {ar=}, {lval=}")
     pari.set_real_precision_bits(keep_prec)
     return ar, lval
 
 def analytic_rank_and_lvalue(E, prec=128, backend='Magma', verbose=False):
     if backend=='Magma':
-        return analytic_rank_and_lvalue_magma(E, prec=128, verbose=verbose)
+        return analytic_rank_and_lvalue_magma(E, prec=prec, verbose=verbose)
     if backend=='pari':
-        return analytic_rank_and_lvalue_pari(E, prec=128, verbose=verbose)
+        return analytic_rank_and_lvalue_pari(E, prec=prec, verbose=verbose)
     raise ValueError("backend value must be 'Magma' or 'pari'")
 
 
@@ -637,7 +627,7 @@ def extend_mwdata_one(Edata, classdata, Kfactors,
 
     # We need to construct every E as a Sage EllipticCurve in
     # order to compute omega, but we only need construct it as
-    # a Magma curve once per isogeny class.
+    # a Magma/Pari curve once per isogeny class for the a.r. and Lvalue.
     E = curve_from_string(K, Edata['ainvs'])
 
     # find analytic rank and L-value (if degree<6):
@@ -664,18 +654,23 @@ def extend_mwdata_one(Edata, classdata, Kfactors,
     if verbose:
         print("gens = {}".format(gens))
 
-    if max_sat_prime and ngens:
-        if max_sat_prime is None:
-            new_gens, index, _ = E.saturation(gens, verbose=0)
-        else:
+    if ngens:
+        if max_sat_prime:
             new_gens, index, _ = E.saturation(gens, max_prime=max_sat_prime, verbose=0)
+        else:
+            new_gens, index, _ = E.saturation(gens, verbose=0)
         if index > 1:
-            print("Original gens were not saturated, index = {} (using max_prime {})".format(index, max_sat_prime))
+            print(f"Original gens were not saturated, {index = }")
+            if max_sat_prime:
+                print(f" (using {max_sat_prime = })")
             gens = new_gens
             Edata['gens'] = decode_points_one2many(encode_points(gens)) # list of strings
         else:
             if verbose:
-                print("gens are saturated at primes up to {}".format(max_sat_prime))
+                if max_sat_prime:
+                    print(f"gens are saturated at primes up to {max_sat_prime}")
+                else:
+                    print("gens are saturated at all primes")
 
     heights = [P.height(precision=prec) for P in gens]
     Edata['heights'] = str(heights).replace(" ", "")
@@ -730,15 +725,14 @@ def extend_mwdata_one(Edata, classdata, Kfactors,
         print("Tamagawa product = {}".format(tamagawa_product))
 
     if NTreg:
-        # NB we may have computed lval to lower precision than NTreg and omega
-        Rsha = lval * nt**2  / R(NTreg * tamagawa_product * omega)
-
         if K not in Kfactors:
-            Kfactors[K] = R(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+            Kfactors[K] = R(K.discriminant().abs()).sqrt()
         if verbose:
             print("Field factor = {}".format(Kfactors[K]))
 
-        Rsha *= Kfactors[K]
+        # NB we may have computed lval to lower precision than NTreg and omega
+
+        Rsha = Kfactors[K] * lval * nt**2  / R(NTreg * tamagawa_product * omega)
         Edata['sha'] = sha = Rsha.round()
         if verbose:
             print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
@@ -925,7 +919,7 @@ def make_isogeny_class(curve, verbose=False, prec=None, backend='Magma'):
     #rest will get copied across to the individual curve records
 
     curve['curves'] = clist
-    mwdata = compute_mwdata(curve, prec=prec, verbose=verbose)
+    mwdata = compute_mwdata(curve, backend=backend, verbose=verbose, prec=prec)
     if verbose > 1:
         print("Computed mwdata")
     # copy class-invariant data

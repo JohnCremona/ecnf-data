@@ -216,7 +216,7 @@ def read_curves(infile, only_one=False, ncurves=0):
 def read_curves_new(infile, only_one=False, ncurves=0):
     r""" Iterator to loop through lines of a curves.* file each containing
     14 data fields as defined in the ecnf-format.txt file (see
-    schemas.py), yielding its curves as EllipticCurve objects.
+    schemas.py), yielding its curves.
 
     If only_one is True, skips curves whose 4th data field is
     *not* 1, hence only yielding one curve per isogeny class.
@@ -952,8 +952,8 @@ def write_data_files(data, file_types=all_file_types, field_type=None, field_lab
                 outfile.write(line.rstrip()+"\n")
                 n += 1
                 if n%1000==0:
-                    print("{} lines output to {} so far...".format(n, new_file))
-        print("{} lines output to {} so far...".format(n, new_file))
+                    print("{} lines output to {} ...".format(n, new_file))
+        print("{} lines output to {} ...".format(n, new_file))
 
 def make_all_data_files(raw_curves, file_types=all_file_types,
                         field_type=None, field_label='test', base_dir=ECNF_DIR, verbose=0,
@@ -1000,7 +1000,7 @@ def make_all_data_files1(raw_curves, file_types=all_file_types,
     backend is 'Magma' or 'pari' and controls who computes analytic rank and L-value.
 
     Unlike make_all_data_files() which calls make_isogeny_classes just
-    once and only outputs right at the end, this one callas
+    once and only outputs right at the end, this one calls
     make_isogeny_class() for each raw curve and outputs as it goes
     along.  This guards against sage/magma/pari crashing in the middle
     of a long run.
@@ -1011,6 +1011,32 @@ def make_all_data_files1(raw_curves, file_types=all_file_types,
         label = "{}-{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
         print("working on class {}".format(label))
         data = make_isogeny_class(curve, verbose=verbose, prec=prec, backend=backend)
+        write_data_files(data, file_types, field_type, field_label, base_dir, append=True)
+        print("output for class {} complete".format(label))
+        print("====================================")
+
+def remake_classes(raw_curves, file_types=all_file_types,
+                   field_type=None, field_label='test', base_dir=ECNF_DIR, verbose=0):
+    """raw_curves is a generator yielding short 'raw' curve dicts with
+    fields (as in read_curves_magma()):
+
+    field_label, conductor_norm, conductor_label, conductor_ideal, iso_label, ainvs
+
+    This computes isogeny classes BUTNOT all curve data for all curves in
+    each class, writing the result to files
+    <base_dir>/<field_type>/<ft>.<field_label> for each file typ ft
+    (default: all, i.e. curves, isoclass, local_data, mwdata, galrep)
+
+    Calls make_isogeny_class() for each raw curve and outputs as it
+    goes along.  This guards against sage/magma/pari crashing in the
+    middle of a long run.
+
+    """
+    from nfscripts import make_isogeny_class
+    for curve in raw_curves:
+        label = "{}-{}-{}".format(curve['field_label'],curve['conductor_label'],curve['iso_label'])
+        print("working on class {}".format(label))
+        data = make_isogeny_class(curve, verbose=verbose)
         write_data_files(data, file_types, field_type, field_label, base_dir, append=True)
         print("output for class {} complete".format(label))
         print("====================================")

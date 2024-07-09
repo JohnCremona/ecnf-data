@@ -9,13 +9,17 @@ from nfscripts import torsion_data, global_period, analytic_rank_and_lvalue
 
 AR_DEGREE_BOUND = 6 # do not compute analytic ranks over field of degree larger than this
 
-# cache values of  RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+# cache values of  RR(K.discriminant().abs()).sqrt()
+
+# NB previous versons divided this factor by 2**(K.signature()[1]) =
+# 2**r2 where r2 = #complex places, but instead we adjust the global
+# period by doubling the period at complex places.
 
 field_factors = {}
 def get_field_factor(K, RR):
     global field_factors
     if K not in field_factors:
-        field_factors[K] = RR(K.discriminant().abs()).sqrt() / 2**(K.signature()[1])
+        field_factors[K] = RR(K.discriminant().abs()).sqrt()
     return field_factors[K]
 
 def MWShaInfo(E, HeightBound=None, test_saturation=False, verbose=False):
@@ -251,6 +255,8 @@ def compute_mwdata(iso_class, test_saturation=False, backend='Magma', verbose=Fa
         prec = RR.precision()
     else:
         RR = RealField(prec)
+    if verbose:
+        print(f"In compute_mwdata() with {prec=}, {backend=}, {RR=}")
 
     class_label = "-".join([iso_class['field_label'], iso_class['conductor_label'], iso_class['iso_label']])
     Es = iso_class['curves']
