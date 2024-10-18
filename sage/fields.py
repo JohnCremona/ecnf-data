@@ -218,7 +218,7 @@ def add_field(K, field_label=None, prime_norm_bound=200, nf_data_file=None):
         Kdata['G'] = K.galois_group(names='b')
     for dd, f, j in cm_j_invariants_and_orders(K):
         cm_j_dict[j] = dd * (f ** 2)
-    print("updated cm_j_dict to {}".format(cm_j_dict))
+    print("updated cm_j_dict") # " to {}".format(cm_j_dict))
     Kdata['used_curves'] = {}
     Kdata['nf_data'] = None
     Kdata['cm_counts'] = {}

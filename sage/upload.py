@@ -25,6 +25,8 @@ assert Set(ec_nfcurves_extra_columns)==Set(extra_keys_and_types.keys())
 def column_to_string(colname, col):
         if col is None:
             return "\\N"
+        if col == '?':
+            return "\\N"
         col = str(col).replace(" ","")
         col = col.replace("'",'"')
         if col == "True":
