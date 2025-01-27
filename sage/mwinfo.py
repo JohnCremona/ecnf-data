@@ -264,12 +264,15 @@ def compute_mwdata(iso_class, test_saturation=False, backend='Magma', verbose=Fa
     K = E.base_field()
     if verbose:
         print("Curves in class %s: %s" % (class_label, [E.ainvs() for E in Es]))
-    mwi = MWInfo_curves(Es, HeightBound=2, test_saturation=test_saturation, verbose=verbose)
+    if K.absolute_discriminant().abs()>100000:
+        mwi = [[[],[]] for E in Es]
+    else:
+        mwi = MWInfo_curves(Es, HeightBound=2, test_saturation=test_saturation, verbose=verbose)
     if verbose:
         print("MW data: %s" % mwi)
 
     # analytic rank (for small degree only):
-    if K.degree() <= AR_DEGREE_BOUND:
+    if K.degree() <= AR_DEGREE_BOUND and K.absolute_discriminant().abs()<100000:
         ar, lval = analytic_rank_and_lvalue(E, prec=prec, backend=backend, verbose=verbose)
     else:
         ar = lval = None
@@ -345,7 +348,7 @@ def compute_mwdata(iso_class, test_saturation=False, backend='Magma', verbose=Fa
             if sha == 0 or (sha-Rsha).abs() > 0.0001 or not ZZ(sha).is_square():
                 if not verbose:
                     print("Approximate analytic Sha = {}, rounds to {}".format(Rsha, sha))
-                print("****************************Not good! 0 or non-square or not close to a positive integer!")
+                print("****************************Not good! 0 or non-square or not very close to a positive integer (abs(difference)={(sha-Rsha).abs()})!")
 
         else:
             sha = None
