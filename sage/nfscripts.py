@@ -609,7 +609,7 @@ def analytic_rank_and_lvalue(E, prec=128, backend='Magma', verbose=False):
 
 def extend_mwdata_one(Edata, classdata, Kfactors,
                       max_sat_prime=None, prec=None, backend='Magma', verbose=False):
-    r"""Computes analytic rank and L-value using Magma, and omega (global
+    r"""Computes analytic rank and L-value using Magma or pari, and omega (global
     period), heights and regulator using Sage.  Computes analytic Sha
     (rounded).
 
@@ -924,7 +924,7 @@ def make_isogeny_class(curve, verbose=False, prec=None, backend='Magma'):
         print("Computed mwdata")
     # copy class-invariant data
     curve['analytic_rank'] = mwdata[0].get('analytic_rank', None)
-    curve['rank_bounds'] = mwdata[0]['rank_bounds']
+    curve['rank_bounds'] = mwdata[0].get('rank_bounds', None)
     curve['rank'] = mwdata[0].get('rank', None)
 
     # fill in data for individual curves
