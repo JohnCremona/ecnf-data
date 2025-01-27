@@ -289,7 +289,7 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
     with open(infile) as file:
         for L in file.readlines():
             data = L.strip().split(maxsplit=1)
-            if len(data) == 0:
+            if len(data) == 0: # skip blank lines
                 continue
             assert len(data) == 2, "Line '{}' does not have two fields".format(L)
             if data[0] == 'Field':
@@ -319,6 +319,8 @@ def read_curves_magma(infile, min_norm=1, max_norm=None):
                     yield record
             elif data[0] == 'No':
                 print(f"No curve for class {record['conductor_label']}{record['iso_label']}, skipping")
+                continue
+            elif data[0] == 'Results': # start of second pass
                 continue
             else:
                 print("Unrecognised line prefix {}, skipping this line".format(data[0]))
@@ -438,7 +440,7 @@ def read_newform_data(bmf_filename, verbose=False):
     """
     bmf_file = open(bmf_filename)
     old_fmt =  "nflist" in bmf_filename
-    print("file has {} format".format('old' if old_fmt else 'new'))
+    #print("file has {} format".format('old' if old_fmt else 'new'))
     newforms = {}
     for L in bmf_file.readlines():
         if verbose:
