@@ -221,17 +221,15 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
     if bmf_filename==None:
         print(f"Must supply name of a file containing BMFs over {field} in {BIANCHI_DATA_DIR}")
     else:
-        if verbose:
-            print(f"Using {bmf_filename} for newform input")
+        print(f"Using {bmf_filename} for newform input")
 
     if outfilename:
         outfile=open(outfilename, mode="a")
         if verbose:
             print(f"Using {outfilename} for output")
-    output(f"Field {field_label}\n")
+    output(f"\nField {field_label}\n\n")
     newforms = read_newform_data(bmf_filename)
-    if verbose:
-        print("...read newform data finished")
+    print(f"...finished reading newform data : {len(newforms)} newforms")
     if missing_label_file==None:
         missing_label_file = bmf_filename
         if verbose:
@@ -244,12 +242,17 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
     nforms = 0
     ncurves_found = 0
     ncurves_not_found = 0
+    # This will hold a list of (K, N, class_label, apdict) for which no curve was found on first pass
+    missing_curve_data = []
     mag=Magma()
-    for level in read_missing_levels(open(missing_label_file)):
+    f = open(missing_label_file)
+    for level in read_missing_levels(f):
         if "." in level:
             N = ideal_from_label(K, level)
         else:
             N = ideal_from_IQF_label(K, level)
+        if verbose:
+            print(f"Level = {level}, ideal = {N}")
         NN = N.norm()
         if min_norm and NN<min_norm:
             continue
@@ -307,12 +310,34 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
                 output(f"Curve {ainvs}\n")
             else:
                 output("No curve found\n")
+                missing_curve_data.append((K, N, class_label, apdict))
             if outfilename:
                 outfile.flush()
+    f.close()
     assert ncurves_found + ncurves_not_found == nforms
     if ncurves_not_found:
         print(f"No curve found for {ncurves_not_found} newforms out of {nforms} over {field_label}")
         print(f"Curve(s) found for {ncurves_found} newforms out of {nforms} over {field_label}")
+        print("Trying a second pass to pick up conjugates and twists...")
+        output("\nResults from second pass:\n\n")
+        for K, N, class_label, apdict in missing_curve_data:
+            E = find_matching_curve(K, N, apdict)
+            if E:
+                ncurves_found += 1
+                ncurves_not_found -= 1
+                if verbose:
+                    print(f"Found a curve in the cache matching {full_class_label}: {E.ainvs()}")
+                    print(f"Number of missing curves reduces to {ncurves_not_found}")
+                # output 3 lines per curve, as expected by the function read_curves_magma:
+                output(f"Conductor {ideal_to_string(N)}\n")
+                output(f"Isogeny_class {class_label}\n")
+                ainvs = str(list(E.ainvs())).replace("a", "w")
+                output(f"Curve {ainvs}\n")
+        if ncurves_not_found:
+            print(f"No curve found for {ncurves_not_found} newforms out of {nforms} over {field_label}")
+            print(f"Curve(s) found for {ncurves_found} newforms out of {nforms} over {field_label}")
+        else:
+            print(f"Curve(s) found for all {nforms} newforms over {field_label}")
     else:
         print(f"Curve(s) found for all {nforms} newforms over {field_label}")
 
