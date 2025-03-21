@@ -1,5 +1,7 @@
 *~
 *.pyc
+rawdata/
 rawcurves*
 sage/curves.*
 sage/sage.out.*
+sage/search_*.m
