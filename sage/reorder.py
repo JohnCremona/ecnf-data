@@ -59,8 +59,7 @@ def check_labels(Edata):
 def get_data_and_perm(field_label, verbose=False):
     r"""
     Given a field label, read all the old data for that field and also
-    a new rawcurves file from the appropriate subdirectory of
-    ECNF_DIR.
+    a new rawcurves file from the rawdata subdirectory of ECNF_DIR.
 
     Return the complete old data (list of complecte curve records) and
     perm, a dict with key=conductor_label, value=dict mapping
@@ -73,7 +72,8 @@ def get_data_and_perm(field_label, verbose=False):
     """
     field_type = get_field_type_from_label(field_label)
     ECNF_SUBDIR = "/".join([ECNF_DIR, field_type])
-    rawcurves_file = ECNF_SUBDIR+"/rawcurves."+field_label
+    RAW_SUBDIR = "/".join([ECNF_DIR, 'rawdata'])
+    rawcurves_file = RAW_SUBDIR+"/rawcurves."+field_label
 
     K = nf_lookup(field_label)
     data = read_all_field_data(ECNF_SUBDIR, field_label, check_cols=True)
