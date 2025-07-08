@@ -958,6 +958,8 @@ def make_isogeny_class(curve, verbose=False, prec=None, backend='Magma'):
         # The following will fail for curves which are
         # base-changes of curves over Q with large conductor (and
         # hence no Cremona label)
+        if verbose:
+            print(" - checking for base-change...")
         EEQ = c.descend_to(QQ)
         if EEQ:
             if verbose:
@@ -966,15 +968,21 @@ def make_isogeny_class(curve, verbose=False, prec=None, backend='Magma'):
         record['base_change'] = [get_Q_label(cQ) for cQ in c.descend_to(QQ)]
 
         # local_data (keys 'local_data', 'non_min_p', 'minD', 'bad_primes'):
+        if verbose:
+            print(" - computing local data...")
         ld = local_data(c)
         record.update(ld)
 
         # MW data per curve ('gens', 'ngens', 'heights', 'reg',
         # 'torsion_order', 'torsion_structure', 'torsion_gens',
         # 'omega', 'Lvalue', 'sha'):
+        if verbose:
+            print(" - recording MW data...")
         record.update(mwdata[i])
 
         # Galois image data via magma
+        if verbose:
+            print(" - computing galrep data...")
         galrepdata = get_galrep_data(E, verbose=verbose) # one string with spaces
         record.update(galrepdata)
 

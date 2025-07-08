@@ -12,7 +12,7 @@ def output_magma_commands(magma_commands_string, magma_commands_file):
         f.write(magma_commands_string)
     print(f"Complete Magma commands written to {magma_commands_file}")
 
-def EllipticCurveSearch(full_class_label, K, Plist, N, aplist, effort=1000, mag=None):
+def EllipticCurveSearch(full_class_label, K, Plist, N, aplist, effort=10000, mag=None):
     r"""Call Magma's own EllipticCurveSearch() function to find and
     elliptic curve E defined over K with conductor N and ap as in the
     list.
@@ -163,7 +163,7 @@ def find_matching_curve(K, N, aPdict):
             return E
     return None
 
-def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, old_curves_file=None, effort=1000, verbose=False):
+def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_filename=None, min_norm=None, max_norm=None, outfilename=None, old_curves_file=None, effort=10000, verbose=False):
     r"""
     Uses Magma via EllipticCurveSearch() to search for missing curves (over IQFs given some BMFs).
 
@@ -251,13 +251,13 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
             N = ideal_from_label(K, level)
         else:
             N = ideal_from_IQF_label(K, level)
-        if verbose:
-            print(f"Level = {level}, ideal = {N}")
         NN = N.norm()
         if min_norm and NN<min_norm:
             continue
         if max_norm and NN>max_norm:
             continue
+        if verbose:
+            print(f"Level = {level}, ideal = {N}")
         goodP = [(i,P) for i,P in enumerate(Plist) if not P.divides(N)]
         level_label = ideal_label(N)
         if verbose:
@@ -320,6 +320,7 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
         print(f"Curve(s) found for {ncurves_found} newforms out of {nforms} over {field_label}")
         print("Trying a second pass to pick up conjugates and twists...")
         output("\nResults from second pass:\n\n")
+        still_missing_curve_data = []
         for K, N, class_label, apdict in missing_curve_data:
             E = find_matching_curve(K, N, apdict)
             if E:
@@ -333,9 +334,13 @@ def magma_search(field, missing_label_file=None, field_info_filename=None, bmf_f
                 output(f"Isogeny_class {class_label}\n")
                 ainvs = str(list(E.ainvs())).replace("a", "w")
                 output(f"Curve {ainvs}\n")
+            else:
+                still_missing_curve_data.append((K, N, class_label, apdict))
         if ncurves_not_found:
-            print(f"No curve found for {ncurves_not_found} newforms out of {nforms} over {field_label}")
             print(f"Curve(s) found for {ncurves_found} newforms out of {nforms} over {field_label}")
+            print(f"No curve found for {ncurves_not_found} newforms out of {nforms} over {field_label}")
+            for  K, N, class_label, apdict in still_missing_curve_data:
+                print(f"{field_label}-{class_label}")
         else:
             print(f"Curve(s) found for all {nforms} newforms over {field_label}")
     else:

@@ -53,6 +53,9 @@ def read_all_field_data(base_dir, field_label, check_cols=True, mwdata_format='n
 
     all_data = {}
     n = 0
+    if not os.path.exists(curves_filename):
+        print(f"No data in {curves_filename}, skipping")
+        return all_data
 
     print("Reading from {}".format(curves_filename))
     with open(curves_filename) as curves:
